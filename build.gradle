@@ -1,5 +1,6 @@
 plugins {
-    id 'java'
+    // id 'java'
+    id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.4.31'
     // id 'war'
 }
@@ -12,7 +13,7 @@ repositories {
     jcenter()
 }
 
-def mainClassName = "io.ktor.server.netty.EngineMain"
+mainClassName = "io.ktor.server.netty.EngineMain"
 
 def ktor_version = "1.5.2"
 def logback_version = "1.2.3"
