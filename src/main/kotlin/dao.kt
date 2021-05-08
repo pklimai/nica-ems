@@ -32,13 +32,13 @@ class EventDAO(val db: Database) : DAOEventInterface {
             Unit
         }
 
-    //    override fun updateEvent(file_ptr: Int, event_num: Int, period: Int, run: Int, sw_ver: Short, all_tracks: Int) {
+//    override fun updateEvent(file_ptr: Int, event_num: Int, period: Int, run: Int, sw_ver: Short, all_tracks: Int) {
 //        TODO("Not yet implemented")
 //    }
 //    override fun deleteEvent(file_ptr: Int, event_num: Int) {
 //        TODO("Not yet implemented")
 //    }
-//
+
     override fun getEvent(file_ptr: Int, event_num: Int): Event? = transaction(db) {
         Events.select { (Events.file_ptr eq file_ptr) and (Events.event_num eq event_num) }.map {
             Event(
@@ -65,6 +65,19 @@ class EventDAO(val db: Database) : DAOEventInterface {
                 )
             }
         }
+
+    fun searchEvents(period: Int, run: Int): List<Event> = transaction(db) {
+        Events.select { (Events.period eq period) and (Events.run eq run) }.map {
+            Event(
+                it[Events.file_ptr],
+                it[Events.event_num],
+                it[Events.period],
+                it[Events.run],
+                it[Events.sw_ver].toShort(),
+                it[Events.all_tracks]
+            )
+        }
+    }
 
     override fun close() {}
 

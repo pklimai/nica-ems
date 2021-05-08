@@ -46,6 +46,49 @@ fun Application.main() {
             get() {
                 call.respond(mapOf("events" to dao.getAllEvents()))
             }
+
+            // Example URL -- http://127.0.0.1:8080/events/4/10
+            get("/{file_ptr}/{event_num}") {
+                val file_ptr = call.parameters["file_ptr"]?.toInt()
+                val event_num = call.parameters["event_num"]?.toInt()
+                if (file_ptr != null && event_num != null) {
+                    val resp = dao.getEvent(file_ptr = file_ptr, event_num = event_num)
+                    if (resp != null) {
+                        call.respond(resp)
+                    }
+                    else {
+                        call.respond("No such event found!")
+                    }
+                }
+            }
+
+            // Example URL -- http://127.0.0.1:8080/events/getevent?file_ptr=4&event_num=10
+            get("/getevent") {
+                val file_ptr = call.parameters["file_ptr"]?.toInt()
+                val event_num = call.parameters["event_num"]?.toInt()
+                if (file_ptr != null && event_num != null) {
+                    val resp = dao.getEvent(file_ptr = file_ptr, event_num = event_num)
+                    if (resp != null) {
+                        call.respond(resp)
+                    }
+                    else {
+                        call.respond("No such event found!")
+                    }
+                }
+                else {
+                    call.respond("file_ptr and event_num are required here")
+                }
+            }
+
+            // Example URL -- http://127.0.0.1:8080/events/search?period=7&run=5000
+            get("/search") {
+                val period = call.parameters["period"]?.toInt()
+                val run = call.parameters["run"]?.toInt()
+                if (period != null && run != null) {
+                    call.respond(mapOf("events" to dao.searchEvents(period, run)))
+                }
+            }
+
         }
     }
 }
