@@ -4,6 +4,7 @@ import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
 import io.ktor.jackson.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.html.*
@@ -35,10 +36,10 @@ fun Application.main() {
                 body {
                     val runtime = Runtime.getRuntime()
                     h3 { +"Ktor Netty engine: Hello, ${System.getProperty("user.name")}!" }
-                    p { + "CPUs: ${runtime.availableProcessors()}. Memory free/total/max: ${runtime.freeMemory()} / ${runtime.totalMemory()} / ${runtime.maxMemory()}."}
+                    p { +"CPUs: ${runtime.availableProcessors()}. Memory free/total/max: ${runtime.freeMemory()} / ${runtime.totalMemory()} / ${runtime.maxMemory()}." }
                     hr {}
-                    h3 { + "REST API"}
-                    p { a(href = "/events") { +"All events"} }
+                    h3 { +"REST API" }
+                    p { a(href = "/events") { +"All events" } }
                 }
             }
         }
@@ -55,8 +56,7 @@ fun Application.main() {
                     val resp = dao.getEvent(file_ptr = file_ptr, event_num = event_num)
                     if (resp != null) {
                         call.respond(resp)
-                    }
-                    else {
+                    } else {
                         call.respond("No such event found!")
                     }
                 }
@@ -70,12 +70,10 @@ fun Application.main() {
                     val resp = dao.getEvent(file_ptr = file_ptr, event_num = event_num)
                     if (resp != null) {
                         call.respond(resp)
-                    }
-                    else {
+                    } else {
                         call.respond("No such event found!")
                     }
-                }
-                else {
+                } else {
                     call.respond("file_ptr and event_num are required here")
                 }
             }
@@ -88,6 +86,39 @@ fun Application.main() {
                     call.respond(mapOf("events" to dao.searchEvents(period, run)))
                 }
             }
+
+            // **NB**: Content-Type is mandatory
+            // POST http://127.0.0.1:8080/events/create
+            // Content-Type: application/json
+            //
+            // { "file_ptr": 10, "event_num": 22, "period": 7, "run": 5000, "sw_ver": 1, "all_tracks": 55 }
+            post("/create") {
+                val event = call.receive<Event>()
+                dao.createEvent(
+                    event.file_ptr,
+                    event.event_num,
+                    event.period,
+                    event.run,
+                    event.sw_ver,
+                    event.all_tracks
+                )
+                call.respond("Event created!")
+            }
+
+//            post("/create-multiple") {
+//                val events = call.receive<List<Event>>()
+//                events.forEach { event ->
+//                    dao.createEvent(
+//                        event.file_ptr,
+//                        event.event_num,
+//                        event.period,
+//                        event.run,
+//                        event.sw_ver,
+//                        event.all_tracks
+//                    )
+//                }
+//                call.respond("{events.size} events created!")
+//            }
 
         }
     }
