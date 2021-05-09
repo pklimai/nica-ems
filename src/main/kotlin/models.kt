@@ -11,6 +11,8 @@ data class Event (
     val all_tracks: Int
 )
 
+data class EventList(val events: List<Event>)
+
 object Events : Table() {
     val file_ptr = integer("file_ptr").primaryKey()
     val event_num = integer("event_num").primaryKey()

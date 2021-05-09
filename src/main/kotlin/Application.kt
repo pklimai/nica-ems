@@ -105,20 +105,26 @@ fun Application.main() {
                 call.respond("Event created!")
             }
 
-//            post("/create-multiple") {
-//                val events = call.receive<List<Event>>()
-//                events.forEach { event ->
-//                    dao.createEvent(
-//                        event.file_ptr,
-//                        event.event_num,
-//                        event.period,
-//                        event.run,
-//                        event.sw_ver,
-//                        event.all_tracks
-//                    )
-//                }
-//                call.respond("{events.size} events created!")
-//            }
+            /*
+             { "events": [
+               { "file_ptr": 10, "event_num": 31, "period": 7, "run": 5000, "sw_ver": 1, "all_tracks": 55 },
+               { "file_ptr": 10, "event_num": 32, "period": 7, "run": 5000, "sw_ver": 1, "all_tracks": 55 }
+             ] }
+            */
+            post("/create-multiple") {
+                val events = call.receive<EventList>()
+                events.events.forEach { event ->
+                    dao.createEvent(
+                        event.file_ptr,
+                        event.event_num,
+                        event.period,
+                        event.run,
+                        event.sw_ver,
+                        event.all_tracks
+                    )
+                }
+                call.respond("${events.events.size} events created!")
+            }
 
         }
     }
