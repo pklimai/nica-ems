@@ -6,7 +6,7 @@ import java.io.Closeable
 
 interface DAOEventInterface : Closeable {
     fun init()
-    fun createEvent(file_ptr: Int, event_num: Int, period: Int, run: Int, sw_ver: Short, all_tracks: Int)
+    fun createEvent(file_guid: Int, event_number: Int, sw_ver: Short, period_number: Int, run_number: Int, track_number: Int)
 
 //    fun updateEvent(file_ptr: Int, event_num: Int, period: Int, run: Int, sw_ver: Short, all_tracks: Int)
 //    fun deleteEvent(file_ptr: Int, event_num: Int)
@@ -19,15 +19,15 @@ class EventDAO(val db: Database) : DAOEventInterface {
         SchemaUtils.create(Events)
     }
 
-    override fun createEvent(file_ptr: Int, event_num: Int, period: Int, run: Int, sw_ver: Short, all_tracks: Int) =
+    override fun createEvent(file_guid: Int, event_number: Int, sw_ver: Short, period_number: Int, run_number: Int, track_number: Int) =
         transaction(db) {
             Events.insert {
-                it[Events.file_ptr] = file_ptr
-                it[Events.event_num] = event_num
-                it[Events.period] = period
-                it[Events.run] = run
-                it[Events.sw_ver] = sw_ver.toInt()
-                it[Events.all_tracks] = all_tracks
+                it[Events.file_guid] = file_guid
+                it[Events.event_number] = event_number
+                it[Events.software_id] = sw_ver.toInt()
+                it[Events.period_number] = period_number
+                it[Events.run_number] = run_number
+                it[Events.track_number] = track_number
             }
             Unit
         }
@@ -40,14 +40,14 @@ class EventDAO(val db: Database) : DAOEventInterface {
 //    }
 
     override fun getEvent(file_ptr: Int, event_num: Int): Event? = transaction(db) {
-        Events.select { (Events.file_ptr eq file_ptr) and (Events.event_num eq event_num) }.map {
+        Events.select { (Events.file_guid eq file_ptr) and (Events.event_number eq event_num) }.map {
             Event(
-                it[Events.file_ptr],
-                it[Events.event_num],
-                it[Events.period],
-                it[Events.run],
-                it[Events.sw_ver].toShort(),
-                it[Events.all_tracks]
+                it[Events.file_guid],
+                it[Events.event_number],
+                it[Events.software_id].toShort(),
+                it[Events.period_number].toShort(),
+                it[Events.run_number].toShort(),
+                it[Events.track_number]
             )
         }.singleOrNull()
     }
@@ -56,25 +56,25 @@ class EventDAO(val db: Database) : DAOEventInterface {
         transaction(db) {
             Events.selectAll().map {
                 Event(
-                    it[Events.file_ptr],
-                    it[Events.event_num],
-                    it[Events.period],
-                    it[Events.run],
-                    it[Events.sw_ver].toShort(),
-                    it[Events.all_tracks]
+                    it[Events.file_guid],
+                    it[Events.event_number],
+                    it[Events.software_id].toShort(),
+                    it[Events.period_number].toShort(),
+                    it[Events.run_number].toShort(),
+                    it[Events.track_number]
                 )
             }
         }
 
     fun searchEvents(period: Int, run: Int): List<Event> = transaction(db) {
-        Events.select { (Events.period eq period) and (Events.run eq run) }.map {
+        Events.select { (Events.period_number eq period) and (Events.run_number eq run) }.map {
             Event(
-                it[Events.file_ptr],
-                it[Events.event_num],
-                it[Events.period],
-                it[Events.run],
-                it[Events.sw_ver].toShort(),
-                it[Events.all_tracks]
+                it[Events.file_guid],
+                it[Events.event_number],
+                it[Events.software_id].toShort(),
+                it[Events.period_number].toShort(),
+                it[Events.run_number].toShort(),
+                it[Events.track_number]
             )
         }
     }

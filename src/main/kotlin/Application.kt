@@ -18,7 +18,7 @@ fun Application.main() {
     }
     val dao = EventDAO(
         Database.connect(
-            "jdbc:postgresql://192.168.65.52:5000/postgres",
+            "jdbc:postgresql://192.168.65.52:5000/event_db",
             driver = "org.postgresql.Driver",
             user = "postgres",
             password = "example"
@@ -95,12 +95,12 @@ fun Application.main() {
             post("/create") {
                 val event = call.receive<Event>()
                 dao.createEvent(
-                    event.file_ptr,
-                    event.event_num,
-                    event.period,
-                    event.run,
-                    event.sw_ver,
-                    event.all_tracks
+                    event.file_guid,
+                    event.event_number,
+                    event.period_number,
+                    event.run_number.toInt(),
+                    event.software_id.toInt(),
+                    event.track_number
                 )
                 call.respond("Event created!")
             }
@@ -115,12 +115,12 @@ fun Application.main() {
                 val events = call.receive<EventList>()
                 events.events.forEach { event ->
                     dao.createEvent(
-                        event.file_ptr,
-                        event.event_num,
-                        event.period,
-                        event.run,
-                        event.sw_ver,
-                        event.all_tracks
+                        event.file_guid,
+                        event.event_number,
+                        event.period_number,
+                        event.run_number.toInt(),
+                        event.software_id.toInt(),
+                        event.track_number
                     )
                 }
                 call.respond("${events.events.size} events created!")
