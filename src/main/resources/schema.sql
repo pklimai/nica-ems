@@ -1,18 +1,24 @@
--- drop table software_
+-- psql -h 192.168.65.52 -p 5000 -U postgres -d event_db
+
+-- drop table src_event;
+-- drop table bmn_event;
+-- drop table software_;
+-- drop table file_;
+-- drop table storage_;
+
+
 create table software_
 (
     software_id smallserial primary key,
     software_version varchar (20) not null unique
 );
 
--- drop table storage_
 create table storage_
 (
     storage_id smallserial primary key,
     storage_name varchar (20) not null unique
 );
 
--- drop table file_
 create table file_
 (
     file_guid serial primary key,
@@ -20,7 +26,6 @@ create table file_
     file_path varchar(255) not null
 );
 
--- drop table bmn_event
 create table bmn_event
 (
     file_guid int not null references file_(file_guid) on update cascade,
@@ -34,7 +39,6 @@ create table bmn_event
     track_number int not null default (-1)
 );
 
--- drop table src_event
 create table src_event
 (
     file_guid int not null references file_(file_guid) on update cascade,
@@ -49,5 +53,3 @@ create table src_event
     input_charge real not null default (-1),
     output_charge real not null default (-1)
 );
-
-

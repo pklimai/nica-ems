@@ -15,10 +15,10 @@ interface DAOEventInterface : Closeable {
         track_number: Int
     )
 
-//    fun updateEvent(file_ptr: Int, event_num: Int, period: Int, run: Int, software_id: Short, all_tracks: Int)
-//    fun deleteEvent(file_ptr: Int, event_num: Int)
+//    fun updateEvent(file_guid: Int, event_num: Int, period: Int, run: Int, software_id: Short, all_tracks: Int)
+//    fun deleteEvent(file_guid: Int, event_num: Int)
 
-    fun getEvent(file_ptr: Int, event_num: Int): Event?
+    fun getEvent(file_guid: Int, event_num: Int): Event?
     fun getAllEvents(): List<Event>
 }
 
@@ -47,15 +47,15 @@ class EventDAO(val db: Database) : DAOEventInterface {
             Unit
         }
 
-//    override fun updateEvent(file_ptr: Int, event_num: Int, period: Int, run: Int, software_id: Short, all_tracks: Int) {
+//    override fun updateEvent(file_guid: Int, event_num: Int, period: Int, run: Int, software_id: Short, all_tracks: Int) {
 //        TODO("Not yet implemented")
 //    }
-//    override fun deleteEvent(file_ptr: Int, event_num: Int) {
+//    override fun deleteEvent(file_guid: Int, event_num: Int) {
 //        TODO("Not yet implemented")
 //    }
 
-    override fun getEvent(file_ptr: Int, event_num: Int): Event? = transaction(db) {
-        Events.select { (Events.file_guid eq file_ptr) and (Events.event_number eq event_num) }.map {
+    override fun getEvent(file_guid: Int, event_num: Int): Event? = transaction(db) {
+        Events.select { (Events.file_guid eq file_guid) and (Events.event_number eq event_num) }.map {
             Event(
                 it[Events.file_guid],
                 it[Events.event_number],

@@ -7,7 +7,6 @@ import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.util.*
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.Database
 import java.sql.DriverManager
@@ -74,12 +73,43 @@ fun Application.main() {
                 call.respond(mapOf("events_raw" to lstEvents))
             }
 
+            get("/raw/joined") {
+                val stmt = conn.createStatement()
+                val res = stmt.executeQuery(
+                    """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
+                        FROM bmn_event INNER JOIN software_  
+                        ON bmn_event.software_id = software_.software_id
+                        INNER JOIN file_ ON bmn_event.file_guid = file_.file_guid
+                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
+                        """
+                )
+
+                val lstEvents = ArrayList<EventRaw>()
+                while (res.next()) {
+                    lstEvents.add(
+                        EventRaw(
+                            FileRaw(
+                                StorageRaw(res.getString("storage_name")),
+                                res.getString("file_path")
+                            ),
+                            res.getInt("event_number"),
+                            SoftwareRaw(res.getString("software_version")),
+                            res.getShort("period_number"),
+                            res.getShort("run_number"),
+                            res.getInt("track_number")
+                        )
+                    )
+                }
+                call.respond(mapOf("events_raw_joined" to lstEvents))
+
+            }
+
             // Example URL -- http://127.0.0.1:8080/events/4/10
             get("/{file_ptr}/{event_num}") {
                 val file_ptr = call.parameters["file_ptr"]?.toInt()
                 val event_num = call.parameters["event_num"]?.toInt()
                 if (file_ptr != null && event_num != null) {
-                    val resp = dao.getEvent(file_ptr = file_ptr, event_num = event_num)
+                    val resp = dao.getEvent(file_guid = file_ptr, event_num = event_num)
                     if (resp != null) {
                         call.respond(resp)
                     } else {
@@ -93,7 +123,7 @@ fun Application.main() {
                 val file_ptr = call.parameters["file_ptr"]?.toInt()
                 val event_num = call.parameters["event_num"]?.toInt()
                 if (file_ptr != null && event_num != null) {
-                    val resp = dao.getEvent(file_ptr = file_ptr, event_num = event_num)
+                    val resp = dao.getEvent(file_guid = file_ptr, event_num = event_num)
                     if (resp != null) {
                         call.respond(resp)
                     } else {

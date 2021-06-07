@@ -63,3 +63,23 @@ object Events : Table("bmn_event") {
 
 data class EventList(val events: List<Event>)
 
+data class StorageRaw(val storage_name: String)
+
+data class FileRaw(
+    val storage_name: StorageRaw,
+    val file_path: String
+)
+
+data class SoftwareRaw(val software_version: String)
+
+data class EventRaw(
+    val file: FileRaw,
+    val event_number: Int,
+    val software_version: SoftwareRaw,
+    val period_number: Short,
+    val run_number: Short,
+    val track_number: Int
+)
+
+data class EventRawList(val events: List<EventRaw>)
+
