@@ -43,6 +43,15 @@ data class Event(
     val track_number: Int
 )
 
+data class EventJoined(
+    val file_guid: Int,
+    val event_number: Int,
+    val software_version: String,
+    val period_number: Short,
+    val run_number: Short,
+    val track_number: Int
+)
+
 object Events : Table("bmn_event") {
     val file_guid = integer("file_guid").primaryKey().references(Files.file_guid)
     val event_number = integer("event_number").primaryKey()
@@ -53,3 +62,4 @@ object Events : Table("bmn_event") {
 }
 
 data class EventList(val events: List<Event>)
+

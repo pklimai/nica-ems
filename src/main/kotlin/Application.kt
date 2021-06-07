@@ -48,6 +48,10 @@ fun Application.main() {
                 call.respond(mapOf("events" to dao.getAllEvents()))
             }
 
+            get("/joined") {
+                call.respond(mapOf("events_joined" to dao.getAllEventsJoined()))
+            }
+
             // Example URL -- http://127.0.0.1:8080/events/4/10
             get("/{file_ptr}/{event_num}") {
                 val file_ptr = call.parameters["file_ptr"]?.toInt()
@@ -91,7 +95,7 @@ fun Application.main() {
             // POST http://127.0.0.1:8080/events/create
             // Content-Type: application/json
             //
-            // { "file_ptr": 10, "event_num": 22, "period": 7, "run": 5000, "sw_ver": 1, "all_tracks": 55 }
+            // { "file_ptr": 10, "event_num": 22, "period": 7, "run": 5000, "software_id": 1, "all_tracks": 55 }
             post("/create") {
                 val event = call.receive<Event>()
                 dao.createEvent(
@@ -107,8 +111,8 @@ fun Application.main() {
 
             /*
              { "events": [
-               { "file_ptr": 10, "event_num": 31, "period": 7, "run": 5000, "sw_ver": 1, "all_tracks": 55 },
-               { "file_ptr": 10, "event_num": 32, "period": 7, "run": 5000, "sw_ver": 1, "all_tracks": 55 }
+               { "file_ptr": 10, "event_num": 31, "period": 7, "run": 5000, "software_idr": 1, "all_tracks": 55 },
+               { "file_ptr": 10, "event_num": 32, "period": 7, "run": 5000, "software_id": 1, "all_tracks": 55 }
              ] }
             */
             post("/create-multiple") {
