@@ -7,8 +7,15 @@ import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.Database
+import java.sql.DriverManager
+
+val URL = "jdbc:postgresql://192.168.65.52:5000/event_db"
+val DRIVER = "org.postgresql.Driver"
+val USER = "postgres"
+val PASS = "example"
 
 fun Application.main() {
     install(DefaultHeaders)
@@ -17,13 +24,9 @@ fun Application.main() {
         jackson {}
     }
     val dao = EventDAO(
-        Database.connect(
-            "jdbc:postgresql://192.168.65.52:5000/event_db",
-            driver = "org.postgresql.Driver",
-            user = "postgres",
-            password = "example"
-        )
+        Database.connect(URL, driver = DRIVER, user = USER, password = PASS)
     )
+    val conn = DriverManager.getConnection(URL, USER, PASS)
 
     println(dao.getAllEvents())
 
@@ -50,6 +53,25 @@ fun Application.main() {
 
             get("/joined") {
                 call.respond(mapOf("events_joined" to dao.getAllEventsJoined()))
+            }
+
+            get("/raw") {
+                val stmt = conn.createStatement()
+                val res = stmt.executeQuery("SELECT * FROM bmn_event")
+                val lstEvents = ArrayList<Event>()
+                while (res.next()) {
+                    lstEvents.add(
+                        Event(
+                            res.getInt("file_guid"),
+                            res.getInt("event_number"),
+                            res.getShort("software_id"),
+                            res.getShort("period_number"),
+                            res.getShort("run_number"),
+                            res.getInt("track_number")
+                        )
+                    )
+                }
+                call.respond(mapOf("events_raw" to lstEvents))
             }
 
             // Example URL -- http://127.0.0.1:8080/events/4/10
