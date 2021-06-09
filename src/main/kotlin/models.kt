@@ -73,9 +73,10 @@ data class FileRaw(
 data class SoftwareRaw(val software_version: String)
 
 data class EventRaw(
-    val file: FileRaw,
+    val storage_name: String,
+    val file_path: String,
     val event_number: Int,
-    val software_version: SoftwareRaw,
+    val software_version: String,
     val period_number: Short,
     val run_number: Short,
     val track_number: Int

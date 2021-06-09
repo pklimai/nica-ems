@@ -7,6 +7,7 @@ import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.util.*
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.Database
 import java.sql.DriverManager
@@ -45,6 +46,110 @@ fun Application.main() {
                 }
             }
         }
+
+        route("/webui") {
+            get() {
+                var period: Int? = null
+                var run: Int? = null
+                try {
+                    period = call.parameters["period"]?.toInt()
+                } catch (e: java.lang.NumberFormatException) {
+                    period = null
+                }
+                try {
+                    run = call.parameters["run"]?.toInt()
+                } catch (e: java.lang.NumberFormatException) {
+                    run = null
+                }
+                call.respondHtml {
+                    head {
+                        title { +"Ktor event index" }
+                    }
+                    body {
+                        h2 { +"Enter search criteria for events" }
+                        form {
+                            label { +"Period" }
+                            textInput {
+                                id = "period"
+                                name = "period"  // required for parameter to be sent in URL
+                                period?.let {
+                                    value = period.toString()
+                                }
+                            }
+                            br { }
+                            label { +"Run" }
+                            textInput {
+                                id = "run"
+                                name = "run"  // required for parameter to be sent in URL
+                                run?.let {
+                                    value = run.toString()
+                                }
+                            }
+                            br { }
+                            submitInput {
+                                value = "Submit"
+                                formMethod = InputFormMethod.get
+                            }
+
+                        }
+
+                        h2 { +"Events found:" }
+
+
+                        var query =
+                            """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
+                        FROM bmn_event INNER JOIN software_  
+                        ON bmn_event.software_id = software_.software_id
+                        INNER JOIN file_ ON bmn_event.file_guid = file_.file_guid
+                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
+                        """
+                        period?.let {
+                            query += "WHERE period_number = $period"
+                            run?.let {
+                                query += "AND run_number = $run"
+                            }
+                        }
+
+                        val res = conn.createStatement().executeQuery(query)
+
+                        br {}
+                        table {
+                            tr {
+                                th { +"storage_name" }
+                                th { +"file_path" }
+                                th { +"event_number" }
+                                th { +"software_version" }
+                                th { +"period_number" }
+                                th { +"run_number" }
+                                th { +"track_number" }
+                            }
+
+                            while (res.next()) {
+                                tr {
+                                    td { +res.getString("storage_name") }
+                                    td { +res.getString("file_path") }
+                                    td { +res.getInt("event_number").toString() }
+                                    td { +res.getString("software_version") }
+                                    td { +res.getShort("period_number").toString() }
+                                    td { +res.getShort("run_number").toString() }
+                                    td { +res.getInt("track_number").toString() }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            post() {
+                call.respondHtml {
+                    body {
+                        h2 { +"POST worked!" }
+                    }
+                }
+            }
+
+        }
+
+
         route("/events") {
             get() {
                 call.respond(mapOf("events" to dao.getAllEvents()))
@@ -88,12 +193,10 @@ fun Application.main() {
                 while (res.next()) {
                     lstEvents.add(
                         EventRaw(
-                            FileRaw(
-                                StorageRaw(res.getString("storage_name")),
-                                res.getString("file_path")
-                            ),
+                            res.getString("storage_name"),
+                            res.getString("file_path"),
                             res.getInt("event_number"),
-                            SoftwareRaw(res.getString("software_version")),
+                            res.getString("software_version"),
                             res.getShort("period_number"),
                             res.getShort("run_number"),
                             res.getInt("track_number")
