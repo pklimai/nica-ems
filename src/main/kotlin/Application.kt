@@ -3,11 +3,11 @@ package com.example
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
+import io.ktor.http.content.*
 import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.util.*
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.Database
 import java.sql.DriverManager
@@ -16,6 +16,23 @@ val URL = "jdbc:postgresql://192.168.65.52:5000/event_db"
 val DRIVER = "org.postgresql.Driver"
 val USER = "postgres"
 val PASS = "example"
+
+class SoftwareMap (val id_to_str: Map<Short, String>, val str_to_id: Map<String, Short>)
+
+fun getSoftwareMap(conn: java.sql.Connection): SoftwareMap {
+    val query = "SELECT * FROM software_"
+    val res = conn.createStatement().executeQuery(query)
+    val idToStr = HashMap<Short, String>()
+    val strToId = HashMap<String, Short>()
+    while (res.next()) {
+        val id = res.getShort("software_id")
+        val ver = res.getString("software_version")
+        idToStr[id] = ver
+        strToId[ver] = id
+    }
+    return SoftwareMap(idToStr, strToId)
+}
+
 
 fun Application.main() {
     install(DefaultHeaders)
@@ -28,13 +45,21 @@ fun Application.main() {
     )
     val conn = DriverManager.getConnection(URL, USER, PASS)
 
-    println(dao.getAllEvents())
+    // println(dao.getAllEvents())
+
+    // println("Working Directory = ${System.getProperty("user.dir")}")
 
     routing {
+        static("static") {
+            // http://127.0.0.1:8080/static/style.css
+            files("src/main/resources/static/css")
+        }
+
         get("/") {
             call.respondHtml {
                 head {
                     title { +"Ktor: Docker" }
+                    styleLink("static/style.css")
                 }
                 body {
                     val runtime = Runtime.getRuntime()
@@ -42,31 +67,52 @@ fun Application.main() {
                     p { +"CPUs: ${runtime.availableProcessors()}. Memory free/total/max: ${runtime.freeMemory()} / ${runtime.totalMemory()} / ${runtime.maxMemory()}." }
                     hr {}
                     h3 { +"REST API" }
-                    p { a(href = "/events") { +"All events" } }
+                    p { a(href = "/event_api/v1/exposed/all_events") { +"Exposed - All events" } }
+                    p { a(href = "/event_api/v1/exposed/all_joined") { +"Exposed - All events joined" } }
+                    p { a(href = "/event_api/v1/raw/joined") { +"Raw - All events joined" } }
+                    hr {}
+                    h3 { +"WebUI" }
+                    p { a(href = "/dictionaries") { +"Dictionaries" } }
+                    p { a(href = "/search_form") { +"Search Form" } }
                 }
             }
         }
 
-        route("/webui") {
+        route("/dictionaries") {
             get() {
-                var period: Int? = null
-                var run: Int? = null
-                try {
-                    period = call.parameters["period"]?.toInt()
-                } catch (e: java.lang.NumberFormatException) {
-                    period = null
+                call.respondHtml {
+                    +"TODO show small tables here"
                 }
-                try {
-                    run = call.parameters["run"]?.toInt()
+            }
+        }
+
+        route("/search_form") {
+            get() {
+                val period = try {
+                    call.parameters["period"]?.toInt()
                 } catch (e: java.lang.NumberFormatException) {
-                    run = null
+                    null
                 }
+                val run: Int? = try {
+                    call.parameters["run"]?.toInt()
+                } catch (e: java.lang.NumberFormatException) {
+                    null
+                }
+                val software_version: String? = try {
+                    call.parameters["software_version"]
+                } catch (e: java.lang.NumberFormatException) {
+                    null
+                }
+
+                val softwareMap = getSoftwareMap(conn)
+
                 call.respondHtml {
                     head {
                         title { +"Ktor event index" }
+                        styleLink("static/style.css")
                     }
                     body {
-                        h2 { +"Enter search criteria for events" }
+                        h3 { +"Enter search criteria for events" }
                         form {
                             label { +"Period" }
                             textInput {
@@ -86,6 +132,22 @@ fun Application.main() {
                                 }
                             }
                             br { }
+                            label { +"Software Version" }
+                            select {
+                                id = "software_version"
+                                name = "software_version"
+                                softwareMap.str_to_id.keys.forEach {
+                                    option {
+                                        value = it
+                                        if (it == software_version) {
+                                            selected = true
+                                        }
+                                        + it   // NB: Depends on the order!
+                                    }
+                                }
+                            }
+
+                            br { }
                             submitInput {
                                 value = "Submit"
                                 formMethod = InputFormMethod.get
@@ -93,22 +155,32 @@ fun Application.main() {
 
                         }
 
-                        h2 { +"Events found:" }
 
+                        h3 { +"Events found:" }
 
                         var query =
                             """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
-                        FROM bmn_event INNER JOIN software_  
-                        ON bmn_event.software_id = software_.software_id
+                        FROM bmn_event 
+                        INNER JOIN software_ ON bmn_event.software_id = software_.software_id
                         INNER JOIN file_ ON bmn_event.file_guid = file_.file_guid
                         INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
                         """
+                        val filterCriteria = ArrayList<String>()
                         period?.let {
-                            query += "WHERE period_number = $period"
-                            run?.let {
-                                query += "AND run_number = $run"
-                            }
+                            filterCriteria.add("period_number = $period")
                         }
+                        run?.let {
+                            filterCriteria.add("run_number = $run")
+                        }
+                        software_version?.let {
+                            filterCriteria.add("software_version = '$software_version'")
+                        }
+                        if (filterCriteria.isNotEmpty()) {
+                            query += "WHERE " + filterCriteria.joinToString(" AND ")
+                        }
+
+                        // p { +query }
+                        // p { +software_version!! }
 
                         val res = conn.createStatement().executeQuery(query)
 
@@ -150,16 +222,8 @@ fun Application.main() {
         }
 
 
-        route("/events") {
+        route("/event_api/v1/raw") {
             get() {
-                call.respond(mapOf("events" to dao.getAllEvents()))
-            }
-
-            get("/joined") {
-                call.respond(mapOf("events_joined" to dao.getAllEventsJoined()))
-            }
-
-            get("/raw") {
                 val stmt = conn.createStatement()
                 val res = stmt.executeQuery("SELECT * FROM bmn_event")
                 val lstEvents = ArrayList<Event>()
@@ -178,7 +242,7 @@ fun Application.main() {
                 call.respond(mapOf("events_raw" to lstEvents))
             }
 
-            get("/raw/joined") {
+            get("/joined") {
                 val stmt = conn.createStatement()
                 val res = stmt.executeQuery(
                     """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
@@ -205,6 +269,22 @@ fun Application.main() {
                 }
                 call.respond(mapOf("events_raw_joined" to lstEvents))
 
+            }
+        }
+
+
+        route("/event_api/v1/exposed") {
+
+            route("/all_events") {
+                get() {
+                    call.respond(mapOf("events" to dao.getAllEvents()))
+                }
+            }
+
+            route("/all_joined") {
+                get() {
+                    call.respond(mapOf("events_joined" to dao.getAllEventsJoined()))
+                }
             }
 
             // Example URL -- http://127.0.0.1:8080/events/4/10
@@ -286,7 +366,10 @@ fun Application.main() {
             }
 
         }
+
+
     }
 }
+
 
 fun main(args: Array<String>) = io.ktor.server.netty.EngineMain.main(args)
