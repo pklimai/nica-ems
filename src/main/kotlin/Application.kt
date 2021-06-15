@@ -104,6 +104,12 @@ fun Application.main() {
                     null
                 }
 
+                val tracks: Int? = try {
+                    call.parameters["tracks"]?.toInt()
+                } catch (e: java.lang.NumberFormatException) {
+                    null
+                }
+
                 val softwareMap = getSoftwareMap(conn)
 
                 call.respondHtml {
@@ -148,6 +154,16 @@ fun Application.main() {
                             }
 
                             br { }
+                            label { +"Tracks" }
+                            textInput {
+                                id = "tracks"
+                                name = "tracks"  // required for parameter to be sent in URL
+                                tracks?.let {
+                                    value = tracks.toString()
+                                }
+                            }
+
+                            br { }
                             submitInput {
                                 value = "Submit"
                                 formMethod = InputFormMethod.get
@@ -174,6 +190,9 @@ fun Application.main() {
                         }
                         software_version?.let {
                             filterCriteria.add("software_version = '$software_version'")
+                        }
+                        tracks?.let {
+                            filterCriteria.add("track_number = $tracks")
                         }
                         if (filterCriteria.isNotEmpty()) {
                             query += "WHERE " + filterCriteria.joinToString(" AND ")
