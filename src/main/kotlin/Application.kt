@@ -2,13 +2,11 @@ package com.example
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
 import io.ktor.http.content.*
 import io.ktor.jackson.*
-import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.html.*
@@ -59,17 +57,17 @@ fun Application.main() {
         get("/") {
             call.respondHtml {
                 head {
-                    title { + config.title }
+                    title { +config.title }
                     styleLink("/static/style.css")
                 }
                 body {
-                    val runtime = Runtime.getRuntime()
+                    // val runtime = Runtime.getRuntime()
                     // h3 { +"Ktor Netty engine: Hello, ${System.getProperty("user.name")}!" }
                     // p { +"CPUs: ${runtime.availableProcessors()}. Memory free/total/max: ${runtime.freeMemory()} / ${runtime.totalMemory()} / ${runtime.maxMemory()}." }
-                    h2 { + config.title }
+                    h2 { +config.title }
 
                     config.pages.forEach {
-                        h3 { + it.name }
+                        h3 { +it.name }
                         h5 { +"REST API" }
                         p { a(href = it.api_url + "/events") { +"API - get all events" } }
                         h5 { +"WebUI" }
@@ -77,7 +75,7 @@ fun Application.main() {
                         hr {}
                     }
 
-                    h3 { + "Auxiliary data" }
+                    h3 { +"Auxiliary data" }
                     p { a(href = "/dictionaries") { +"Dictionaries" } }
 
                 }
@@ -93,8 +91,9 @@ fun Application.main() {
         }
 
         config.pages.forEach() { page ->
+
             route(page.web_url) {
-                get() {
+                get {
                     val period = try {
                         call.parameters["period"]?.toInt()
                     } catch (e: java.lang.NumberFormatException) {
@@ -121,10 +120,15 @@ fun Application.main() {
 
                     call.respondHtml {
                         head {
-                            title { + config.title }
+                            title { +page.name }
                             styleLink("/static/style.css")
                         }
                         body {
+                            a {
+                                href = "/"
+                                + "Home"
+                            }
+                            h2 { +page.name }
                             h3 { +"Enter search criteria for events" }
                             form {
                                 label { +"Period" }
@@ -183,11 +187,11 @@ fun Application.main() {
                             val et = page.db_table_name
                             var query =
                                 """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
-                        FROM $et 
-                        INNER JOIN software_ ON $et.software_id = software_.software_id
-                        INNER JOIN file_ ON $et.file_guid = file_.file_guid
-                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
-                        """
+                                    FROM $et 
+                                    INNER JOIN software_ ON $et.software_id = software_.software_id
+                                    INNER JOIN file_ ON $et.file_guid = file_.file_guid
+                                    INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
+                                """
                             val filterCriteria = ArrayList<String>()
                             period?.let {
                                 filterCriteria.add("period_number = $period")
@@ -237,64 +241,54 @@ fun Application.main() {
                         }
                     }
                 }
-                post() {
+                /*
+                post {
                     call.respondHtml {
                         body {
                             h2 { +"POST worked!" }
                         }
                     }
                 }
+                */
 
             }
 
 
             route(page.api_url) {
-                get() {
-                    val stmt = conn.createStatement()
-                    val res = stmt.executeQuery("SELECT * FROM ${page.db_table_name}")
-                    val lstEvents = ArrayList<Event>()
-                    while (res.next()) {
-                        lstEvents.add(
-                            Event(
-                                res.getInt("file_guid"),
-                                res.getInt("event_number"),
-                                res.getShort("software_id"),
-                                res.getShort("period_number"),
-                                res.getShort("run_number"),
-                                res.getInt("track_number")
-                            )
-                        )
-                    }
-                    call.respond(mapOf("events_raw" to lstEvents))
-                }
 
                 get("/events") {
                     val stmt = conn.createStatement()
                     val et = page.db_table_name
+
+                    // TODO: Check how joins affect the performance. Consider doing DIY joins?
                     val res = stmt.executeQuery(
                         """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
-                        FROM $et INNER JOIN software_  
-                        ON $et.software_id = software_.software_id
-                        INNER JOIN file_ ON $et.file_guid = file_.file_guid
-                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
+                            FROM $et INNER JOIN software_  
+                            ON $et.software_id = software_.software_id
+                            INNER JOIN file_ ON $et.file_guid = file_.file_guid
+                            INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
                         """
                     )
 
-                    val lstEvents = ArrayList<EventRaw>()
+                    val lstEvents = ArrayList<EventRepr>()
                     while (res.next()) {
                         lstEvents.add(
-                            EventRaw(
-                                res.getString("storage_name"),
-                                res.getString("file_path"),
-                                res.getInt("event_number"),
+                            EventRepr(
+                                Reference(
+                                    res.getString("storage_name"),
+                                    res.getString("file_path"),
+                                    res.getInt("event_number")
+                                ),
                                 res.getString("software_version"),
                                 res.getShort("period_number"),
-                                res.getShort("run_number"),
-                                res.getInt("track_number")
+                                res.getInt("run_number"),
+                                Parameters(
+                                    res.getInt("track_number")
+                                )
                             )
                         )
                     }
-                    call.respond(mapOf("events_raw_joined" to lstEvents))
+                    call.respond(mapOf("events" to lstEvents))
 
                 }
             }

@@ -1,5 +1,6 @@
 package com.example
 
+/*
 data class Software(
     val software_id: Short,
     val software_version: String
@@ -15,36 +16,22 @@ data class File(
     val storage_id: Short,
     val file_path: String
 )
+*/
 
-data class Event(
-    val file_guid: Int,
-    val event_number: Int,
-    val software_id: Short,
+data class EventRepr(
+    val reference: Reference,
+    val software_version: String, // ?
     val period_number: Short,
-    val run_number: Short,
-    val track_number: Int
+    val run_number: Int,
+    val parameters: Parameters
 )
 
-data class EventList(val events: List<Event>)
-
-data class StorageRaw(val storage_name: String)
-
-data class FileRaw(
-    val storage_name: StorageRaw,
-    val file_path: String
-)
-
-data class SoftwareRaw(val software_version: String)
-
-data class EventRaw(
+data class Reference(
     val storage_name: String,
     val file_path: String,
-    val event_number: Int,
-    val software_version: String,
-    val period_number: Short,
-    val run_number: Short,
-    val track_number: Int
+    val event_number: Int
 )
 
-data class EventRawList(val events: List<EventRaw>)
-
+data class Parameters(
+    val track_number: Int
+)
