@@ -276,8 +276,7 @@ fun Application.main() {
 
                     // TODO: Check how joins affect the performance. Consider doing DIY joins?
                     val res = stmt.executeQuery(
-                        """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
-                            FROM $et INNER JOIN software_  
+                        """SELECT * FROM $et INNER JOIN software_  
                             ON $et.software_id = software_.software_id
                             INNER JOIN file_ ON $et.file_guid = file_.file_guid
                             INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
@@ -286,6 +285,11 @@ fun Application.main() {
 
                     val lstEvents = ArrayList<EventRepr>()
                     while (res.next()) {
+                        val paramMap = HashMap<String, Int>()
+
+                        page.parameters.forEach() {
+                            paramMap[it.name] = res.getInt(it.name)
+                        }
                         lstEvents.add(
                             EventRepr(
                                 Reference(
@@ -296,9 +300,7 @@ fun Application.main() {
                                 res.getString("software_version"),
                                 res.getShort("period_number"),
                                 res.getInt("run_number"),
-                                Parameters(
-                                    res.getInt("track_number")
-                                )
+                                paramMap
                             )
                         )
                     }

@@ -23,15 +23,11 @@ data class EventRepr(
     val software_version: String, // ?
     val period_number: Short,
     val run_number: Int,
-    val parameters: Parameters
+    val parameters: Map<String, Any>  // works with Int for Int...
 )
 
 data class Reference(
     val storage_name: String,
     val file_path: String,
     val event_number: Int
-)
-
-data class Parameters(
-    val track_number: Int
 )
