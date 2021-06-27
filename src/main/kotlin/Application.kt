@@ -110,10 +110,13 @@ fun Application.main() {
                         null
                     }
 
-                    val tracks: Int? = try {
-                        call.parameters["tracks"]?.toInt()
-                    } catch (e: java.lang.NumberFormatException) {
-                        null
+                    // Mapping of parameter name to its value as a string (possibly range, etc.)
+                    val parameterStrs = HashMap<String, String>()
+                    page.parameters.forEach { parameter ->
+                        if (parameter.name in call.parameters) {
+                            parameterStrs[parameter.name] = call.parameters[parameter.name].toString()
+                        }
+
                     }
 
                     val softwareMap = getSoftwareMap(conn)
@@ -150,6 +153,7 @@ fun Application.main() {
                                 }
                                 br { }
                                 label { +"Software Version" }
+                                // TODO add null selection
                                 select {
                                     id = "software_version"
                                     name = "software_version"
@@ -164,13 +168,15 @@ fun Application.main() {
                                     }
                                 }
 
-                                br { }
-                                label { +"Tracks" }
-                                textInput {
-                                    id = "tracks"
-                                    name = "tracks"  // required for parameter to be sent in URL
-                                    tracks?.let {
-                                        value = tracks.toString()
+                                page.parameters.forEach { parameter ->
+                                    br {}
+                                    label { + parameter.web_name }
+                                    textInput {
+                                        id = parameter.name
+                                        name = parameter.name
+                                        parameterStrs[parameter.name]?.let {
+                                            value = parameterStrs[parameter.name]!!
+                                        }
                                     }
                                 }
 
@@ -186,8 +192,7 @@ fun Application.main() {
 
                             val et = page.db_table_name
                             var query =
-                                """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
-                                    FROM $et 
+                                """SELECT * FROM $et 
                                     INNER JOIN software_ ON $et.software_id = software_.software_id
                                     INNER JOIN file_ ON $et.file_guid = file_.file_guid
                                     INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
@@ -202,15 +207,19 @@ fun Application.main() {
                             software_version?.let {
                                 filterCriteria.add("software_version = '$software_version'")
                             }
+                            /* TODO filtering based on parameters
                             tracks?.let {
                                 filterCriteria.add("track_number = $tracks")
                             }
+                            */
+                            parameterStrs.forEach {
+                                if (it.value.isNotEmpty())
+                                    filterCriteria.add("${it.key} = ${it.value}")
+                            }
+
                             if (filterCriteria.isNotEmpty()) {
                                 query += "WHERE " + filterCriteria.joinToString(" AND ")
                             }
-
-                            // p { +query }
-                            // p { +software_version!! }
 
                             val res = conn.createStatement().executeQuery(query)
 
@@ -223,7 +232,9 @@ fun Application.main() {
                                     th { +"software_version" }
                                     th { +"period_number" }
                                     th { +"run_number" }
-                                    th { +"track_number" }
+                                    page.parameters.forEach {
+                                        th { + it.name }
+                                    }
                                 }
 
                                 while (res.next()) {
@@ -234,7 +245,10 @@ fun Application.main() {
                                         td { +res.getString("software_version") }
                                         td { +res.getShort("period_number").toString() }
                                         td { +res.getShort("run_number").toString() }
-                                        td { +res.getInt("track_number").toString() }
+                                        page.parameters.forEach {
+                                            // TODO Types
+                                            td { +res.getInt(it.name).toString() }
+                                        }
                                     }
                                 }
                             }
