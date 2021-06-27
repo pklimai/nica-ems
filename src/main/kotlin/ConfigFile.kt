@@ -9,6 +9,7 @@ class ConfigFile(
 class DBConnectionParams(
     val host: String,
     val port: Int,
+    val db_name: String,
     val user: String,
     val password: String
 )

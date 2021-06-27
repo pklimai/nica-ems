@@ -43,7 +43,7 @@ fun Application.main() {
     install(ContentNegotiation) {
         jackson {}
     }
-    val url = "jdbc:postgresql://${config.db_connection.host}:${config.db_connection.port}/event_db"
+    val url = "jdbc:postgresql://${config.db_connection.host}:${config.db_connection.port}/${config.db_connection.db_name}"
     val conn = DriverManager.getConnection(url, config.db_connection.user, config.db_connection.password)
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
@@ -83,14 +83,14 @@ fun Application.main() {
         }
 
         route("/dictionaries") {
-            get() {
+            get {
                 call.respondHtml {
                     +"TODO show small tables here"
                 }
             }
         }
 
-        config.pages.forEach() { page ->
+        config.pages.forEach { page ->
 
             route(page.web_url) {
                 get {
@@ -285,7 +285,7 @@ fun Application.main() {
 
                     val lstEvents = ArrayList<EventRepr>()
                     while (res.next()) {
-                        val paramMap = HashMap<String, Int>()
+                        val paramMap = HashMap<String, Any>()
 
                         page.parameters.forEach() {
                             paramMap[it.name] = res.getInt(it.name)
