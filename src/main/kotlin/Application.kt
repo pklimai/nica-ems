@@ -1,5 +1,8 @@
 package com.example
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
@@ -9,14 +12,12 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.html.*
+import java.io.File
 import java.sql.DriverManager
 
-val URL = "jdbc:postgresql://192.168.65.52:5000/event_db"
-val DRIVER = "org.postgresql.Driver"
-val USER = "postgres"
-val PASS = "example"
+// val DRIVER = "org.postgresql.Driver"
 
-class SoftwareMap (val id_to_str: Map<Short, String>, val str_to_id: Map<String, Short>)
+class SoftwareMap(val id_to_str: Map<Short, String>, val str_to_id: Map<String, Short>)
 
 fun getSoftwareMap(conn: java.sql.Connection): SoftwareMap {
     val query = "SELECT * FROM software_"
@@ -34,12 +35,18 @@ fun getSoftwareMap(conn: java.sql.Connection): SoftwareMap {
 
 
 fun Application.main() {
+
+    val mapper = ObjectMapper(YAMLFactory())
+    mapper.findAndRegisterModules()
+    val config = mapper.readValue(File("src/main/resources/event-config.yaml"), ConfigFile::class.java)
+
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
         jackson {}
     }
-    val conn = DriverManager.getConnection(URL, USER, PASS)
+    val url = "jdbc:postgresql://${config.db_connection.host}:${config.db_connection.port}/event_db"
+    val conn = DriverManager.getConnection(url, config.db_connection.user, config.db_connection.password)
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
 
@@ -52,20 +59,27 @@ fun Application.main() {
         get("/") {
             call.respondHtml {
                 head {
-                    title { +"Ktor: Docker" }
-                    styleLink("static/style.css")
+                    title { + config.title }
+                    styleLink("/static/style.css")
                 }
                 body {
                     val runtime = Runtime.getRuntime()
-                    h3 { +"Ktor Netty engine: Hello, ${System.getProperty("user.name")}!" }
-                    p { +"CPUs: ${runtime.availableProcessors()}. Memory free/total/max: ${runtime.freeMemory()} / ${runtime.totalMemory()} / ${runtime.maxMemory()}." }
-                    hr {}
-                    h3 { +"REST API" }
-                    p { a(href = "/event_api/v1/raw/joined") { +"Raw - All events joined" } }
-                    hr {}
-                    h3 { +"WebUI" }
+                    // h3 { +"Ktor Netty engine: Hello, ${System.getProperty("user.name")}!" }
+                    // p { +"CPUs: ${runtime.availableProcessors()}. Memory free/total/max: ${runtime.freeMemory()} / ${runtime.totalMemory()} / ${runtime.maxMemory()}." }
+                    h2 { + config.title }
+
+                    config.pages.forEach {
+                        h3 { + it.name }
+                        h5 { +"REST API" }
+                        p { a(href = it.api_url + "/events") { +"API - get all events" } }
+                        h5 { +"WebUI" }
+                        p { a(href = it.web_url) { +"Search Form" } }
+                        hr {}
+                    }
+
+                    h3 { + "Auxiliary data" }
                     p { a(href = "/dictionaries") { +"Dictionaries" } }
-                    p { a(href = "/search_form") { +"Search Form" } }
+
                 }
             }
         }
@@ -78,211 +92,214 @@ fun Application.main() {
             }
         }
 
-        route("/search_form") {
-            get() {
-                val period = try {
-                    call.parameters["period"]?.toInt()
-                } catch (e: java.lang.NumberFormatException) {
-                    null
-                }
-                val run: Int? = try {
-                    call.parameters["run"]?.toInt()
-                } catch (e: java.lang.NumberFormatException) {
-                    null
-                }
-                val software_version: String? = try {
-                    call.parameters["software_version"]
-                } catch (e: java.lang.NumberFormatException) {
-                    null
-                }
-
-                val tracks: Int? = try {
-                    call.parameters["tracks"]?.toInt()
-                } catch (e: java.lang.NumberFormatException) {
-                    null
-                }
-
-                val softwareMap = getSoftwareMap(conn)
-
-                call.respondHtml {
-                    head {
-                        title { +"Ktor event index" }
-                        styleLink("static/style.css")
+        config.pages.forEach() { page ->
+            route(page.web_url) {
+                get() {
+                    val period = try {
+                        call.parameters["period"]?.toInt()
+                    } catch (e: java.lang.NumberFormatException) {
+                        null
                     }
-                    body {
-                        h3 { +"Enter search criteria for events" }
-                        form {
-                            label { +"Period" }
-                            textInput {
-                                id = "period"
-                                name = "period"  // required for parameter to be sent in URL
-                                period?.let {
-                                    value = period.toString()
+                    val run: Int? = try {
+                        call.parameters["run"]?.toInt()
+                    } catch (e: java.lang.NumberFormatException) {
+                        null
+                    }
+                    val software_version: String? = try {
+                        call.parameters["software_version"]
+                    } catch (e: java.lang.NumberFormatException) {
+                        null
+                    }
+
+                    val tracks: Int? = try {
+                        call.parameters["tracks"]?.toInt()
+                    } catch (e: java.lang.NumberFormatException) {
+                        null
+                    }
+
+                    val softwareMap = getSoftwareMap(conn)
+
+                    call.respondHtml {
+                        head {
+                            title { + config.title }
+                            styleLink("/static/style.css")
+                        }
+                        body {
+                            h3 { +"Enter search criteria for events" }
+                            form {
+                                label { +"Period" }
+                                textInput {
+                                    id = "period"
+                                    name = "period"  // required for parameter to be sent in URL
+                                    period?.let {
+                                        value = period.toString()
+                                    }
                                 }
-                            }
-                            br { }
-                            label { +"Run" }
-                            textInput {
-                                id = "run"
-                                name = "run"  // required for parameter to be sent in URL
-                                run?.let {
-                                    value = run.toString()
+                                br { }
+                                label { +"Run" }
+                                textInput {
+                                    id = "run"
+                                    name = "run"  // required for parameter to be sent in URL
+                                    run?.let {
+                                        value = run.toString()
+                                    }
                                 }
-                            }
-                            br { }
-                            label { +"Software Version" }
-                            select {
-                                id = "software_version"
-                                name = "software_version"
-                                softwareMap.str_to_id.keys.forEach {
-                                    option {
-                                        value = it
-                                        if (it == software_version) {
-                                            selected = true
+                                br { }
+                                label { +"Software Version" }
+                                select {
+                                    id = "software_version"
+                                    name = "software_version"
+                                    softwareMap.str_to_id.keys.forEach {
+                                        option {
+                                            value = it
+                                            if (it == software_version) {
+                                                selected = true
+                                            }
+                                            +it   // NB: Depends on the order!
                                         }
-                                        + it   // NB: Depends on the order!
+                                    }
+                                }
+
+                                br { }
+                                label { +"Tracks" }
+                                textInput {
+                                    id = "tracks"
+                                    name = "tracks"  // required for parameter to be sent in URL
+                                    tracks?.let {
+                                        value = tracks.toString()
+                                    }
+                                }
+
+                                br { }
+                                submitInput {
+                                    value = "Submit"
+                                    formMethod = InputFormMethod.get
+                                }
+
+                            }
+
+                            h3 { +"Events found:" }
+
+                            val et = page.db_table_name
+                            var query =
+                                """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
+                        FROM $et 
+                        INNER JOIN software_ ON $et.software_id = software_.software_id
+                        INNER JOIN file_ ON $et.file_guid = file_.file_guid
+                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
+                        """
+                            val filterCriteria = ArrayList<String>()
+                            period?.let {
+                                filterCriteria.add("period_number = $period")
+                            }
+                            run?.let {
+                                filterCriteria.add("run_number = $run")
+                            }
+                            software_version?.let {
+                                filterCriteria.add("software_version = '$software_version'")
+                            }
+                            tracks?.let {
+                                filterCriteria.add("track_number = $tracks")
+                            }
+                            if (filterCriteria.isNotEmpty()) {
+                                query += "WHERE " + filterCriteria.joinToString(" AND ")
+                            }
+
+                            // p { +query }
+                            // p { +software_version!! }
+
+                            val res = conn.createStatement().executeQuery(query)
+
+                            br {}
+                            table {
+                                tr {
+                                    th { +"storage_name" }
+                                    th { +"file_path" }
+                                    th { +"event_number" }
+                                    th { +"software_version" }
+                                    th { +"period_number" }
+                                    th { +"run_number" }
+                                    th { +"track_number" }
+                                }
+
+                                while (res.next()) {
+                                    tr {
+                                        td { +res.getString("storage_name") }
+                                        td { +res.getString("file_path") }
+                                        td { +res.getInt("event_number").toString() }
+                                        td { +res.getString("software_version") }
+                                        td { +res.getShort("period_number").toString() }
+                                        td { +res.getShort("run_number").toString() }
+                                        td { +res.getInt("track_number").toString() }
                                     }
                                 }
                             }
-
-                            br { }
-                            label { +"Tracks" }
-                            textInput {
-                                id = "tracks"
-                                name = "tracks"  // required for parameter to be sent in URL
-                                tracks?.let {
-                                    value = tracks.toString()
-                                }
-                            }
-
-                            br { }
-                            submitInput {
-                                value = "Submit"
-                                formMethod = InputFormMethod.get
-                            }
-
-                        }
-
-
-                        h3 { +"Events found:" }
-
-                        var query =
-                            """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
-                        FROM bmn_event 
-                        INNER JOIN software_ ON bmn_event.software_id = software_.software_id
-                        INNER JOIN file_ ON bmn_event.file_guid = file_.file_guid
-                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
-                        """
-                        val filterCriteria = ArrayList<String>()
-                        period?.let {
-                            filterCriteria.add("period_number = $period")
-                        }
-                        run?.let {
-                            filterCriteria.add("run_number = $run")
-                        }
-                        software_version?.let {
-                            filterCriteria.add("software_version = '$software_version'")
-                        }
-                        tracks?.let {
-                            filterCriteria.add("track_number = $tracks")
-                        }
-                        if (filterCriteria.isNotEmpty()) {
-                            query += "WHERE " + filterCriteria.joinToString(" AND ")
-                        }
-
-                        // p { +query }
-                        // p { +software_version!! }
-
-                        val res = conn.createStatement().executeQuery(query)
-
-                        br {}
-                        table {
-                            tr {
-                                th { +"storage_name" }
-                                th { +"file_path" }
-                                th { +"event_number" }
-                                th { +"software_version" }
-                                th { +"period_number" }
-                                th { +"run_number" }
-                                th { +"track_number" }
-                            }
-
-                            while (res.next()) {
-                                tr {
-                                    td { +res.getString("storage_name") }
-                                    td { +res.getString("file_path") }
-                                    td { +res.getInt("event_number").toString() }
-                                    td { +res.getString("software_version") }
-                                    td { +res.getShort("period_number").toString() }
-                                    td { +res.getShort("run_number").toString() }
-                                    td { +res.getInt("track_number").toString() }
-                                }
-                            }
                         }
                     }
                 }
-            }
-            post() {
-                call.respondHtml {
-                    body {
-                        h2 { +"POST worked!" }
+                post() {
+                    call.respondHtml {
+                        body {
+                            h2 { +"POST worked!" }
+                        }
                     }
+                }
+
+            }
+
+
+            route(page.api_url) {
+                get() {
+                    val stmt = conn.createStatement()
+                    val res = stmt.executeQuery("SELECT * FROM ${page.db_table_name}")
+                    val lstEvents = ArrayList<Event>()
+                    while (res.next()) {
+                        lstEvents.add(
+                            Event(
+                                res.getInt("file_guid"),
+                                res.getInt("event_number"),
+                                res.getShort("software_id"),
+                                res.getShort("period_number"),
+                                res.getShort("run_number"),
+                                res.getInt("track_number")
+                            )
+                        )
+                    }
+                    call.respond(mapOf("events_raw" to lstEvents))
+                }
+
+                get("/events") {
+                    val stmt = conn.createStatement()
+                    val et = page.db_table_name
+                    val res = stmt.executeQuery(
+                        """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
+                        FROM $et INNER JOIN software_  
+                        ON $et.software_id = software_.software_id
+                        INNER JOIN file_ ON $et.file_guid = file_.file_guid
+                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
+                        """
+                    )
+
+                    val lstEvents = ArrayList<EventRaw>()
+                    while (res.next()) {
+                        lstEvents.add(
+                            EventRaw(
+                                res.getString("storage_name"),
+                                res.getString("file_path"),
+                                res.getInt("event_number"),
+                                res.getString("software_version"),
+                                res.getShort("period_number"),
+                                res.getShort("run_number"),
+                                res.getInt("track_number")
+                            )
+                        )
+                    }
+                    call.respond(mapOf("events_raw_joined" to lstEvents))
+
                 }
             }
 
         }
-
-
-        route("/event_api/v1/raw") {
-            get() {
-                val stmt = conn.createStatement()
-                val res = stmt.executeQuery("SELECT * FROM bmn_event")
-                val lstEvents = ArrayList<Event>()
-                while (res.next()) {
-                    lstEvents.add(
-                        Event(
-                            res.getInt("file_guid"),
-                            res.getInt("event_number"),
-                            res.getShort("software_id"),
-                            res.getShort("period_number"),
-                            res.getShort("run_number"),
-                            res.getInt("track_number")
-                        )
-                    )
-                }
-                call.respond(mapOf("events_raw" to lstEvents))
-            }
-
-            get("/joined") {
-                val stmt = conn.createStatement()
-                val res = stmt.executeQuery(
-                    """SELECT software_version, event_number, file_path, storage_name, period_number, run_number, track_number
-                        FROM bmn_event INNER JOIN software_  
-                        ON bmn_event.software_id = software_.software_id
-                        INNER JOIN file_ ON bmn_event.file_guid = file_.file_guid
-                        INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
-                        """
-                )
-
-                val lstEvents = ArrayList<EventRaw>()
-                while (res.next()) {
-                    lstEvents.add(
-                        EventRaw(
-                            res.getString("storage_name"),
-                            res.getString("file_path"),
-                            res.getInt("event_number"),
-                            res.getString("software_version"),
-                            res.getShort("period_number"),
-                            res.getShort("run_number"),
-                            res.getInt("track_number")
-                        )
-                    )
-                }
-                call.respond(mapOf("events_raw_joined" to lstEvents))
-
-            }
-        }
-
     }
 }
 
