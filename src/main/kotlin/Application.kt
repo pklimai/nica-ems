@@ -5,8 +5,10 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
+import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.jackson.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.html.*
@@ -31,6 +33,20 @@ fun getSoftwareMap(conn: java.sql.Connection): SoftwareMap {
     return SoftwareMap(idToStr, strToId)
 }
 
+class StorageMap(val str_to_id: Map<String, Byte>)
+
+fun getStorageMap(conn: java.sql.Connection): StorageMap {
+    val query = "SELECT * FROM storage_"
+    val res = conn.createStatement().executeQuery(query)
+    val strToId = HashMap<String, Byte>()
+    while (res.next()) {
+        val id = res.getByte("storage_id")
+        val storage_name = res.getString("storage_name")
+        strToId[storage_name] = id
+    }
+    return StorageMap(strToId)
+}
+
 
 fun Application.main() {
 
@@ -43,7 +59,8 @@ fun Application.main() {
     install(ContentNegotiation) {
         jackson {}
     }
-    val url = "jdbc:postgresql://${config.db_connection.host}:${config.db_connection.port}/${config.db_connection.db_name}"
+    val url =
+        "jdbc:postgresql://${config.db_connection.host}:${config.db_connection.port}/${config.db_connection.db_name}"
     val conn = DriverManager.getConnection(url, config.db_connection.user, config.db_connection.password)
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
@@ -80,6 +97,10 @@ fun Application.main() {
 
                 }
             }
+        }
+
+        get("/health") {
+            call.respond(HttpStatusCode.OK)
         }
 
         route("/dictionaries") {
@@ -129,7 +150,7 @@ fun Application.main() {
                         body {
                             a {
                                 href = "/"
-                                + "Home"
+                                +"Home"
                             }
                             h2 { +page.name }
                             h3 { +"Enter search criteria for events" }
@@ -170,7 +191,7 @@ fun Application.main() {
 
                                 page.parameters.forEach { parameter ->
                                     br {}
-                                    label { + parameter.web_name }
+                                    label { +parameter.web_name }
                                     textInput {
                                         id = parameter.name
                                         name = parameter.name
@@ -207,11 +228,8 @@ fun Application.main() {
                             software_version?.let {
                                 filterCriteria.add("software_version = '$software_version'")
                             }
-                            /* TODO filtering based on parameters
-                            tracks?.let {
-                                filterCriteria.add("track_number = $tracks")
-                            }
-                            */
+
+                            // TODO filtering based on parameter ranges
                             parameterStrs.forEach {
                                 if (it.value.isNotEmpty())
                                     filterCriteria.add("${it.key} = ${it.value}")
@@ -233,7 +251,7 @@ fun Application.main() {
                                     th { +"period_number" }
                                     th { +"run_number" }
                                     page.parameters.forEach {
-                                        th { + it.name }
+                                        th { +it.name }
                                     }
                                 }
 
@@ -245,9 +263,14 @@ fun Application.main() {
                                         td { +res.getString("software_version") }
                                         td { +res.getShort("period_number").toString() }
                                         td { +res.getShort("run_number").toString() }
-                                        page.parameters.forEach {
+                                        page.parameters.forEach { parameter ->
                                             // TODO Types
-                                            td { +res.getInt(it.name).toString() }
+                                            td {
+                                                when (parameter.type) {
+                                                    "int" -> +res.getInt(parameter.name).toString()
+                                                    "float" -> +res.getFloat(parameter.name).toString()
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -307,6 +330,62 @@ fun Application.main() {
                     call.respond(mapOf("events" to lstEvents))
 
                 }
+                /*
+                [ {
+                  "reference": {
+                    "storage_name": "data1",
+                    "file_path": "/tmp/file1",
+                    "event_number": 1
+                  },
+                  "software_version": "19.1",
+                  "period_number": 7,
+                  "run_number": 5000,
+                  "parameters": {
+                    "track_number": 20
+                  }
+                } ]
+                */
+                post("/events") {
+                    val events = call.receive<Array<EventRepr>>()
+                    val swMap = getSoftwareMap(conn)
+                    val storageMap = getStorageMap(conn)
+                    events.forEach { event ->
+                        println("Create event: $event")
+                        val swid = swMap.str_to_id[event.software_version]
+                        val file_path = event.reference.file_path
+                        val storage_name = event.reference.storage_name
+                        val storage_id = storageMap.str_to_id[storage_name]
+
+                        // get file_guid
+
+                        val res = conn.createStatement().executeQuery(
+                            """SELECT file_guid FROM file_ WHERE 
+                             storage_id = $storage_id AND file_path = '$file_path'
+                            """.trimMargin()
+                        )
+                        if (res.next()) {
+                            val file_guid = res.getInt("file_guid")
+                            println("File GUID = $file_guid")
+
+                            val query = """
+                                INSERT INTO ${page.db_table_name} 
+                                (file_guid, event_number, software_id, period_number, run_number,
+                                 ${page.parameters.joinToString(transform = {it.name}, separator = ", ")} )
+                                 VALUES ($file_guid, ${event.reference.event_number}, $swid, ${event.period_number},
+                                   ${event.run_number}, 
+                                   ${page.parameters.map{ event.parameters[it.name].toString() }.joinToString(", ")})
+                        """.trimIndent()
+                            print(query)
+                            conn.createStatement().executeUpdate(query)
+                        } else {
+                            println("Could not extract file GUID...")
+                            call.respond("Not OK")
+                        }
+                    }
+                    call.respond("Events were created")
+                }
+
+
             }
 
         }
