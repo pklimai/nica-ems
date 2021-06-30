@@ -1,7 +1,10 @@
 package com.example
 
+import com.typesafe.config.Optional
+
 class ConfigFile(
-    val db_connection: DBConnectionParams,
+    val event_db: DBConnectionParams,
+    val condition_db: DBConnectionParams?,
     val title: String,
     val pages: List<Page>
 )

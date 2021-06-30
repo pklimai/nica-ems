@@ -17,37 +17,6 @@ import java.sql.DriverManager
 
 // val DRIVER = "org.postgresql.Driver"
 
-class SoftwareMap(val id_to_str: Map<Short, String>, val str_to_id: Map<String, Short>)
-
-fun getSoftwareMap(conn: java.sql.Connection): SoftwareMap {
-    val query = "SELECT * FROM software_"
-    val res = conn.createStatement().executeQuery(query)
-    val idToStr = HashMap<Short, String>()
-    val strToId = HashMap<String, Short>()
-    while (res.next()) {
-        val id = res.getShort("software_id")
-        val ver = res.getString("software_version")
-        idToStr[id] = ver
-        strToId[ver] = id
-    }
-    return SoftwareMap(idToStr, strToId)
-}
-
-class StorageMap(val str_to_id: Map<String, Byte>)
-
-fun getStorageMap(conn: java.sql.Connection): StorageMap {
-    val query = "SELECT * FROM storage_"
-    val res = conn.createStatement().executeQuery(query)
-    val strToId = HashMap<String, Byte>()
-    while (res.next()) {
-        val id = res.getByte("storage_id")
-        val storage_name = res.getString("storage_name")
-        strToId[storage_name] = id
-    }
-    return StorageMap(strToId)
-}
-
-
 fun Application.main() {
 
     val mapper = ObjectMapper(YAMLFactory())
@@ -59,9 +28,23 @@ fun Application.main() {
     install(ContentNegotiation) {
         jackson {}
     }
-    val url =
-        "jdbc:postgresql://${config.db_connection.host}:${config.db_connection.port}/${config.db_connection.db_name}"
-    val conn = DriverManager.getConnection(url, config.db_connection.user, config.db_connection.password)
+    install(Compression)
+
+    val urlEventDB =
+        "jdbc:postgresql://${config.event_db.host}:${config.event_db.port}/${config.event_db.db_name}"
+    val conn = DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
+
+    // If null, do not use event preselection from the Condition Database
+    val connCondition = config.condition_db?.let {
+        val urlConditionDB =
+            "jdbc:postgresql://${config.condition_db.host}:${config.condition_db.port}/${config.condition_db.db_name}"
+        DriverManager.getConnection(urlConditionDB, config.condition_db.user, config.condition_db.password)
+    }
+
+    println("Conn to Condition DB: $connCondition")
+    connCondition?.let {
+        println(getRunsBy(it, "Ar", "Al", 2.6f))
+    }
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
 

@@ -1,9 +1,16 @@
-db_connection:
+event_db:
   host: 192.168.65.52
   port: 5000
   db_name: event_db
   user: postgres
   password: example
+
+condition_db:
+  host: 192.168.65.52
+  port: 5001
+  db_name: bmn_db
+  user: user
+  password: user_pass
 
 title: "Event Index Main Page"
 

@@ -1,5 +1,7 @@
 
-Run in Docker on CentOS 8:
+# Event Metadata System API and Web UI
+
+### Run in Docker on CentOS 8:
 
 ```
 sudo dnf install java-11-openjdk-devel
@@ -9,4 +11,8 @@ cd ~/ktor-test/
 sudo docker build -t ktor-test .
 sudo docker run -p 80:8080  ktor-test
 ```
+
+### Testing
+
+Use `testing/docker-compose.yaml` for test databases. 
 
