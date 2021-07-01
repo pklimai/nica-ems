@@ -1,15 +1,13 @@
 package com.example
 
-import com.typesafe.config.Optional
-
 class ConfigFile(
-    val event_db: DBConnectionParams,
-    val condition_db: DBConnectionParams?,
+    val event_db: DBConnectionConfig,
+    val condition_db: DBConnectionConfig?,
     val title: String,
-    val pages: List<Page>
+    val pages: List<PageConfig>
 )
 
-class DBConnectionParams(
+class DBConnectionConfig(
     val host: String,
     val port: Int,
     val db_name: String,
@@ -17,15 +15,15 @@ class DBConnectionParams(
     val password: String
 )
 
-class Page(
+class PageConfig(
     val name: String,
     val api_url: String,
     val web_url: String,
     val db_table_name: String,
-    val parameters: List<Parameter>
+    val parameters: List<ParameterConfig>
 )
 
-class Parameter(
+class ParameterConfig(
     val name: String,
     val type: String,  // TODO
     val intervals: Boolean,

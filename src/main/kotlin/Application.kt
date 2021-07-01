@@ -94,27 +94,24 @@ fun Application.main() {
             }
         }
 
+        val periodConfig = ParameterConfig("period_number", "int", true, "Period Number")
+        val runConfig = ParameterConfig("run_number", "int", true, "Run Number")
+
         config.pages.forEach { page ->
 
             route(page.web_url) {
                 get {
-                    val period = try {
-                        call.parameters["period"]?.toInt()
-                    } catch (e: java.lang.NumberFormatException) {
-                        null
-                    }
-                    val run: Int? = try {
-                        call.parameters["run"]?.toInt()
-                    } catch (e: java.lang.NumberFormatException) {
-                        null
-                    }
+
+                    val period_number = Parameter.fromParameterConfig(periodConfig, call.parameters["period_number"])
+                    val run_number = Parameter.fromParameterConfig(runConfig, call.parameters["run_number"])
+
                     val software_version: String? = try {
                         call.parameters["software_version"]
                     } catch (e: java.lang.NumberFormatException) {
                         null
                     }
 
-                    // Mapping of parameter name to its value as a string (possibly range, etc.)
+                    // Mapping of optional parameter name to its value as a string (possibly range, etc.)
                     val parameterStrs = HashMap<String, String>()
                     page.parameters.forEach { parameter ->
                         if (parameter.name in call.parameters) {
@@ -138,21 +135,21 @@ fun Application.main() {
                             h2 { +page.name }
                             h3 { +"Enter search criteria for events" }
                             form {
-                                label { +"Period" }
+                                label { + periodConfig.web_name }
                                 textInput {
-                                    id = "period"
-                                    name = "period"  // required for parameter to be sent in URL
-                                    period?.let {
-                                        value = period.toString()
+                                    id = "period_number"
+                                    name = "period_number"  // required for parameter to be sent in URL
+                                    period_number?.let {
+                                        value = period_number.stringValue
                                     }
                                 }
                                 br { }
-                                label { +"Run" }
+                                label { + runConfig.web_name }
                                 textInput {
-                                    id = "run"
-                                    name = "run"  // required for parameter to be sent in URL
-                                    run?.let {
-                                        value = run.toString()
+                                    id = run_number!!.name
+                                    name = run_number!!.name  // required for parameter to be sent in URL
+                                    run_number?.let {
+                                        value = run_number.stringValue
                                     }
                                 }
                                 br { }
@@ -202,11 +199,11 @@ fun Application.main() {
                                     INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
                                 """
                             val filterCriteria = ArrayList<String>()
-                            period?.let {
-                                filterCriteria.add("period_number = $period")
+                            period_number?.let {
+                                filterCriteria.add(period_number.generateSQLWhere())
                             }
-                            run?.let {
-                                filterCriteria.add("run_number = $run")
+                            run_number?.let {
+                                filterCriteria.add(run_number.generateSQLWhere())
                             }
                             software_version?.let {
                                 filterCriteria.add("software_version = '$software_version'")
@@ -221,6 +218,8 @@ fun Application.main() {
                             if (filterCriteria.isNotEmpty()) {
                                 query += "WHERE " + filterCriteria.joinToString(" AND ")
                             }
+
+                            print(query)
 
                             val res = conn.createStatement().executeQuery(query)
 
@@ -353,10 +352,10 @@ fun Application.main() {
                             val query = """
                                 INSERT INTO ${page.db_table_name} 
                                 (file_guid, event_number, software_id, period_number, run_number,
-                                 ${page.parameters.joinToString(transform = {it.name}, separator = ", ")} )
+                                 ${page.parameters.joinToString(transform = { it.name }, separator = ", ")} )
                                  VALUES ($file_guid, ${event.reference.event_number}, $swid, ${event.period_number},
                                    ${event.run_number}, 
-                                   ${page.parameters.map{ event.parameters[it.name].toString() }.joinToString(", ")})
+                                   ${page.parameters.map { event.parameters[it.name].toString() }.joinToString(", ")})
                         """.trimIndent()
                             print(query)
                             conn.createStatement().executeUpdate(query)
