@@ -105,19 +105,18 @@ fun Application.main() {
                     val period_number = Parameter.fromParameterConfig(periodConfig, call.parameters["period_number"])
                     val run_number = Parameter.fromParameterConfig(runConfig, call.parameters["run_number"])
 
-                    val software_version: String? = try {
-                        call.parameters["software_version"]
-                    } catch (e: java.lang.NumberFormatException) {
-                        null
-                    }
+                    val software_version: String? = call.parameters["software_version"]
 
                     // Mapping of optional parameter name to its value as a string (possibly range, etc.)
-                    val parameterStrs = HashMap<String, String>()
-                    page.parameters.forEach { parameter ->
-                        if (parameter.name in call.parameters) {
-                            parameterStrs[parameter.name] = call.parameters[parameter.name].toString()
+                    val parametersSupplied = HashMap<String, Parameter>()
+                    page.parameters.forEach { parameterConfig ->
+                        if (parameterConfig.name in call.parameters) {
+                            val parameterValue = call.parameters[parameterConfig.name].toString()
+                            if (parameterValue.isNotBlank()) {
+                                parametersSupplied[parameterConfig.name] =
+                                    Parameter.fromParameterConfig(parameterConfig, parameterValue)!!
+                            }
                         }
-
                     }
 
                     val softwareMap = getSoftwareMap(conn)
@@ -135,24 +134,10 @@ fun Application.main() {
                             h2 { +page.name }
                             h3 { +"Enter search criteria for events" }
                             form {
-                                label { + periodConfig.web_name }
-                                textInput {
-                                    id = "period_number"
-                                    name = "period_number"  // required for parameter to be sent in URL
-                                    period_number?.let {
-                                        value = period_number.stringValue
-                                    }
-                                }
-                                br { }
-                                label { + runConfig.web_name }
-                                textInput {
-                                    id = run_number!!.name
-                                    name = run_number!!.name  // required for parameter to be sent in URL
-                                    run_number?.let {
-                                        value = run_number.stringValue
-                                    }
-                                }
-                                br { }
+
+                                parameterInput(periodConfig, period_number)
+                                parameterInput(runConfig, run_number)
+
                                 label { +"Software Version" }
                                 // TODO add null selection
                                 select {
@@ -168,17 +153,10 @@ fun Application.main() {
                                         }
                                     }
                                 }
+                                br {}
 
                                 page.parameters.forEach { parameter ->
-                                    br {}
-                                    label { +parameter.web_name }
-                                    textInput {
-                                        id = parameter.name
-                                        name = parameter.name
-                                        parameterStrs[parameter.name]?.let {
-                                            value = parameterStrs[parameter.name]!!
-                                        }
-                                    }
+                                    parameterInput(parameter, parametersSupplied[parameter.name])
                                 }
 
                                 br { }
@@ -200,19 +178,18 @@ fun Application.main() {
                                 """
                             val filterCriteria = ArrayList<String>()
                             period_number?.let {
-                                filterCriteria.add(period_number.generateSQLWhere())
+                                filterCriteria.add(it.generateSQLWhere())
                             }
+
                             run_number?.let {
-                                filterCriteria.add(run_number.generateSQLWhere())
+                                filterCriteria.add(it.generateSQLWhere())
                             }
                             software_version?.let {
                                 filterCriteria.add("software_version = '$software_version'")
                             }
 
-                            // TODO filtering based on parameter ranges
-                            parameterStrs.forEach {
-                                if (it.value.isNotEmpty())
-                                    filterCriteria.add("${it.key} = ${it.value}")
+                            parametersSupplied.forEach {
+                                filterCriteria.add(it.value.generateSQLWhere())
                             }
 
                             if (filterCriteria.isNotEmpty()) {

@@ -9,15 +9,14 @@ interface RangeSupporting<T> {
     val maxValue: T
 }
 
-abstract class Parameter(val name: String, val stringValue: String) {
-    // val config: ParameterConfig? = null
+abstract class Parameter(val config: ParameterConfig, val stringValue: String) {
     companion object {
         fun fromParameterConfig(parameterConfig: ParameterConfig, value: String?): Parameter? {
-            if (value == null) return null
+            if (value.isNullOrEmpty()) return null
             when (parameterConfig.type.uppercase()) {
                 // TODO also split by range support
-                "INT" -> return IntParameter(parameterConfig.name, value)
-                "FLOAT" -> return FloatParameter(parameterConfig.name, value)
+                "INT" -> return IntParameter(parameterConfig, value)
+                "FLOAT" -> return FloatParameter(parameterConfig, value)
                 else -> return null
             }
             // TODO also return null if cannot decode
@@ -28,7 +27,7 @@ abstract class Parameter(val name: String, val stringValue: String) {
 
 }
 
-class IntParameter(name: String, stringValue: String): Parameter(name, stringValue), RangeSupporting<Int> {
+class IntParameter(config: ParameterConfig, stringValue: String): Parameter(config, stringValue), RangeSupporting<Int> {
     override val isRangeSpecified = stringValue.contains(RANGE_SEPARATOR)
     override val minValue =
         if (isRangeSpecified) stringValue.substringBefore(RANGE_SEPARATOR).toInt() else stringValue.toInt()
@@ -37,15 +36,15 @@ class IntParameter(name: String, stringValue: String): Parameter(name, stringVal
 
     override fun generateSQLWhere(): String {
         return if (isRangeSpecified) {
-            " $name BETWEEN $minValue and $maxValue"
+            " ${config.name} BETWEEN $minValue and $maxValue"
         } else {
-            " $name = $minValue"
+            " ${config.name} = $minValue"
         }
     }
 
 }
 
-class FloatParameter(name: String, stringValue: String) : Parameter(name, stringValue), RangeSupporting<Float> {
+class FloatParameter(config: ParameterConfig, stringValue: String) : Parameter(config, stringValue), RangeSupporting<Float> {
     override val isRangeSpecified = stringValue.contains(RANGE_SEPARATOR)
     override val minValue =
         if (isRangeSpecified) stringValue.substringBefore(RANGE_SEPARATOR).toFloat() else stringValue.toFloat()
@@ -54,9 +53,9 @@ class FloatParameter(name: String, stringValue: String) : Parameter(name, string
 
     override fun generateSQLWhere(): String {
         return if (isRangeSpecified) {
-            "WHERE $name BETWEEN $minValue and $maxValue"
+            " ${config.name} BETWEEN $minValue and $maxValue"
         } else {
-            "WHERE $name = $minValue"
+            " ${config.name} = $minValue"
         }
     }
 
