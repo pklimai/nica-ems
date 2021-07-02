@@ -96,7 +96,8 @@ fun Application.main() {
                     val period_number = Parameter.fromParameterConfig(periodConfig, call.parameters[periodConfig.name])
                     val run_number = Parameter.fromParameterConfig(runConfig, call.parameters[runConfig.name])
 
-                    val software_version: String? = call.parameters["software_version"]
+                    val software_version: String? =
+                        if (call.parameters["software_version"].isNullOrEmpty()) null else call.parameters["software_version"]
                     val softwareMap = getSoftwareMap(connEMD)
 
                     // Parameters for pre-selection
@@ -136,21 +137,26 @@ fun Application.main() {
                                 parameterInput(runConfig, run_number)
 
                                 label { +"Software Version" }
-                                // TODO add null selection
                                 select {
                                     id = "software_version"
                                     name = "software_version"
+                                    option {
+                                        value = ""  // sent as a value in URL
+                                        if (software_version.isNullOrEmpty()) {
+                                            selected = true
+                                        }
+                                        +"No selection"   // Displayed
+                                    }
                                     softwareMap.str_to_id.keys.forEach {
                                         option {
                                             value = it
                                             if (it == software_version) {
                                                 selected = true
                                             }
-                                            +it   // NB: Depends on the order!
+                                            +it   // NB: Order matters!
                                         }
                                     }
                                 }
-
 
                                 connCondition?.let {
                                     hr {}
@@ -159,7 +165,6 @@ fun Application.main() {
                                     parameterInput(energyConfig, energy)
                                     hr {}
                                 }
-
 
                                 page.parameters.forEach { parameter ->
                                     parameterInput(parameter, parametersSupplied[parameter.name])
@@ -182,33 +187,26 @@ fun Application.main() {
                                     INNER JOIN file_ ON $et.file_guid = file_.file_guid
                                     INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
                                 """
+
                             val filterCriteria = ArrayList<String>()
-                            period_number?.let {
-                                filterCriteria.add(it.generateSQLWhere())
-                            }
-
-                            run_number?.let {
-                                filterCriteria.add(it.generateSQLWhere())
-                            }
-                            software_version?.let {
-                                filterCriteria.add("software_version = '$software_version'")
-                            }
-
-                            parametersSupplied.forEach {
-                                filterCriteria.add(it.value.generateSQLWhere())
-                            }
+                            period_number?.let { filterCriteria.add(it.generateSQLWhere()) }
+                            run_number?.let { filterCriteria.add(it.generateSQLWhere()) }
+                            software_version?.let { filterCriteria.add("software_version = '$software_version'") }
+                            parametersSupplied.forEach { filterCriteria.add(it.value.generateSQLWhere()) }
 
                             connCondition?.let {
                                 if (beam_particle != null || target_particle != null || energy != null) {
                                     val periodsRuns = getRunsBy(connCondition, beam_particle, target_particle, energy)
                                     if (periodsRuns.isEmpty()) {
-                                        p { +"""WARNING: Empty set of (period_number, run_number) returned in 
-                                            pre-selection, not using it""" }
+                                        p {
+                                            +"""WARNING: Empty set of (period_number, run_number) returned in 
+                                            pre-selection, not using it"""
+                                        }
                                     } else {
                                         val periodsRunsJoined = periodsRuns
                                             .joinToString(", ", prefix = "( ", postfix = " )")
                                             { "(${it.first}, ${it.second})" }
-                                        p { + "Preselection (period_number, run_number) returned: $periodsRunsJoined"}
+                                        p { +"Preselection (period_number, run_number) returned: $periodsRunsJoined" }
                                         filterCriteria.add(" (period_number, run_number) IN $periodsRunsJoined")
                                     }
                                 }
@@ -223,6 +221,7 @@ fun Application.main() {
                             val res = connEMD.createStatement().executeQuery(query)
 
                             br {}
+                            var count = 0
                             table {
                                 tr {
                                     th { +"storage_name" }
@@ -235,8 +234,8 @@ fun Application.main() {
                                         th { +it.name }
                                     }
                                 }
-
                                 while (res.next()) {
+                                    count++
                                     tr {
                                         td { +res.getString("storage_name") }
                                         td { +res.getString("file_path") }
@@ -250,27 +249,20 @@ fun Application.main() {
                                                 when (parameter.type) {
                                                     "int" -> +res.getInt(parameter.name).toString()
                                                     "float" -> +res.getFloat(parameter.name).toString()
+                                                    "string" -> +res.getString(parameter.name)
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
+                            if (count == 0) {
+                                p { + "No results found in the EMD database" }
+                            }
                         }
                     }
                 }
-                /*
-                post {
-                    call.respondHtml {
-                        body {
-                            h2 { +"POST worked!" }
-                        }
-                    }
-                }
-                */
-
             }
-
 
             route(page.api_url) {
 
@@ -365,7 +357,6 @@ fun Application.main() {
                     }
                     call.respond("Events were created")
                 }
-
 
             }
 
