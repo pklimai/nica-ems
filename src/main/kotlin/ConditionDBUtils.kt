@@ -1,4 +1,4 @@
-package com.example
+package ru.mipt.npm.nica.emd
 
 import java.lang.Exception
 import java.sql.Connection

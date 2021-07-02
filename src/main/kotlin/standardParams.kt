@@ -1,4 +1,4 @@
-package com.example
+package ru.mipt.npm.nica.emd
 
 val periodConfig = ParameterConfig("period_number", "int", true, "Period Number")
 val runConfig = ParameterConfig("run_number", "int", true, "Run Number")

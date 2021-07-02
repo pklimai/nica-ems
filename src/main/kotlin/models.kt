@@ -1,22 +1,4 @@
-package com.example
-
-/*
-data class Software(
-    val software_id: Short,
-    val software_version: String
-)
-
-data class Storage(
-    val storage_id: Short,
-    val storage_name: String
-)
-
-data class File(
-    val file_guid: Int,
-    val storage_id: Short,
-    val file_path: String
-)
-*/
+package ru.mipt.npm.nica.emd
 
 data class EventRepr(
     val reference: Reference,

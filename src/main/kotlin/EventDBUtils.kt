@@ -1,4 +1,4 @@
-package com.example
+package ru.mipt.npm.nica.emd
 
 class SoftwareMap(val id_to_str: Map<Short, String>, val str_to_id: Map<String, Short>)
 

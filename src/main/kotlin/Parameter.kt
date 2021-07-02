@@ -1,4 +1,4 @@
-package com.example
+package ru.mipt.npm.nica.emd
 
 const val RANGE_SEPARATOR = ".."
 
