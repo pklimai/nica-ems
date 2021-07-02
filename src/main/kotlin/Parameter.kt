@@ -17,6 +17,7 @@ abstract class Parameter(val config: ParameterConfig, val stringValue: String) {
                 // TODO also split by range support
                 "INT" -> return IntParameter(parameterConfig, value)
                 "FLOAT" -> return FloatParameter(parameterConfig, value)
+                "STRING" -> return StringParameter(parameterConfig, value)
                 else -> return null
             }
             // TODO also return null if cannot decode
@@ -24,7 +25,6 @@ abstract class Parameter(val config: ParameterConfig, val stringValue: String) {
     }
 
     abstract fun generateSQLWhere(): String
-
 }
 
 class IntParameter(config: ParameterConfig, stringValue: String): Parameter(config, stringValue), RangeSupporting<Int> {
@@ -41,7 +41,6 @@ class IntParameter(config: ParameterConfig, stringValue: String): Parameter(conf
             " ${config.name} = $minValue"
         }
     }
-
 }
 
 class FloatParameter(config: ParameterConfig, stringValue: String) : Parameter(config, stringValue), RangeSupporting<Float> {
@@ -58,5 +57,10 @@ class FloatParameter(config: ParameterConfig, stringValue: String) : Parameter(c
             " ${config.name} = $minValue"
         }
     }
+}
 
+class StringParameter(config: ParameterConfig, stringValue: String) : Parameter(config, stringValue) {
+    override fun generateSQLWhere(): String {
+        return " ${config.name} = '$stringValue'"
+    }
 }

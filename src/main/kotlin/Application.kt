@@ -32,7 +32,7 @@ fun Application.main() {
 
     val urlEventDB =
         "jdbc:postgresql://${config.event_db.host}:${config.event_db.port}/${config.event_db.db_name}"
-    val conn = DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
+    val connEMD = DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
 
     // If null, do not use event preselection from the Condition Database
     val connCondition = config.condition_db?.let {
@@ -41,13 +41,7 @@ fun Application.main() {
         DriverManager.getConnection(urlConditionDB, config.condition_db.user, config.condition_db.password)
     }
 
-    println("Conn to Condition DB: $connCondition")
-    connCondition?.let {
-        println(getRunsBy(it, "Ar", "Al", 2.6f))
-    }
-
     // println("Working Directory = ${System.getProperty("user.dir")}")
-
     routing {
         static("static") {
             // http://127.0.0.1:8080/static/style.css
@@ -94,20 +88,25 @@ fun Application.main() {
             }
         }
 
-        val periodConfig = ParameterConfig("period_number", "int", true, "Period Number")
-        val runConfig = ParameterConfig("run_number", "int", true, "Run Number")
-
         config.pages.forEach { page ->
 
             route(page.web_url) {
                 get {
 
-                    val period_number = Parameter.fromParameterConfig(periodConfig, call.parameters["period_number"])
-                    val run_number = Parameter.fromParameterConfig(runConfig, call.parameters["run_number"])
+                    val period_number = Parameter.fromParameterConfig(periodConfig, call.parameters[periodConfig.name])
+                    val run_number = Parameter.fromParameterConfig(runConfig, call.parameters[runConfig.name])
 
                     val software_version: String? = call.parameters["software_version"]
+                    val softwareMap = getSoftwareMap(connEMD)
 
-                    // Mapping of optional parameter name to its value as a string (possibly range, etc.)
+                    // Parameters for pre-selection
+                    val beam_particle =
+                        Parameter.fromParameterConfig(beamParticleConfig, call.parameters[beamParticleConfig.name])
+                    val target_particle =
+                        Parameter.fromParameterConfig(targetParticleConfig, call.parameters[targetParticleConfig.name])
+                    val energy = Parameter.fromParameterConfig(energyConfig, call.parameters[energyConfig.name])
+
+                    // Mapping of optional parameter name to its config and string value (possibly range, etc.)
                     val parametersSupplied = HashMap<String, Parameter>()
                     page.parameters.forEach { parameterConfig ->
                         if (parameterConfig.name in call.parameters) {
@@ -118,8 +117,6 @@ fun Application.main() {
                             }
                         }
                     }
-
-                    val softwareMap = getSoftwareMap(conn)
 
                     call.respondHtml {
                         head {
@@ -153,7 +150,16 @@ fun Application.main() {
                                         }
                                     }
                                 }
-                                br {}
+
+
+                                connCondition?.let {
+                                    hr {}
+                                    parameterInput(beamParticleConfig, beam_particle)
+                                    parameterInput(targetParticleConfig, target_particle)
+                                    parameterInput(energyConfig, energy)
+                                    hr {}
+                                }
+
 
                                 page.parameters.forEach { parameter ->
                                     parameterInput(parameter, parametersSupplied[parameter.name])
@@ -192,13 +198,29 @@ fun Application.main() {
                                 filterCriteria.add(it.value.generateSQLWhere())
                             }
 
+                            connCondition?.let {
+                                if (beam_particle != null || target_particle != null || energy != null) {
+                                    val periodsRuns = getRunsBy(connCondition, beam_particle, target_particle, energy)
+                                    if (periodsRuns.isEmpty()) {
+                                        p { +"""WARNING: Empty set of (period_number, run_number) returned in 
+                                            pre-selection, not using it""" }
+                                    } else {
+                                        val periodsRunsJoined = periodsRuns
+                                            .joinToString(", ", prefix = "( ", postfix = " )")
+                                            { "(${it.first}, ${it.second})" }
+                                        p { + "Preselection (period_number, run_number) returned: $periodsRunsJoined"}
+                                        filterCriteria.add(" (period_number, run_number) IN $periodsRunsJoined")
+                                    }
+                                }
+                            }
+
                             if (filterCriteria.isNotEmpty()) {
                                 query += "WHERE " + filterCriteria.joinToString(" AND ")
                             }
 
                             print(query)
 
-                            val res = conn.createStatement().executeQuery(query)
+                            val res = connEMD.createStatement().executeQuery(query)
 
                             br {}
                             table {
@@ -253,7 +275,7 @@ fun Application.main() {
             route(page.api_url) {
 
                 get("/events") {
-                    val stmt = conn.createStatement()
+                    val stmt = connEMD.createStatement()
                     val et = page.db_table_name
 
                     // TODO: Check how joins affect the performance. Consider doing DIY joins?
@@ -306,8 +328,8 @@ fun Application.main() {
                 */
                 post("/events") {
                     val events = call.receive<Array<EventRepr>>()
-                    val swMap = getSoftwareMap(conn)
-                    val storageMap = getStorageMap(conn)
+                    val swMap = getSoftwareMap(connEMD)
+                    val storageMap = getStorageMap(connEMD)
                     events.forEach { event ->
                         println("Create event: $event")
                         val swid = swMap.str_to_id[event.software_version]
@@ -317,7 +339,7 @@ fun Application.main() {
 
                         // get file_guid
 
-                        val res = conn.createStatement().executeQuery(
+                        val res = connEMD.createStatement().executeQuery(
                             """SELECT file_guid FROM file_ WHERE 
                              storage_id = $storage_id AND file_path = '$file_path'
                             """.trimMargin()
@@ -335,7 +357,7 @@ fun Application.main() {
                                    ${page.parameters.map { event.parameters[it.name].toString() }.joinToString(", ")})
                         """.trimIndent()
                             print(query)
-                            conn.createStatement().executeUpdate(query)
+                            connEMD.createStatement().executeUpdate(query)
                         } else {
                             println("Could not extract file GUID...")
                             call.respond("Not OK")
