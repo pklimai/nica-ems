@@ -16,3 +16,22 @@ sudo docker run -p 80:8080 nica-emd
 
 Use `testing/docker-compose.yaml` for test databases. 
 
+### Event JSON example
+
+```
+[ 
+  {
+    "reference": {
+      "storage_name": "data1",
+      "file_path": "/tmp/file1",
+      "event_number": 1
+    },
+    "software_version": "19.1",
+    "period_number": 7,
+    "run_number": 5000,
+    "parameters": {
+      "track_number": 20
+    }
+  } 
+]
+```

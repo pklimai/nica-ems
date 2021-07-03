@@ -257,7 +257,7 @@ fun Application.main() {
                                 }
                             }
                             if (count == 0) {
-                                p { + "No results found in the EMD database" }
+                                p { +"No results found in the EMD database" }
                             }
                         }
                     }
@@ -283,7 +283,7 @@ fun Application.main() {
                     while (res.next()) {
                         val paramMap = HashMap<String, Any>()
 
-                        page.parameters.forEach() {
+                        page.parameters.forEach {
                             paramMap[it.name] = res.getInt(it.name)
                         }
                         lstEvents.add(
@@ -303,21 +303,7 @@ fun Application.main() {
                     call.respond(mapOf("events" to lstEvents))
 
                 }
-                /*
-                [ {
-                  "reference": {
-                    "storage_name": "data1",
-                    "file_path": "/tmp/file1",
-                    "event_number": 1
-                  },
-                  "software_version": "19.1",
-                  "period_number": 7,
-                  "run_number": 5000,
-                  "parameters": {
-                    "track_number": 20
-                  }
-                } ]
-                */
+
                 post("/events") {
                     val events = call.receive<Array<EventRepr>>()
                     val swMap = getSoftwareMap(connEMD)
@@ -330,7 +316,6 @@ fun Application.main() {
                         val storage_id = storageMap.str_to_id[storage_name]
 
                         // get file_guid
-
                         val res = connEMD.createStatement().executeQuery(
                             """SELECT file_guid FROM file_ WHERE 
                              storage_id = $storage_id AND file_path = '$file_path'
@@ -344,14 +329,14 @@ fun Application.main() {
                                 INSERT INTO ${page.db_table_name} 
                                 (file_guid, event_number, software_id, period_number, run_number,
                                  ${page.parameters.joinToString(transform = { it.name }, separator = ", ")} )
-                                 VALUES ($file_guid, ${event.reference.event_number}, $swid, ${event.period_number},
+                                VALUES ($file_guid, ${event.reference.event_number}, $swid, ${event.period_number},
                                    ${event.run_number}, 
-                                   ${page.parameters.map { event.parameters[it.name].toString() }.joinToString(", ")})
-                        """.trimIndent()
+                                   ${page.parameters.joinToString(", "){event.parameters[it.name].toString()}})
+                                """.trimIndent()
                             print(query)
                             connEMD.createStatement().executeUpdate(query)
                         } else {
-                            println("Could not extract file GUID...")
+                            println("Could not extract file GUID...")    // TODO properly return status
                             call.respond("Not OK")
                         }
                     }
