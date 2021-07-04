@@ -93,31 +93,8 @@ fun Application.main() {
             route(page.web_url) {
                 get {
 
-                    val period_number = Parameter.fromParameterConfig(periodConfig, call.parameters[periodConfig.name])
-                    val run_number = Parameter.fromParameterConfig(runConfig, call.parameters[runConfig.name])
-
-                    val software_version: String? =
-                        if (call.parameters["software_version"].isNullOrEmpty()) null else call.parameters["software_version"]
+                    val parameterBundle = ParameterBundle.buildFromCall(call, page)
                     val softwareMap = getSoftwareMap(connEMD)
-
-                    // Parameters for pre-selection
-                    val beam_particle =
-                        Parameter.fromParameterConfig(beamParticleConfig, call.parameters[beamParticleConfig.name])
-                    val target_particle =
-                        Parameter.fromParameterConfig(targetParticleConfig, call.parameters[targetParticleConfig.name])
-                    val energy = Parameter.fromParameterConfig(energyConfig, call.parameters[energyConfig.name])
-
-                    // Mapping of optional parameter name to its config and string value (possibly range, etc.)
-                    val parametersSupplied = HashMap<String, Parameter>()
-                    page.parameters.forEach { parameterConfig ->
-                        if (parameterConfig.name in call.parameters) {
-                            val parameterValue = call.parameters[parameterConfig.name].toString()
-                            if (parameterValue.isNotBlank()) {
-                                parametersSupplied[parameterConfig.name] =
-                                    Parameter.fromParameterConfig(parameterConfig, parameterValue)!!
-                            }
-                        }
-                    }
 
                     call.respondHtml {
                         head {
@@ -131,94 +108,11 @@ fun Application.main() {
                             }
                             h2 { +page.name }
                             h3 { +"Enter search criteria for events" }
-                            form {
-
-                                parameterInput(periodConfig, period_number)
-                                parameterInput(runConfig, run_number)
-
-                                label { +"Software Version" }
-                                select {
-                                    id = "software_version"
-                                    name = "software_version"
-                                    option {
-                                        value = ""  // sent as a value in URL
-                                        if (software_version.isNullOrEmpty()) {
-                                            selected = true
-                                        }
-                                        +"No selection"   // Displayed
-                                    }
-                                    softwareMap.str_to_id.keys.forEach {
-                                        option {
-                                            value = it
-                                            if (it == software_version) {
-                                                selected = true
-                                            }
-                                            +it   // NB: Order matters!
-                                        }
-                                    }
-                                }
-
-                                connCondition?.let {
-                                    hr {}
-                                    parameterInput(beamParticleConfig, beam_particle)
-                                    parameterInput(targetParticleConfig, target_particle)
-                                    parameterInput(energyConfig, energy)
-                                    hr {}
-                                }
-
-                                page.parameters.forEach { parameter ->
-                                    parameterInput(parameter, parametersSupplied[parameter.name])
-                                }
-
-                                br { }
-                                submitInput {
-                                    value = "Submit"
-                                    formMethod = InputFormMethod.get
-                                }
-
-                            }
+                            inputParametersForm(parameterBundle, page, softwareMap, connCondition)
 
                             h3 { +"Events found:" }
 
-                            val et = page.db_table_name
-                            var query =
-                                """SELECT * FROM $et 
-                                    INNER JOIN software_ ON $et.software_id = software_.software_id
-                                    INNER JOIN file_ ON $et.file_guid = file_.file_guid
-                                    INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
-                                """
-
-                            val filterCriteria = ArrayList<String>()
-                            period_number?.let { filterCriteria.add(it.generateSQLWhere()) }
-                            run_number?.let { filterCriteria.add(it.generateSQLWhere()) }
-                            software_version?.let { filterCriteria.add("software_version = '$software_version'") }
-                            parametersSupplied.forEach { filterCriteria.add(it.value.generateSQLWhere()) }
-
-                            connCondition?.let {
-                                if (beam_particle != null || target_particle != null || energy != null) {
-                                    val periodsRuns = getRunsBy(connCondition, beam_particle, target_particle, energy)
-                                    if (periodsRuns.isEmpty()) {
-                                        p {
-                                            +"""WARNING: Empty set of (period_number, run_number) returned in 
-                                            pre-selection, not using it"""
-                                        }
-                                    } else {
-                                        val periodsRunsJoined = periodsRuns
-                                            .joinToString(", ", prefix = "( ", postfix = " )")
-                                            { "(${it.first}, ${it.second})" }
-                                        p { +"Preselection (period_number, run_number) returned: $periodsRunsJoined" }
-                                        filterCriteria.add(" (period_number, run_number) IN $periodsRunsJoined")
-                                    }
-                                }
-                            }
-
-                            if (filterCriteria.isNotEmpty()) {
-                                query += "WHERE " + filterCriteria.joinToString(" AND ")
-                            }
-
-                            print(query)
-
-                            val res = connEMD.createStatement().executeQuery(query)
+                            val res = queryEMD(parameterBundle, page, connCondition, connEMD, this)
 
                             br {}
                             var count = 0
@@ -257,8 +151,9 @@ fun Application.main() {
                                 }
                             }
                             if (count == 0) {
-                                p { +"No results found in the EMD database" }
+                                p { +"No results matching specified criteria found in the EMD database" }
                             }
+
                         }
                     }
                 }
@@ -267,17 +162,9 @@ fun Application.main() {
             route(page.api_url) {
 
                 get("/events") {
-                    val stmt = connEMD.createStatement()
-                    val et = page.db_table_name
-
-                    // TODO: Check how joins affect the performance. Consider doing DIY joins?
-                    val res = stmt.executeQuery(
-                        """SELECT * FROM $et INNER JOIN software_  
-                            ON $et.software_id = software_.software_id
-                            INNER JOIN file_ ON $et.file_guid = file_.file_guid
-                            INNER JOIN storage_ ON file_.storage_id = storage_.storage_id
-                        """
-                    )
+                    val parameterBundle = ParameterBundle.buildFromCall(call, page)
+                    val softwareMap = getSoftwareMap(connEMD)
+                    val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
 
                     val lstEvents = ArrayList<EventRepr>()
                     while (res.next()) {
@@ -301,16 +188,15 @@ fun Application.main() {
                         )
                     }
                     call.respond(mapOf("events" to lstEvents))
-
                 }
 
                 post("/events") {
                     val events = call.receive<Array<EventRepr>>()
-                    val swMap = getSoftwareMap(connEMD)
+                    val softwareMap = getSoftwareMap(connEMD)
                     val storageMap = getStorageMap(connEMD)
                     events.forEach { event ->
                         println("Create event: $event")
-                        val swid = swMap.str_to_id[event.software_version]
+                        val software_id = softwareMap.str_to_id[event.software_version]
                         val file_path = event.reference.file_path
                         val storage_name = event.reference.storage_name
                         val storage_id = storageMap.str_to_id[storage_name]
@@ -329,9 +215,9 @@ fun Application.main() {
                                 INSERT INTO ${page.db_table_name} 
                                 (file_guid, event_number, software_id, period_number, run_number,
                                  ${page.parameters.joinToString(transform = { it.name }, separator = ", ")} )
-                                VALUES ($file_guid, ${event.reference.event_number}, $swid, ${event.period_number},
+                                VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
                                    ${event.run_number}, 
-                                   ${page.parameters.joinToString(", "){event.parameters[it.name].toString()}})
+                                   ${page.parameters.joinToString(", ") { event.parameters[it.name].toString() }})
                                 """.trimIndent()
                             print(query)
                             connEMD.createStatement().executeUpdate(query)
