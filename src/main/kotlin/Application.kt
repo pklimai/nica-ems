@@ -194,11 +194,11 @@ fun Application.main() {
                                         td { +res.getShort("period_number").toString() }
                                         td { +res.getShort("run_number").toString() }
                                         page.parameters.forEach { parameter ->
-                                            // TODO Types
                                             td {
                                                 when (parameter.type) {
                                                     "int" -> +res.getInt(parameter.name).toString()
                                                     "float" -> +res.getFloat(parameter.name).toString()
+                                                    "bool" -> +res.getBoolean(parameter.name).toString()
                                                     "string" -> +res.getString(parameter.name)
                                                 }
                                             }
@@ -227,7 +227,13 @@ fun Application.main() {
                         val paramMap = HashMap<String, Any>()
 
                         page.parameters.forEach {
-                            paramMap[it.name] = res.getInt(it.name)
+                            when (it.type.uppercase()) {
+                                "INT" -> paramMap[it.name] = res.getInt(it.name)
+                                "FLOAT" -> paramMap[it.name] = res.getFloat(it.name)
+                                "STRING" -> paramMap[it.name] = res.getString(it.name)
+                                "BOOL" -> paramMap[it.name] = res.getBoolean(it.name)
+                                else -> throw Exception("Unknown parameter type!")
+                            }
                         }
                         lstEvents.add(
                             EventRepr(

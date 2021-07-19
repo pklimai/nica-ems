@@ -6,19 +6,55 @@ import java.sql.Connection
 fun FORM.parameterInput(parameterConfig: ParameterConfig, parameter: Parameter?) {
     // TODO input based on type - bool, str, etc.
     label { +parameterConfig.web_name }
-    textInput {
-        id = parameterConfig.name
-        name = parameterConfig.name  // required for parameter to be sent in URL
-        parameter?.let {
-            value = parameter.stringValue
+    when (parameterConfig.type.uppercase()) {
+        "STRING", "INT", "FLOAT" ->
+            textInput {
+                id = parameterConfig.name
+                name = parameterConfig.name  // required for parameter to be sent in URL
+                parameter?.let {
+                    value = parameter.stringValue
+                }
+            }
+        "BOOL" -> {
+            select {
+                id = parameterConfig.name
+                name = parameterConfig.name
+                option {
+                    value = ""  // sent as a value in URL
+                    if (parameter == null) {
+                        selected = true
+                    }
+                    +"No selection"   // Displayed
+                }
+                option {
+                    value = "true"
+                    if (parameter?.stringValue?.uppercase() == "TRUE") {
+                        selected = true
+                    }
+                    + "true"
+                }
+                option {
+                    value = "false"
+                    if (parameter?.stringValue?.uppercase() == "FALSE") {
+                        selected = true
+                    }
+                    + "false"
+                }
+            }
         }
+        else -> throw Exception("Unknown parameter type!")
     }
     br { }
 }
 
-fun BODY.inputParametersForm(parameterBundle: ParameterBundle, page: PageConfig, softwareMap: SoftwareMap, connCondition: Connection?) {
+fun BODY.inputParametersForm(
+    parameterBundle: ParameterBundle,
+    page: PageConfig,
+    softwareMap: SoftwareMap,
+    connCondition: Connection?
+) {
     form {
-        with (parameterBundle) {
+        with(parameterBundle) {
             parameterInput(periodConfig, period_number)
             parameterInput(runConfig, run_number)
 

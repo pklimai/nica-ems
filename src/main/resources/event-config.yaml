@@ -12,33 +12,49 @@ condition_db:
   user: user
   password: user_pass
 
-title: "Event Index Main Page"
+title: Event Index Main Page
 
 pages:
-  - name: "BM@N Events"
-    api_url: "/event_api/v1/bmn"
-    web_url: "/event_web/bmn"  # Web search form URL
-    db_table_name: "bmn_event"
+  - name: BM@N Events
+    api_url: /event_api/v1/bmn    # API URL
+    web_url: /event_web/bmn       # Web search form URL
+    db_table_name: bmn_event
     parameters:
       - name: track_number
         type: int
         intervals: true
-        web_name: "Total track number"
+        web_name: Total track number
 
-  - name: "BM@N SRC Events"
-    api_url: "/event_api/v1/src"
-    web_url: "/event_web/src"  # Web search form URL
-    db_table_name: "src_event"
+  - name: BM@N SRC Events
+    api_url: /event_api/v1/src
+    web_url: /event_web/src
+    db_table_name: src_event
     parameters:
       - name: track_number
         type: int
         intervals: true
-        web_name: "Total track number"
+        web_name: Total track number
       - name: input_charge
         type: float
         intervals: true
-        web_name: "Input charge"
+        web_name: Input charge
       - name: output_charge
         type: float
         intervals: true
-        web_name: "Output charge"
+        web_name: Output charge
+
+  - name: Test Events
+    api_url: /event_api/v1/test
+    web_url: /event_web/test
+    db_table_name: test_event
+    parameters:
+      - name: track_number
+        type: int
+        intervals: true
+        web_name: Total track number
+      - name: trigger_str
+        type: string
+        web_name: Triggers (string)
+      - name: primary_vertex
+        type: bool
+        web_name: Primary vertex

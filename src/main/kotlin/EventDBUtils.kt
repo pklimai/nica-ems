@@ -37,8 +37,7 @@ fun getStorageMap(conn: java.sql.Connection): StorageMap {
 
 fun queryEMD(
     parameterBundle: ParameterBundle, page: PageConfig, connCondition: Connection?, connEMD: Connection, body: BODY?
-):
-        ResultSet {
+): ResultSet {
     with(parameterBundle) {
         val et = page.db_table_name
         // TODO: Check how joins affect the performance. Consider doing DIY joins?

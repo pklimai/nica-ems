@@ -18,7 +18,8 @@ abstract class Parameter(val config: ParameterConfig, val stringValue: String) {
                 "INT" -> return IntParameter(parameterConfig, value)
                 "FLOAT" -> return FloatParameter(parameterConfig, value)
                 "STRING" -> return StringParameter(parameterConfig, value)
-                else -> return null
+                "BOOL" -> return BooleanParameter(parameterConfig, value)
+                else -> throw Exception("Unknown parameter type!")
             }
             // TODO also return null if cannot decode
         }
@@ -62,5 +63,12 @@ class FloatParameter(config: ParameterConfig, stringValue: String) : Parameter(c
 class StringParameter(config: ParameterConfig, stringValue: String) : Parameter(config, stringValue) {
     override fun generateSQLWhere(): String {
         return " ${config.name} = '$stringValue'"
+    }
+}
+
+class BooleanParameter(config: ParameterConfig, stringValue: String) : Parameter(config, stringValue) {
+    override fun generateSQLWhere(): String {
+        val sqlValue =  stringValue.uppercase()   // if (stringValue.uppercase() == "TRUE") 1 else 0
+        return " ${config.name} = $sqlValue"
     }
 }
