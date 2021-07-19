@@ -83,7 +83,63 @@ fun Application.main() {
         route("/dictionaries") {
             get {
                 call.respondHtml {
-                    +"TODO show small tables here"
+                    head {
+                        title { +config.title }
+                        styleLink("/static/style.css")
+                    }
+                    body {
+                        a {
+                            href = "/"
+                            +"Home"
+                        }
+                        h2 { +"Software version table" }
+                        connEMD.createStatement().executeQuery("SELECT * FROM software_").let { res ->
+                            table {
+                                tr {
+                                    th { +"software_id" }
+                                    th { +"software_version" }
+                                }
+                                while (res.next()) {
+                                    tr {
+                                        td { + res.getInt("software_id").toString() }
+                                        td { + res.getString("software_version") }
+                                    }
+                                }
+                            }
+                        }
+                        h2 { + "Storage table" }
+                        connEMD.createStatement().executeQuery("SELECT * FROM storage_").let { res ->
+                            table {
+                                tr {
+                                    th { +"storage_id" }
+                                    th { +"storage_name" }
+                                }
+                                while (res.next()) {
+                                    tr {
+                                        td { + res.getInt("storage_id").toString() }
+                                        td { + res.getString("storage_name") }
+                                    }
+                                }
+                            }
+                        }
+                        h2 { + "Files table" }
+                        connEMD.createStatement().executeQuery("SELECT * FROM file_").let { res ->
+                            table {
+                                tr {
+                                    th { +"file_guid" }
+                                    th { +"storage_id" }
+                                    th { +"file_path"}
+                                }
+                                while (res.next()) {
+                                    tr {
+                                        td { + res.getInt("file_guid").toString() }
+                                        td { + res.getShort("storage_id").toString() }
+                                        td { + res.getString("file_path") }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
