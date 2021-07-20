@@ -101,13 +101,13 @@ fun Application.main() {
                                 }
                                 while (res.next()) {
                                     tr {
-                                        td { + res.getInt("software_id").toString() }
-                                        td { + res.getString("software_version") }
+                                        td { +res.getInt("software_id").toString() }
+                                        td { +res.getString("software_version") }
                                     }
                                 }
                             }
                         }
-                        h2 { + "Storage table" }
+                        h2 { +"Storage table" }
                         connEMD.createStatement().executeQuery("SELECT * FROM storage_").let { res ->
                             table {
                                 tr {
@@ -116,25 +116,25 @@ fun Application.main() {
                                 }
                                 while (res.next()) {
                                     tr {
-                                        td { + res.getInt("storage_id").toString() }
-                                        td { + res.getString("storage_name") }
+                                        td { +res.getInt("storage_id").toString() }
+                                        td { +res.getString("storage_name") }
                                     }
                                 }
                             }
                         }
-                        h2 { + "Files table" }
+                        h2 { +"Files table" }
                         connEMD.createStatement().executeQuery("SELECT * FROM file_").let { res ->
                             table {
                                 tr {
                                     th { +"file_guid" }
                                     th { +"storage_id" }
-                                    th { +"file_path"}
+                                    th { +"file_path" }
                                 }
                                 while (res.next()) {
                                     tr {
-                                        td { + res.getInt("file_guid").toString() }
-                                        td { + res.getShort("storage_id").toString() }
-                                        td { + res.getString("file_path") }
+                                        td { +res.getInt("file_guid").toString() }
+                                        td { +res.getShort("storage_id").toString() }
+                                        td { +res.getString("file_path") }
                                     }
                                 }
                             }
@@ -273,13 +273,19 @@ fun Application.main() {
                             val file_guid = res.getInt("file_guid")
                             println("File GUID = $file_guid")
 
+                            val parameterValuesStr =
+                                page.parameters.joinToString(", ") {
+                                    when (it.type.uppercase()) {
+                                        "STRING" -> "'" + event.parameters[it.name].toString() + "'"
+                                        else -> event.parameters[it.name].toString()
+                                    }
+                                }
                             val query = """
                                 INSERT INTO ${page.db_table_name} 
                                 (file_guid, event_number, software_id, period_number, run_number,
-                                 ${page.parameters.joinToString(transform = { it.name }, separator = ", ")} )
+                                 ${page.parameters.joinToString(", ") { it.name }})
                                 VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
-                                   ${event.run_number}, 
-                                   ${page.parameters.joinToString(", ") { event.parameters[it.name].toString() }})
+                                   ${event.run_number}, $parameterValuesStr)
                                 """.trimIndent()
                             print(query)
                             connEMD.createStatement().executeUpdate(query)
