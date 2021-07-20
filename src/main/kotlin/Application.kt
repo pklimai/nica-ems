@@ -264,41 +264,57 @@ fun Application.main() {
                         val storage_id = storageMap.str_to_id[storage_name]
 
                         // get file_guid
+                        val file_guid: Int
                         val res = connEMD.createStatement().executeQuery(
                             """SELECT file_guid FROM file_ WHERE 
                              storage_id = $storage_id AND file_path = '$file_path'
                             """.trimMargin()
                         )
                         if (res.next()) {
-                            val file_guid = res.getInt("file_guid")
+                            file_guid = res.getInt("file_guid")
                             println("File GUID = $file_guid")
-
-                            val parameterValuesStr =
-                                page.parameters.joinToString(", ") {
-                                    when (it.type.uppercase()) {
-                                        "STRING" -> "'" + event.parameters[it.name].toString() + "'"
-                                        else -> event.parameters[it.name].toString()
-                                    }
+                        } else {
+                            // create file
+                            val fileQuery = """
+                                INSERT INTO file_ (storage_id, file_path)
+                                VALUES ($storage_id, '$file_path')
+                            """.trimIndent()
+                            print(fileQuery)
+                            connEMD.createStatement().executeUpdate(fileQuery)
+                            // TODO remove duplicate code here...
+                            val res2 = connEMD.createStatement().executeQuery(
+                                """SELECT file_guid FROM file_ WHERE 
+                             storage_id = $storage_id AND file_path = '$file_path'
+                            """.trimMargin()
+                            )
+                            if (res2.next()) {
+                                file_guid = res2.getInt("file_guid")
+                                println("File GUID = $file_guid")
+                            }
+                            else {
+                                throw java.lang.Exception("File guid writing issue... ")
+                            }
+                        }
+                        val parameterValuesStr =
+                            page.parameters.joinToString(", ") {
+                                when (it.type.uppercase()) {
+                                    "STRING" -> "'" + event.parameters[it.name].toString() + "'"
+                                    else -> event.parameters[it.name].toString()
                                 }
-                            val query = """
+                            }
+                        val query = """
                                 INSERT INTO ${page.db_table_name} 
                                 (file_guid, event_number, software_id, period_number, run_number,
                                  ${page.parameters.joinToString(", ") { it.name }})
                                 VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
                                    ${event.run_number}, $parameterValuesStr)
                                 """.trimIndent()
-                            print(query)
-                            connEMD.createStatement().executeUpdate(query)
-                        } else {
-                            println("Could not extract file GUID...")    // TODO properly return status
-                            call.respond("Not OK")
-                        }
+                        print(query)
+                        connEMD.createStatement().executeUpdate(query)
                     }
                     call.respond("Events were created")
                 }
-
             }
-
         }
     }
 }
