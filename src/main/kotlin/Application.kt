@@ -41,6 +41,8 @@ fun Application.main() {
         DriverManager.getConnection(urlConditionDB, config.condition_db.user, config.condition_db.password)
     }
 
+    // TODO: Check if tables already exist, if not, create them in the database?
+
     // println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
         static("static") {
@@ -63,7 +65,7 @@ fun Application.main() {
                     config.pages.forEach {
                         h3 { +it.name }
                         h5 { +"REST API" }
-                        p { a(href = it.api_url + "/events") { +"API - get all events" } }
+                        p { a(href = it.api_url + "/emd") { +"API - get all events" } }
                         h5 { +"WebUI" }
                         p { a(href = it.web_url) { +"Search Form" } }
                         hr {}
@@ -217,7 +219,7 @@ fun Application.main() {
 
             route(page.api_url) {
 
-                get("/events") {
+                get("/emd") {
                     val parameterBundle = ParameterBundle.buildFromCall(call, page)
                     val softwareMap = getSoftwareMap(connEMD)
                     val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
@@ -252,7 +254,7 @@ fun Application.main() {
                     call.respond(mapOf("events" to lstEvents))
                 }
 
-                post("/events") {
+                post("/emd") {
                     val events = call.receive<Array<EventRepr>>()
                     val softwareMap = getSoftwareMap(connEMD)
                     val storageMap = getStorageMap(connEMD)
@@ -314,6 +316,11 @@ fun Application.main() {
                     }
                     call.respond("Events were created")
                 }
+
+                delete("/emd") {
+                    TODO("Not implemented")
+                }
+
             }
         }
     }
