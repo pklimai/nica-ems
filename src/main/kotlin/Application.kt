@@ -321,6 +321,12 @@ fun Application.main() {
                     TODO("Not implemented")
                 }
 
+                get("/eventsFileDownload") {
+                    // TODO Apply all filtering, build ROOT file, return it...
+                    val f = File("src/main/resources/downloadFile.bin")
+                    call.respondFile(f)
+                }
+
             }
         }
     }

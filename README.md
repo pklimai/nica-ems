@@ -25,11 +25,11 @@ Ranges for `int` and `float` types are supported (both in Web inteface and API) 
 
 ### API
 
-##### Methods supported
+#### Methods supported
 
 Note: API paths are relative to `api_url` in the configuration file.
 
-###### Get event metadata:
+##### Get event metadata:
 `GET /emd[?parameter1=value1[&parameter2=value2[...]]]`
   
 Here and below, for parameter values we have 
@@ -49,26 +49,30 @@ Here and below, for parameter values we have
 
 * Any custom parameters specified in YAML file 
 
-###### Create event records in the metadata catalog:
+##### Create event records in the metadata catalog:
 `POST /emd`
 
 Message body must contain the JSON list of events using format as given below.  
 
-###### TODO: Delete event records from the metadata catalog
+##### TODO: Delete event records from the metadata catalog
 `DELETE /emd`
 
 Message body must contain the JSON list of events (only `reference:` part required).
 
-###### TODO: Count number of entries in EMD and return just this value
+##### TODO: Count number of entries in EMD and return just this value
 `GET /count[?parameter1=value1[&parameter2=value2[...]]]`
 
-###### TODO: Get event records as a ROOT file
-`GET /events[?parameter1=value1[&parameter2=value2[...]]]`
-  
-? Returns the path to generated file, OR need to provide file path in request OR file is downloaded? 
+##### TODO: Get event records as a ROOT file (synchronous)
+`GET /eventsFileDownload[?parameter1=value1[&parameter2=value2[...]]]`
 
+File is built and downloaded immediately (same HTTP session) 
 
-##### Event JSON schema
+##### TODO: Get event records as a ROOT file reference (asynchronous)
+`GET /eventsFileRef[?parameter1=value1[&parameter2=value2[...]]]`
+
+Returns the path to generated file, OR need to initially provide file path in request?
+
+#### Event JSON schema
 
 Both GET and POST use the same format for events:
 
