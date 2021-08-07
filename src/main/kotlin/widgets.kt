@@ -92,6 +92,10 @@ fun BODY.inputParametersForm(
                 parameterInput(parameter, parametersSupplied[parameter.name])
             }
 
+            hr{}
+            parameterInput(limitConfig, limit)
+            parameterInput(offsetConfig, offset)
+
             br { }
             submitInput {
                 value = "Submit"

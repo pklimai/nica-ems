@@ -77,7 +77,14 @@ fun queryEMD(
             query += " WHERE " + filterCriteria.joinToString(" AND ")
         }
 
-        print(query)
+        limit?.let {
+            query += " LIMIT ${limit.stringValue}"
+        }
+        offset?.let {
+            query += " OFFSET ${offset.stringValue}"
+        }
+
+        println(query)
 
         return connEMD.createStatement().executeQuery(query)
     }

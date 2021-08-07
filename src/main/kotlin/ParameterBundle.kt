@@ -9,6 +9,8 @@ class ParameterBundle(
     val beam_particle: Parameter?,
     val target_particle: Parameter?,
     val energy: Parameter?,
+    val limit: Parameter?,
+    val offset: Parameter?,
     val parametersSupplied: HashMap<String, Parameter>
 ) {
     companion object {
@@ -36,6 +38,8 @@ class ParameterBundle(
                 target_particle =
                     Parameter.fromParameterConfig(targetParticleConfig, call.parameters[targetParticleConfig.name]),
                 energy = Parameter.fromParameterConfig(energyConfig, call.parameters[energyConfig.name]),
+                limit = Parameter.fromParameterConfig(limitConfig, call.parameters[limitConfig.name]),
+                offset = Parameter.fromParameterConfig(offsetConfig, call.parameters[offsetConfig.name]),
                 parametersSupplied = parametersSupplied
             )
         }
