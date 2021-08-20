@@ -105,9 +105,9 @@ The `file_path` will be created in the `file_` table, if not there yet.
 sudo dnf install java-11-openjdk-devel
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.9.11-3.el8_3.x86_64
 cd ~/nica-emd/
-./gradlew installDist
+sh gradlew installDist
 sudo docker build -t nica-emd .
-sudo docker run -p 80:8080 nica-emd
+sudo docker run -d --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd
 ```
 
 ##### Testing
