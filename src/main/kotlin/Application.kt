@@ -21,8 +21,15 @@ fun Application.main() {
 
     val mapper = ObjectMapper(YAMLFactory())
     mapper.findAndRegisterModules()
-    val config = mapper.readValue(File("src/main/resources/event-config.yaml"), ConfigFile::class.java)
 
+    var config: ConfigFile
+    try {
+        config = mapper.readValue(File("/root/event-config.yaml"), ConfigFile::class.java)
+        println("Read config from /root/event-config.yaml")
+    } catch (e: java.lang.Exception) {
+        config = mapper.readValue(File("src/main/resources/event-config.yaml"), ConfigFile::class.java)
+        println("Read config file from src/main/resources/event-config.yaml")
+    }
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
@@ -37,8 +44,8 @@ fun Application.main() {
     // If null, do not use event preselection from the Condition Database
     val connCondition = config.condition_db?.let {
         val urlConditionDB =
-            "jdbc:postgresql://${config.condition_db.host}:${config.condition_db.port}/${config.condition_db.db_name}"
-        DriverManager.getConnection(urlConditionDB, config.condition_db.user, config.condition_db.password)
+            "jdbc:postgresql://${config.condition_db!!.host}:${config.condition_db!!.port}/${config.condition_db!!.db_name}"
+        DriverManager.getConnection(urlConditionDB, config.condition_db!!.user, config.condition_db!!.password)
     }
 
     // TODO: Check if tables already exist, if not, create them in the database?
@@ -321,10 +328,17 @@ fun Application.main() {
                     TODO("Not implemented")
                 }
 
-                get("/eventsFileDownload") {
+                get("/eventFile") {
+                    // Synchronous
                     // TODO Apply all filtering, build ROOT file, return it...
                     val f = File("src/main/resources/downloadFile.bin")
                     call.respondFile(f)
+                }
+
+                get("/eventFileRef") {
+                    // Asynchronous
+                    // Maybe rename to /eventFileSync, /eventFileAsync ?
+                    TODO()
                 }
 
             }
