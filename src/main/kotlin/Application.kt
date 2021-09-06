@@ -54,7 +54,8 @@ fun Application.main() {
     routing {
         static("static") {
             // http://127.0.0.1:8080/static/style.css
-            files("src/main/resources/static/css")
+            files("src/main/resources/static/css")   // in dev
+            files("/app/resources/main/static/css")  // in Docker
         }
 
         get("/") {
