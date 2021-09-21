@@ -3,6 +3,8 @@ package ru.mipt.npm.nica.emd
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.auth.ldap.*
 import io.ktor.features.*
 import io.ktor.html.*
 import io.ktor.http.*
@@ -36,6 +38,15 @@ fun Application.main() {
         jackson {}
     }
     install(Compression)
+    install(Authentication) {
+        basic("auth-ldap") {
+            validate { credentials ->
+                realm = "JINR.RU"
+                // ldapAuthenticate(credentials, "ldap://192.168.65.52:389", "cn=%s,dc=ktor,dc=io")
+                ldapAuthenticate(credentials, "ldap://127.0.0.1:3890", "uid=%s,cn=users,cn=accounts,dc=jinr,dc=ru")
+            }
+        }
+    }
 
     val urlEventDB =
         "jdbc:postgresql://${config.event_db.host}:${config.event_db.port}/${config.event_db.db_name}"
@@ -156,192 +167,194 @@ fun Application.main() {
 
         config.pages.forEach { page ->
 
-            route(page.web_url) {
-                get {
+            authenticate("auth-ldap") {
 
-                    val parameterBundle = ParameterBundle.buildFromCall(call, page)
-                    val softwareMap = getSoftwareMap(connEMD)
+                route(page.web_url) {
+                    get {
 
-                    call.respondHtml {
-                        head {
-                            title { +page.name }
-                            styleLink("/static/style.css")
-                        }
-                        body {
-                            a {
-                                href = "/"
-                                +"Home"
+                        val parameterBundle = ParameterBundle.buildFromCall(call, page)
+                        val softwareMap = getSoftwareMap(connEMD)
+
+                        call.respondHtml {
+                            head {
+                                title { +page.name }
+                                styleLink("/static/style.css")
                             }
-                            h2 { +page.name }
-                            h3 { +"Enter search criteria for events" }
-                            inputParametersForm(parameterBundle, page, softwareMap, connCondition)
-
-                            h3 { +"Events found:" }
-
-                            val res = queryEMD(parameterBundle, page, connCondition, connEMD, this)
-
-                            br {}
-                            var count = 0
-                            table {
-                                tr {
-                                    th { +"storage_name" }
-                                    th { +"file_path" }
-                                    th { +"event_number" }
-                                    th { +"software_version" }
-                                    th { +"period_number" }
-                                    th { +"run_number" }
-                                    page.parameters.forEach {
-                                        th { +it.name }
-                                    }
+                            body {
+                                a {
+                                    href = "/"
+                                    +"Home"
                                 }
-                                while (res.next()) {
-                                    count++
+                                h2 { +page.name }
+                                h3 { +"Enter search criteria for events" }
+                                inputParametersForm(parameterBundle, page, softwareMap, connCondition)
+
+                                h3 { +"Events found:" }
+
+                                val res = queryEMD(parameterBundle, page, connCondition, connEMD, this)
+
+                                br {}
+                                var count = 0
+                                table {
                                     tr {
-                                        td { +res.getString("storage_name") }
-                                        td { +res.getString("file_path") }
-                                        td { +res.getInt("event_number").toString() }
-                                        td { +res.getString("software_version") }
-                                        td { +res.getShort("period_number").toString() }
-                                        td { +res.getShort("run_number").toString() }
-                                        page.parameters.forEach { parameter ->
-                                            td {
-                                                when (parameter.type) {
-                                                    "int" -> +res.getInt(parameter.name).toString()
-                                                    "float" -> +res.getFloat(parameter.name).toString()
-                                                    "bool" -> +res.getBoolean(parameter.name).toString()
-                                                    "string" -> +res.getString(parameter.name)
+                                        th { +"storage_name" }
+                                        th { +"file_path" }
+                                        th { +"event_number" }
+                                        th { +"software_version" }
+                                        th { +"period_number" }
+                                        th { +"run_number" }
+                                        page.parameters.forEach {
+                                            th { +it.name }
+                                        }
+                                    }
+                                    while (res.next()) {
+                                        count++
+                                        tr {
+                                            td { +res.getString("storage_name") }
+                                            td { +res.getString("file_path") }
+                                            td { +res.getInt("event_number").toString() }
+                                            td { +res.getString("software_version") }
+                                            td { +res.getShort("period_number").toString() }
+                                            td { +res.getShort("run_number").toString() }
+                                            page.parameters.forEach { parameter ->
+                                                td {
+                                                    when (parameter.type) {
+                                                        "int" -> +res.getInt(parameter.name).toString()
+                                                        "float" -> +res.getFloat(parameter.name).toString()
+                                                        "bool" -> +res.getBoolean(parameter.name).toString()
+                                                        "string" -> +res.getString(parameter.name)
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            if (count == 0) {
-                                p { +"No results matching specified criteria found in the EMD database" }
-                            }
+                                if (count == 0) {
+                                    p { +"No results matching specified criteria found in the EMD database" }
+                                }
 
+                            }
                         }
                     }
                 }
-            }
 
-            route(page.api_url) {
+                route(page.api_url) {
 
-                get("/emd") {
-                    val parameterBundle = ParameterBundle.buildFromCall(call, page)
-                    val softwareMap = getSoftwareMap(connEMD)
-                    val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
+                    get("/emd") {
+                        val parameterBundle = ParameterBundle.buildFromCall(call, page)
+                        val softwareMap = getSoftwareMap(connEMD)
+                        val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
 
-                    val lstEvents = ArrayList<EventRepr>()
-                    while (res.next()) {
-                        val paramMap = HashMap<String, Any>()
+                        val lstEvents = ArrayList<EventRepr>()
+                        while (res.next()) {
+                            val paramMap = HashMap<String, Any>()
 
-                        page.parameters.forEach {
-                            when (it.type.uppercase()) {
-                                "INT" -> paramMap[it.name] = res.getInt(it.name)
-                                "FLOAT" -> paramMap[it.name] = res.getFloat(it.name)
-                                "STRING" -> paramMap[it.name] = res.getString(it.name)
-                                "BOOL" -> paramMap[it.name] = res.getBoolean(it.name)
-                                else -> throw Exception("Unknown parameter type!")
+                            page.parameters.forEach {
+                                when (it.type.uppercase()) {
+                                    "INT" -> paramMap[it.name] = res.getInt(it.name)
+                                    "FLOAT" -> paramMap[it.name] = res.getFloat(it.name)
+                                    "STRING" -> paramMap[it.name] = res.getString(it.name)
+                                    "BOOL" -> paramMap[it.name] = res.getBoolean(it.name)
+                                    else -> throw Exception("Unknown parameter type!")
+                                }
                             }
-                        }
-                        lstEvents.add(
-                            EventRepr(
-                                Reference(
-                                    res.getString("storage_name"),
-                                    res.getString("file_path"),
-                                    res.getInt("event_number")
-                                ),
-                                res.getString("software_version"),
-                                res.getShort("period_number"),
-                                res.getInt("run_number"),
-                                paramMap
+                            lstEvents.add(
+                                EventRepr(
+                                    Reference(
+                                        res.getString("storage_name"),
+                                        res.getString("file_path"),
+                                        res.getInt("event_number")
+                                    ),
+                                    res.getString("software_version"),
+                                    res.getShort("period_number"),
+                                    res.getInt("run_number"),
+                                    paramMap
+                                )
                             )
-                        )
+                        }
+                        call.respond(mapOf("events" to lstEvents))
                     }
-                    call.respond(mapOf("events" to lstEvents))
-                }
 
-                post("/emd") {
-                    val events = call.receive<Array<EventRepr>>()
-                    val softwareMap = getSoftwareMap(connEMD)
-                    val storageMap = getStorageMap(connEMD)
-                    events.forEach { event ->
-                        println("Create event: $event")
-                        val software_id = softwareMap.str_to_id[event.software_version]
-                        val file_path = event.reference.file_path
-                        val storage_name = event.reference.storage_name
-                        val storage_id = storageMap.str_to_id[storage_name]
+                    post("/emd") {
+                        val events = call.receive<Array<EventRepr>>()
+                        val softwareMap = getSoftwareMap(connEMD)
+                        val storageMap = getStorageMap(connEMD)
+                        events.forEach { event ->
+                            println("Create event: $event")
+                            val software_id = softwareMap.str_to_id[event.software_version]
+                            val file_path = event.reference.file_path
+                            val storage_name = event.reference.storage_name
+                            val storage_id = storageMap.str_to_id[storage_name]
 
-                        // get file_guid
-                        val file_guid: Int
-                        val res = connEMD.createStatement().executeQuery(
-                            """SELECT file_guid FROM file_ WHERE 
-                             storage_id = $storage_id AND file_path = '$file_path'
-                            """.trimMargin()
-                        )
-                        if (res.next()) {
-                            file_guid = res.getInt("file_guid")
-                            println("File GUID = $file_guid")
-                        } else {
-                            // create file
-                            val fileQuery = """
-                                INSERT INTO file_ (storage_id, file_path)
-                                VALUES ($storage_id, '$file_path')
-                            """.trimIndent()
-                            print(fileQuery)
-                            connEMD.createStatement().executeUpdate(fileQuery)
-                            // TODO remove duplicate code here...
-                            val res2 = connEMD.createStatement().executeQuery(
+                            // get file_guid
+                            val file_guid: Int
+                            val res = connEMD.createStatement().executeQuery(
                                 """SELECT file_guid FROM file_ WHERE 
                              storage_id = $storage_id AND file_path = '$file_path'
                             """.trimMargin()
                             )
-                            if (res2.next()) {
-                                file_guid = res2.getInt("file_guid")
+                            if (res.next()) {
+                                file_guid = res.getInt("file_guid")
                                 println("File GUID = $file_guid")
-                            }
-                            else {
-                                throw java.lang.Exception("File guid writing issue... ")
-                            }
-                        }
-                        val parameterValuesStr =
-                            page.parameters.joinToString(", ") {
-                                when (it.type.uppercase()) {
-                                    "STRING" -> "'" + event.parameters[it.name].toString() + "'"
-                                    else -> event.parameters[it.name].toString()
+                            } else {
+                                // create file
+                                val fileQuery = """
+                                INSERT INTO file_ (storage_id, file_path)
+                                VALUES ($storage_id, '$file_path')
+                            """.trimIndent()
+                                print(fileQuery)
+                                connEMD.createStatement().executeUpdate(fileQuery)
+                                // TODO remove duplicate code here...
+                                val res2 = connEMD.createStatement().executeQuery(
+                                    """SELECT file_guid FROM file_ WHERE 
+                             storage_id = $storage_id AND file_path = '$file_path'
+                            """.trimMargin()
+                                )
+                                if (res2.next()) {
+                                    file_guid = res2.getInt("file_guid")
+                                    println("File GUID = $file_guid")
+                                } else {
+                                    throw java.lang.Exception("File guid writing issue... ")
                                 }
                             }
-                        val query = """
+                            val parameterValuesStr =
+                                page.parameters.joinToString(", ") {
+                                    when (it.type.uppercase()) {
+                                        "STRING" -> "'" + event.parameters[it.name].toString() + "'"
+                                        else -> event.parameters[it.name].toString()
+                                    }
+                                }
+                            val query = """
                                 INSERT INTO ${page.db_table_name} 
                                 (file_guid, event_number, software_id, period_number, run_number,
                                  ${page.parameters.joinToString(", ") { it.name }})
                                 VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
                                    ${event.run_number}, $parameterValuesStr)
                                 """.trimIndent()
-                        print(query)
-                        connEMD.createStatement().executeUpdate(query)
+                            print(query)
+                            connEMD.createStatement().executeUpdate(query)
+                        }
+                        call.respond("Events were created")
                     }
-                    call.respond("Events were created")
-                }
 
-                delete("/emd") {
-                    TODO("Not implemented")
-                }
+                    delete("/emd") {
+                        TODO("Not implemented")
+                    }
 
-                get("/eventFile") {
-                    // Synchronous
-                    // TODO Apply all filtering, build ROOT file, return it...
-                    val f = File("src/main/resources/downloadFile.bin")
-                    call.respondFile(f)
-                }
+                    get("/eventFile") {
+                        // Synchronous
+                        // TODO Apply all filtering, build ROOT file, return it...
+                        val f = File("src/main/resources/downloadFile.bin")
+                        call.respondFile(f)
+                    }
 
-                get("/eventFileRef") {
-                    // Asynchronous
-                    // Maybe rename to /eventFileSync, /eventFileAsync ?
-                    TODO()
-                }
+                    get("/eventFileRef") {
+                        // Asynchronous
+                        // Maybe rename to /eventFileSync, /eventFileAsync ?
+                        TODO()
+                    }
 
+                }
             }
         }
     }
