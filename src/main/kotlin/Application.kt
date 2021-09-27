@@ -38,12 +38,17 @@ fun Application.main() {
         jackson {}
     }
     install(Compression)
-    install(Authentication) {
-        basic("auth-ldap") {
-            validate { credentials ->
-                realm = "JINR.RU"
-                // ldapAuthenticate(credentials, "ldap://192.168.65.52:389", "cn=%s,dc=ktor,dc=io")
-                ldapAuthenticate(credentials, "ldap://127.0.0.1:3890", "uid=%s,cn=users,cn=accounts,dc=jinr,dc=ru")
+
+    if (config.user_auth != null) {
+        install(Authentication) {
+            basic("auth-ldap") {
+                validate { credentials ->
+                    ldapAuthenticate(
+                        credentials,
+                        "ldap://${config.user_auth!!.ldap_server}:${config.user_auth!!.ldap_port}",
+                        config.user_auth!!.user_dn_format
+                    )
+                }
             }
         }
     }
@@ -165,9 +170,17 @@ fun Application.main() {
             }
         }
 
+        fun Route.optionallyAuthenticate(s: String, build: Route.() -> Unit): Route {
+            if (config.user_auth != null) {
+                return authenticate(s, build = build)
+            } else
+                build(this)
+                return this
+        }
+
         config.pages.forEach { page ->
 
-            authenticate("auth-ldap") {
+            optionallyAuthenticate("auth-ldap") {
 
                 route(page.web_url) {
                     get {

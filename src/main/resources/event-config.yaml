@@ -12,6 +12,11 @@ condition_db:
   user: user
   password: user_pass
 
+user_auth:
+  ldap_server: 127.0.0.1
+  ldap_port: 3890
+  user_dn_format: "uid=%s,cn=users,cn=accounts,dc=jinr,dc=ru"
+
 title: Event Index Main Page
 
 pages:

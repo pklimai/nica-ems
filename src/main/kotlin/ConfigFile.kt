@@ -3,6 +3,7 @@ package ru.mipt.npm.nica.emd
 class ConfigFile(
     val event_db: DBConnectionConfig,
     val condition_db: DBConnectionConfig?,
+    val user_auth: UserAuthConfig?,
     val title: String,
     val pages: List<PageConfig>
 )
@@ -21,6 +22,12 @@ class PageConfig(
     val web_url: String,
     val db_table_name: String,
     val parameters: List<ParameterConfig>
+)
+
+class UserAuthConfig(
+    val ldap_server: String,
+    val ldap_port: Int,
+    val user_dn_format: String
 )
 
 class ParameterConfig(
