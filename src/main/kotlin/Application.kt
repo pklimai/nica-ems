@@ -2,6 +2,7 @@ package ru.mipt.npm.nica.emd
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.unboundid.ldap.sdk.*
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.ldap.*
@@ -16,6 +17,7 @@ import io.ktor.routing.*
 import kotlinx.html.*
 import java.io.File
 import java.sql.DriverManager
+
 
 // val DRIVER = "org.postgresql.Driver"
 
@@ -175,7 +177,7 @@ fun Application.main() {
                 return authenticate(s, build = build)
             } else
                 build(this)
-                return this
+            return this
         }
 
         config.pages.forEach { page ->
@@ -254,6 +256,29 @@ fun Application.main() {
                 route(page.api_url) {
 
                     get("/emd") {
+
+                        if (config.user_auth != null) {
+                            println("AUTHENTICATED USER NAME IS: ${call.principal<UserIdPrincipal>()?.name}")
+                            println("EXTRACTING GROUP INFO...")
+                            val ldapConn = LDAPConnection()
+                            ldapConn.connect(config.user_auth!!.ldap_server, config.user_auth!!.ldap_port)
+                            // Perform actual authentication
+                            ldapConn.bind("uid=shift,cn=users,cn=accounts,dc=jinr,dc=ru", "shift")
+
+                            val r = ldapConn.search(
+                                SearchRequest(
+                                    "uid=pklimai,cn=users,cn=accounts,dc=jinr,dc=ru",
+                                    SearchScope.SUB,
+                                    "(&(memberOf=cn=bmneventwriter,cn=groups,cn=accounts,dc=jinr,dc=ru))"
+                                )
+                            )
+                            println(r)
+                            // println(r.getSearchEntry("uid=pklimai,cn=users,cn=accounts,dc=jinr,dc=ru").toString())
+
+                            ldapConn.close()
+
+                        }
+
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
                         val softwareMap = getSoftwareMap(connEMD)
                         val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
