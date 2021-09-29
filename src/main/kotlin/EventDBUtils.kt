@@ -36,7 +36,12 @@ fun getStorageMap(conn: java.sql.Connection): StorageMap {
 }
 
 fun queryEMD(
-    parameterBundle: ParameterBundle, page: PageConfig, connCondition: Connection?, connEMD: Connection, body: BODY?
+    parameterBundle: ParameterBundle,
+    page: PageConfig,
+    connCondition: Connection?,
+    connEMD: Connection,
+    body: BODY?,
+    defaultLimit: Int? = null
 ): ResultSet {
     with(parameterBundle) {
         val et = page.db_table_name
@@ -77,8 +82,10 @@ fun queryEMD(
             query += " WHERE " + filterCriteria.joinToString(" AND ")
         }
 
-        limit?.let {
+        if (limit != null) {
             query += " LIMIT ${limit.stringValue}"
+        } else if (defaultLimit != null) {
+            query += " LIMIT $defaultLimit"
         }
         offset?.let {
             query += " OFFSET ${offset.stringValue}"

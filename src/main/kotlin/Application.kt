@@ -206,7 +206,10 @@ fun Application.main() {
 
                                 h3 { +"Events found:" }
 
-                                val res = queryEMD(parameterBundle, page, connCondition, connEMD, this)
+                                val res = queryEMD(
+                                    parameterBundle, page, connCondition, connEMD, this,
+                                    DEFAULT_LIMIT_FOR_WEB
+                                )
 
                                 br {}
                                 var count = 0
