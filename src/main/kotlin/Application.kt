@@ -257,28 +257,6 @@ fun Application.main() {
 
                     get("/emd") {
 
-                        if (config.user_auth != null) {
-                            println("AUTHENTICATED USER NAME IS: ${call.principal<UserIdPrincipal>()?.name}")
-                            println("EXTRACTING GROUP INFO...")
-                            val ldapConn = LDAPConnection()
-                            ldapConn.connect(config.user_auth!!.ldap_server, config.user_auth!!.ldap_port)
-                            // Perform actual authentication
-                            ldapConn.bind("uid=shift,cn=users,cn=accounts,dc=jinr,dc=ru", "shift")
-
-                            val r = ldapConn.search(
-                                SearchRequest(
-                                    "uid=pklimai,cn=users,cn=accounts,dc=jinr,dc=ru",
-                                    SearchScope.SUB,
-                                    "(&(memberOf=cn=bmneventwriter,cn=groups,cn=accounts,dc=jinr,dc=ru))"
-                                )
-                            )
-                            println(r)
-                            // println(r.getSearchEntry("uid=pklimai,cn=users,cn=accounts,dc=jinr,dc=ru").toString())
-
-                            ldapConn.close()
-
-                        }
-
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
                         val softwareMap = getSoftwareMap(connEMD)
                         val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
@@ -314,6 +292,12 @@ fun Application.main() {
                     }
 
                     post("/emd") {
+
+                        val roles = getUserRoles(config, call)
+                        if (!(roles.isWriter or roles.isAdmin)) {
+                            call.respond(HttpStatusCode.Unauthorized)
+                        }
+
                         val events = call.receive<Array<EventRepr>>()
                         val softwareMap = getSoftwareMap(connEMD)
                         val storageMap = getStorageMap(connEMD)
@@ -372,11 +356,18 @@ fun Application.main() {
                             print(query)
                             connEMD.createStatement().executeUpdate(query)
                         }
+                        call.response.status(HttpStatusCode.OK)
                         call.respond("Events were created")
                     }
 
                     delete("/emd") {
-                        TODO("Not implemented")
+                        val roles = getUserRoles(config, call)
+                        if (!roles.isAdmin) {
+                            call.respond(HttpStatusCode.Unauthorized)
+                        } else {
+                            call.respond(HttpStatusCode.NotImplemented)
+                            TODO("To be implemented")
+                        }
                     }
 
                     get("/eventFile") {
@@ -396,6 +387,36 @@ fun Application.main() {
             }
         }
     }
+}
+
+private fun getUserRoles(config: ConfigFile, call: ApplicationCall): UserRoles {
+    if (config.user_auth != null) {
+        val username = call.principal<UserIdPrincipal>()?.name!!
+        println("AUTHENTICATED USER NAME IS: $username")
+        val ldapConn = LDAPConnection()
+        ldapConn.connect(config.user_auth.ldap_server, config.user_auth.ldap_port)
+        // Perform actual authentication
+        ldapConn.bind(
+            "uid=${config.user_auth.ldap_username},cn=users,cn=accounts,dc=jinr,dc=ru",
+            config.user_auth.ldap_password
+        )
+
+        fun belongsToGroup(group: String) = (ldapConn.search(
+            SearchRequest(
+                //"uid=$username,cn=users,cn=accounts,dc=jinr,dc=ru"
+                config.user_auth.user_dn_format.replace("%s", username),
+                SearchScope.SUB,
+                "(&(memberOf=$group))"
+            )
+        ).entryCount == 1)
+
+        val isWriter = belongsToGroup(config.user_auth.writer_group_dn)
+        val isAdmin = belongsToGroup(config.user_auth.admin_group_dn)
+        println("Writer: $isWriter, Admin: $isAdmin")
+        ldapConn.close()
+
+        return UserRoles(isReader = true, isWriter = isWriter, isAdmin = isAdmin)
+    } else return UserRoles(false, false, false)
 }
 
 

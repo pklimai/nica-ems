@@ -80,8 +80,8 @@ fun BODY.inputParametersForm(
                 }
             }
 
+            hr {}
             connCondition?.let {
-                hr {}
                 parameterInput(beamParticleConfig, beam_particle)
                 parameterInput(targetParticleConfig, target_particle)
                 parameterInput(energyConfig, energy)

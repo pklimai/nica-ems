@@ -27,7 +27,11 @@ class PageConfig(
 class UserAuthConfig(
     val ldap_server: String,
     val ldap_port: Int,
-    val user_dn_format: String
+    val user_dn_format: String,
+    val ldap_username: String,
+    val ldap_password: String,
+    val writer_group_dn: String,
+    val admin_group_dn: String
 )
 
 class ParameterConfig(
