@@ -5,23 +5,24 @@
 
 This software is part of NICA Event Metadata System, providing REST API and Web UI for the experimental 
 event catalog. PostgreSQL database is currently used for event metadata storage. Integration with Condition
-database (containing experimental run metadata) is also implemented.
+database (containing experimental run metadata) and FreeIPA authorization is implemented.
 
 ### Config file
 
 The system is rather flexible and configured using YAML file. The exact set of metadata that is
-stored per experimental event is also configurable. See `resources/event-config.yaml` file 
+stored per experimental event is also configurable. See `resources/event-config-example.yaml` file 
 for example EMD system configuration.
 
 In the config file, you must provide credentials for EMD database and (optionally) Condition database, 
-and specify URLs and parameters stored in EMD catalogue.
-You can have more than one page corresponding to different metadata tables in EMD database.
+LDAP server parameters (also optional, use if you want to authenticate user queries) and specify URLs 
+and parameters stored in EMD catalogue.
+You can have more than one page corresponding to different metadata tables in the same EMD database.
 Each page has its own URL for Web and API endpoint.
 
 Supported parameter types are currently: `int`, `float`, `string`, `bool`.
 
-Ranges for `int` and `float` types are supported (both in Web inteface and API) using `-` 
-(e.g. `track-number=10-15`).
+Ranges for `int` and `float` types are supported (both in Web interface and API) using `-` 
+(e.g. `track-number=10-15`). 
 
 ### API
 
@@ -63,18 +64,18 @@ Message body must contain the JSON list of events (only `reference:` part requir
 `GET /count[?parameter1=value1[&parameter2=value2[...]]]`
 
 ##### TODO: Get event records as a ROOT file (synchronous)
-`GET /eventsFileDownload[?parameter1=value1[&parameter2=value2[...]]]`
+`GET /eventFile[?parameter1=value1[&parameter2=value2[...]]]`
 
 File is built and downloaded immediately (same HTTP session) 
 
 ##### TODO: Get event records as a ROOT file reference (asynchronous)
-`GET /eventsFileRef[?parameter1=value1[&parameter2=value2[...]]]`
+`GET /eventFileRef[?parameter1=value1[&parameter2=value2[...]]]`
 
 Returns the path to generated file, OR need to initially provide file path in request?
 
 #### Event JSON schema
 
-Both GET and POST use the same format for events:
+Both GET and POST use the same format for events, like this:
 
 ```
 [ 
@@ -103,14 +104,18 @@ The `file_path` will be created in the `file_` table, if not there yet.
 
 ```
 sudo dnf install java-11-openjdk-devel
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.9.11-3.el8_3.x86_64
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64
 cd ~/nica-emd/
 sh gradlew installDist
 sudo docker build -t nica-emd .
+sudo docker stop nica-emd
+sudo docker rm nica-emd
 sudo docker run -d --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd
 ```
 
 ##### Testing
 
 Use `testing/docker-compose.yaml` for test databases. 
+
+To test FreeIPA (LDAP), you can configure SSH tunneling such as `127.0.0.1:3890 -> bmn-ipa.jinr.ru:389`
 

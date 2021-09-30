@@ -28,11 +28,13 @@ fun Application.main() {
 
     var config: ConfigFile
     try {
+        // Config provided as Docker volume
         config = mapper.readValue(File("/root/event-config.yaml"), ConfigFile::class.java)
         println("Read config from /root/event-config.yaml")
     } catch (e: java.lang.Exception) {
-        config = mapper.readValue(File("src/main/resources/event-config.yaml"), ConfigFile::class.java)
-        println("Read config file from src/main/resources/event-config.yaml")
+        // Local test config
+        config = mapper.readValue(File("src/main/resources/event-config-example.yaml"), ConfigFile::class.java)
+        println("Read config file from src/main/resources/event-config-example.yaml")
     }
     install(DefaultHeaders)
     install(CallLogging)
