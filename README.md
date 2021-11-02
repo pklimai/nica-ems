@@ -95,6 +95,27 @@ Both GET and POST use the same format for events, like this:
 ]
 ```
 
+For example here is how you can create events in the catalog using `curl` tool:
+```
+curl -X POST -u USER:PASS -H "Content-Type: application/json" http://127.0.0.1/event_api/v1/bmn/emd -d '
+[
+{
+ "reference": {
+  "storage_name": "/var/tmp",
+  "file_path": "1.txt",
+  "event_number": 5
+ },
+ "software_version": "19.1",
+ "period_number": 7,
+ "run_number": 5001,
+ "parameters": {
+  "track_number": 25
+ }
+}
+]
+'
+```
+
 Note: `software_version` and `storage_name` must exist in the corresponding EMD database tables.
 The `file_path` will be created in the `file_` table, if not there yet.
 
