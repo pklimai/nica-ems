@@ -3,7 +3,13 @@ package ru.mipt.npm.nica.emd
 class ConfigFile(
     val event_db: DBConnectionConfig,
     val condition_db: DBConnectionConfig?,
-    val user_auth: UserAuthConfig?,
+
+    // If database_auth is set, user:password from user request are used for database connection
+    // in this case ldap_auth is not used
+    // If both are not set, authentication is disabled completely
+    val database_auth: Boolean?,
+    val ldap_auth: LDAPAuthConfig?,
+
     val title: String,
     val pages: List<PageConfig>
 )
@@ -24,7 +30,7 @@ class PageConfig(
     val parameters: List<ParameterConfig>
 )
 
-class UserAuthConfig(
+class LDAPAuthConfig(
     val ldap_server: String,
     val ldap_port: Int,
     val user_dn_format: String,
