@@ -22,6 +22,8 @@ import java.sql.DriverManager
 
 
 // val DRIVER = "org.postgresql.Driver"
+val DOCKER_CONFIG_PATH = "/root/event-config.yaml"
+val TEST_CONFIG_PATH = "src/main/resources/event-config-example.yaml"
 
 fun Application.main() {
 
@@ -31,12 +33,12 @@ fun Application.main() {
     var config: ConfigFile
     try {
         // Config provided as Docker volume
-        config = mapper.readValue(File("/root/event-config.yaml"), ConfigFile::class.java)
-        println("Read config from /root/event-config.yaml")
+        config = mapper.readValue(File(DOCKER_CONFIG_PATH), ConfigFile::class.java)
+        println("Read config from $DOCKER_CONFIG_PATH")
     } catch (e: java.lang.Exception) {
         // Local test config
-        config = mapper.readValue(File("src/main/resources/event-config-example.yaml"), ConfigFile::class.java)
-        println("Read config file from src/main/resources/event-config-example.yaml")
+        config = mapper.readValue(File(TEST_CONFIG_PATH), ConfigFile::class.java)
+        println("Read config file from $TEST_CONFIG_PATH")
     }
     install(DefaultHeaders)
     install(CallLogging)
@@ -77,7 +79,7 @@ fun Application.main() {
         DriverManager.getConnection(urlConditionDB, config.condition_db!!.user, config.condition_db!!.password)
     }
 
-    // TODO: Check if tables already exist, if not, create them in the database?
+    // TODO: Check if tables in Event Catalogue already exist, if not, create them in the database?
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
@@ -94,9 +96,6 @@ fun Application.main() {
                     styleLink("/static/style.css")
                 }
                 body {
-                    // val runtime = Runtime.getRuntime()
-                    // h3 { +"Ktor Netty engine: Hello, ${System.getProperty("user.name")}!" }
-                    // p { +"CPUs: ${runtime.availableProcessors()}. Memory free/total/max: ${runtime.freeMemory()} / ${runtime.totalMemory()} / ${runtime.maxMemory()}." }
                     h2 { +config.title }
 
                     config.pages.forEach {
