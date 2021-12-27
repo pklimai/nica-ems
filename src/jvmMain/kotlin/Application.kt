@@ -23,7 +23,7 @@ import java.sql.DriverManager
 
 // val DRIVER = "org.postgresql.Driver"
 val DOCKER_CONFIG_PATH = "/root/event-config.yaml"
-val TEST_CONFIG_PATH = "src/main/resources/event-config-example.yaml"
+val TEST_CONFIG_PATH = "src/jvmMain/resources/event-config-example.yaml"
 
 fun Application.main() {
 
@@ -85,7 +85,7 @@ fun Application.main() {
     routing {
         static("static") {
             // http://127.0.0.1:8080/static/style.css
-            files("src/main/resources/static/css")   // in dev
+            files("src/jvmMain/resources/static/css")   // in dev
             files("/app/resources/main/static/css")  // in Docker
         }
 
