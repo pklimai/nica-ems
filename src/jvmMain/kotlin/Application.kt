@@ -89,6 +89,17 @@ fun Application.main() {
             files("/app/resources/main/static/css")  // in Docker
         }
 
+        // Multiplatform
+        get("/new") {
+            call.respondText(
+                this::class.java.classLoader.getResource("index.html")!!.readText(),
+                ContentType.Text.Html
+            )
+        }
+        static("/") {
+            resources("")
+        }
+
         get("/") {
             call.respondHtml {
                 head {
