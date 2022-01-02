@@ -99,6 +99,10 @@ fun Application.main() {
         static("/") {
             resources("")
         }
+        get("/config") {
+            // TODO remove sensitive information
+            call.respond(config)
+        }
 
         get("/") {
             call.respondHtml {
