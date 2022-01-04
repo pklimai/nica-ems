@@ -5,42 +5,56 @@ import kotlinx.coroutines.*
 
 private val scope = MainScope()
 
-val app = fc<Props> {
-    var config by useState(
-        ConfigFile(DBConnectionConfig("",0,"","",""),
-            null, false, null, "", emptyList<PageConfig>()  ) )
+val app = fc<Props> { props ->
+
+    val (config, setConfig) = useState<ConfigFile>()
+
+    val (currentPage, setCurrentPage) = useState<PageConfig>()
+    // setCurrentPage(null) -- valid but causes too many re-renders here!
+
 
     useEffectOnce {
         scope.launch {
-            config = getConfig()
+            setConfig(getConfig())
         }
     }
 
-    h1 {
-        + config.title
-    }
-    ul {
-        config.pages.forEach { item ->
-            li {
-                key = item.name
-//                attrs.onClickFunction = {
-//                    scope.launch {
-//                        deleteShoppingListItem(item)
-//                        shoppingList = getShoppingList()
-//                    }
-//                }
-                +"[${item.name}] ${item.api_url} "
+    div("lightblue") {
+        h1 {
+            +(config?.title ?: "NOT LOADED")
+        }
+        ul {
+            config?.pages?.forEach { item ->
+                li {
+                    key = item.name
+                    attrs.onClickFunction = {
+                        setCurrentPage(item)
+                    }
+                    +"[${item.name}] ${item.api_url} "
+                }
             }
+
+            li {
+                key = "Home"
+                attrs.onClickFunction = {
+                    setCurrentPage(null)
+                }
+                +"Home"
+            }
+
+        }
+
+        div {
+            if (currentPage == null) {
+                child(homePage)
+            } else {
+                child(emdPage) {
+                    attrs.pageConfig = currentPage
+                }
+            }
+
         }
     }
-//    child(inputComponent) {
-//        attrs.onSubmit = { input ->
-//            val cartItem = ShoppingListItem(input.replace("!", ""), input.count { it == '!' })
-//            scope.launch {
-//                addShoppingListItem(cartItem)
-//                shoppingList = getShoppingList()
-//            }
-//        }
-//    }
 
 }
+
