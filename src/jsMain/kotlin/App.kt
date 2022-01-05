@@ -3,7 +3,7 @@ import react.dom.*
 import kotlinx.html.js.*
 import kotlinx.coroutines.*
 
-private val scope = MainScope()
+val scope = MainScope()
 
 val app = fc<Props> { props ->
 

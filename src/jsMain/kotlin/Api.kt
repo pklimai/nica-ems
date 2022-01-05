@@ -15,3 +15,8 @@ val jsonClient = HttpClient {
 suspend fun getConfig(): ConfigFile {
     return jsonClient.get(endpoint + "/config")
 }
+
+suspend fun getEMD(api_url: String): String {
+    return jsonClient.get(endpoint + api_url + "/emd")
+}
+
