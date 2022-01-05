@@ -1,5 +1,5 @@
-import csstype.HtmlAttributes
 import kotlinx.coroutines.launch
+import kotlinx.html.DIV
 import kotlinx.html.id
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
@@ -32,21 +32,64 @@ val emdPage = fc<EMDPageProps> { props ->
             +props.pageConfig.name
         }
 
+        // Without receiver, it works but tags go to wrong level in document
+        fun RDOMBuilder<DIV>.textInput(paramName: String) {
+            input(name = paramName) {
+                attrs {
+                    id = paramName
+                    onChangeFunction = { it ->
+                        val newValue = (it.target as HTMLInputElement).value
+                        // console.log(newValue)
+                        val copyParams = HashMap(params ?: emptyMap())
+                        copyParams[paramName] = newValue
+                        setParams(copyParams)
+                    }
+                }
+
+            }
+        }
+
         props.pageConfig.parameters.forEach { param ->
-            p {
-                + "${param.web_name} - ${param.name}"
+            div {
+                +"${param.web_name} - ${param.name}:"
                 br { }
-                input(name = param.name) {
-                    attrs {
-                        id = param.name
-                        onChangeFunction = { it ->
-                            val newValue = ( it.target as HTMLInputElement).value
-                            console.log(newValue)
-                            val copyParams = HashMap(params ?: emptyMap())
-                            copyParams[param.name] = newValue
-                            setParams(copyParams)
-                            // print params.toString() here shows outdated result!
-                        }
+                textInput(param.name)
+            }
+        }
+
+        // TODO enter limit [dflt = 1000], offset
+        div {
+            + "Limit:"
+            br { }
+            textInput("limit")
+        }
+
+        div {
+            + "Offset:"
+            br { }
+            textInput("offset")
+        }
+
+        button {
+            + "Filter"
+            attrs {
+                onClickFunction = {
+                    // form API request
+
+                    val paramsForURL = if (params != null) {
+                        "?" + params.map{"${it.key}=${it.value}"}.filter{it.isNotBlank()}.joinToString("&")
+                    } else {
+                        ""
+                    }
+
+                    console.log(params.toString())
+                    console.log(paramsForURL)
+
+                    scope.launch {
+                        val emd = getEMD(props.pageConfig.api_url + "/emd" + paramsForURL)
+                        console.log(emd)
+                        // update state with API data
+                        setEMDData(emd)
                     }
 
                 }
@@ -54,21 +97,7 @@ val emdPage = fc<EMDPageProps> { props ->
         }
 
         button {
-            + "Click me"
-            attrs {
-                onClickFunction = {
-                    // form API request
-                    // update state with API data ?
-                    console.log(params.toString())
-
-                    scope.launch {
-                        val emd = getEMD(props.pageConfig.api_url)
-                        console.log(emd)
-                        setEMDData(emd)
-                    }
-
-                }
-            }
+            + "Reset"
         }
 
         child(EMDTable) {
