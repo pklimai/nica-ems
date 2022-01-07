@@ -18,10 +18,10 @@ external interface EMDPageProps : Props {
 
 val emdPage = fc<EMDPageProps> { props ->
     // Parameters entered in form
-    var (params, setParams) = useState<Map<String, String>>()
+    val (params, setParams) = useState<Map<String, String>>()
 
     // Event metadata from API
-    var (EMDData, setEMDData) = useState<String>()
+    val (EMDData, setEMDData) = useState<String>()
 
     div("yellow") {
 
@@ -101,7 +101,8 @@ val emdPage = fc<EMDPageProps> { props ->
         }
 
         child(EMDTable) {
-            attrs.content = EMDData ?: "Not set"
+            attrs.content = EMDData
+            attrs.pageConfig = props.pageConfig
         }
 
         // Table component with props taking API data state
