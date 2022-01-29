@@ -9,13 +9,12 @@ import react.dom.*
 import react.fc
 import react.useState
 
-// Component to render attribute selection and nested table
-
 
 external interface EMDPageProps : Props {
     var pageConfig: PageConfig
 }
 
+// Component to render attribute selection and nested table
 val emdPage = fc<EMDPageProps> { props ->
     // Parameters entered in form
     val (params, setParams) = useState<Map<String, String>>()
@@ -47,6 +46,25 @@ val emdPage = fc<EMDPageProps> { props ->
                 }
 
             }
+        }
+
+        div {
+            + "Period Number"
+            br { }
+            textInput("period_number")
+        }
+
+        div {
+            + "Run Number"
+            br { }
+            textInput("run_number")
+        }
+
+        // TODO List selection
+        div {
+            + "Software Version"
+            br { }
+            textInput("software_version")
         }
 
         props.pageConfig.parameters.forEach { param ->
@@ -98,14 +116,14 @@ val emdPage = fc<EMDPageProps> { props ->
 
         button {
             + "Reset"
+            // TODO onClick
         }
 
+        // Table component with props taking API data state
         child(EMDTable) {
             attrs.content = EMDData
             attrs.pageConfig = props.pageConfig
         }
-
-        // Table component with props taking API data state
 
     }
 

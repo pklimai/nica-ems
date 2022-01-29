@@ -19,9 +19,12 @@ val EMDTable = fc<EMDTableProps> { props ->
                 }
                 thead {
                     tr {
-                        th { +"Event number" }
-                        th { +"File path" }
                         th { +"Storage name" }
+                        th { +"File path" }
+                        th { +"Event number" }
+                        th { +"Software" }
+                        th { +"Period" }
+                        th { +"Run" }
                         props.pageConfig.parameters.forEach { it ->
                             th {
                                 +it.name
@@ -42,9 +45,13 @@ val EMDTable = fc<EMDTableProps> { props ->
                             val file_path = ref["file_path"]
                             val storage_name = ref["storage_name"]
 
-                            td { +event_number.toString() }
-                            td { +file_path.toString() }
                             td { +storage_name.toString() }
+                            td { +file_path.toString() }
+                            td { +event_number.toString() }
+                            td { +event["software_version"].toString() }
+                            td { +event["period_number"].toString() }
+                            td { +event["run_number"].toString() }
+
 
                             props.pageConfig.parameters.forEach { it ->
                                 val param_value = event["parameters"].unsafeCast<Json>()[it.name]
