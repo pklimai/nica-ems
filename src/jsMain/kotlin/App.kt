@@ -48,9 +48,12 @@ val app = fc<Props> { props ->
             if (currentPage == null) {
                 child(homePage)
             } else {
-                child(emdPage) {
+
+                child(EMDPage::class) {
                     attrs.pageConfig = currentPage
                 }
+
+
             }
 
         }
