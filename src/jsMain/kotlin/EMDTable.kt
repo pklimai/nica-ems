@@ -64,5 +64,10 @@ val EMDTable = fc<EMDTableProps> { props ->
             }
 
         }
+        else {
+            h3 {
+                +"Empty EMD data"
+            }
+        }
     }
 }

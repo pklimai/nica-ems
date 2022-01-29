@@ -12,6 +12,8 @@ import react.useState
 
 external interface EMDPageProps : Props {
     var pageConfig: PageConfig
+    var EMDdata: String?
+    var setEMDdata: (String) -> Unit
 }
 
 // Component to render attribute selection and nested table
@@ -20,7 +22,7 @@ val emdPage = fc<EMDPageProps> { props ->
     val (params, setParams) = useState<Map<String, String>>()
 
     // Event metadata from API
-    val (EMDData, setEMDData) = useState<String>()
+    // val (EMDData, setEMDData) = useState<String>()
 
     div("yellow") {
 
@@ -107,7 +109,7 @@ val emdPage = fc<EMDPageProps> { props ->
                         val emd = getEMD(props.pageConfig.api_url + "/emd" + paramsForURL)
                         console.log(emd)
                         // update state with API data
-                        setEMDData(emd)
+                        props.setEMDdata(emd)
                     }
 
                 }
@@ -121,7 +123,7 @@ val emdPage = fc<EMDPageProps> { props ->
 
         // Table component with props taking API data state
         child(EMDTable) {
-            attrs.content = EMDData
+            attrs.content = props.EMDdata
             attrs.pageConfig = props.pageConfig
         }
 

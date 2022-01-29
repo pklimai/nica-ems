@@ -12,6 +12,8 @@ val app = fc<Props> { props ->
     val (currentPage, setCurrentPage) = useState<PageConfig>()
     // setCurrentPage(null) -- valid but causes too many re-renders here!
 
+    val (EMDdata, setEMDdata) = useState<String>()
+
 
     useEffectOnce {
         scope.launch {
@@ -29,6 +31,8 @@ val app = fc<Props> { props ->
                     key = item.name
                     attrs.onClickFunction = {
                         setCurrentPage(item)
+                        // Clear data for table
+                        setEMDdata(null)
                     }
                     +"[${item.name}] ${item.api_url} "
                 }
@@ -50,6 +54,10 @@ val app = fc<Props> { props ->
             } else {
                 child(emdPage) {
                     attrs.pageConfig = currentPage
+                    attrs.EMDdata = EMDdata
+                    attrs.setEMDdata = { it: String ->
+                        setEMDdata(it)
+                    }
                 }
             }
 
