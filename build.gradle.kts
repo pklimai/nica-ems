@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
-val kotlinVersion = "1.5.31"
+val kotlinVersion = "1.6.10"
 val serializationVersion = "1.3.0"
-val ktorVersion = "1.6.5"
+val ktorVersion = "1.6.7"
 val logbackVersion = "1.2.3"
-val reactVersion = "17.0.2-pre.265-kotlin-1.5.31"
-val kmongoVersion = "4.3.0"
+val reactVersion = "17.0.2-pre.292-kotlin-1.6.10"
+val muiVersion = "5.3.1-pre.292-kotlin-1.6.10"
 
 plugins {
     kotlin("multiplatform") version "1.5.31"
@@ -70,6 +70,16 @@ kotlin {
 
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-router-dom:6.2.1-pre.292-kotlin-1.6.10")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-css:$reactVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-legacy:$reactVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom-legacy:$reactVersion")
+
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-mui:$muiVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-html:0.7.3")
+
+                implementation(npm("@emotion/react", "11.7.1"))
+                implementation(npm("@emotion/styled", "11.6.0"))
             }
         }
     }

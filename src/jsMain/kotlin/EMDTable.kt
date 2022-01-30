@@ -2,6 +2,8 @@ import react.Props
 import react.dom.*
 import react.fc
 import kotlin.js.Json
+import mui.material.*
+import react.ReactNode
 
 external interface EMDTableProps : Props {
     // TODO make structured
@@ -10,6 +12,21 @@ external interface EMDTableProps : Props {
 }
 
 val EMDTable = fc<EMDTableProps> { props ->
+
+    div("lightgreen") {
+        Divider {
+            attrs {
+                variant = DividerVariant.fullWidth
+
+                Chip {
+                    attrs {
+                        label = ReactNode("Basic table")
+                    }
+                }
+            }
+        }
+    }
+
     div("lightgreen") {
 
         if (props.content != null) {
@@ -63,8 +80,7 @@ val EMDTable = fc<EMDTableProps> { props ->
                 }
             }
 
-        }
-        else {
+        } else {
             h3 {
                 +"Empty EMD data"
             }

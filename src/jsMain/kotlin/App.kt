@@ -3,6 +3,7 @@ import react.dom.*
 import kotlinx.html.js.*
 import kotlinx.coroutines.*
 
+
 val scope = MainScope()
 
 val app = fc<Props> { props ->
@@ -21,6 +22,7 @@ val app = fc<Props> { props ->
         }
     }
 
+    // kotlin-react-dom-legacy is used here
     div("lightblue") {
         h1 {
             +(config?.title ?: "NOT LOADED")
