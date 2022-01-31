@@ -57,7 +57,7 @@ val app = fc<Props> { props ->
                 child(emdPage) {
                     attrs.pageConfig = currentPage
                     attrs.EMDdata = EMDdata
-                    attrs.setEMDdata = { it: String ->
+                    attrs.setEMDdata = { it: String? ->
                         setEMDdata(it)
                     }
                 }

@@ -3,8 +3,10 @@ import kotlinx.html.DIV
 import kotlinx.html.id
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
+import mui.material.*
 import org.w3c.dom.HTMLInputElement
 import react.Props
+import react.ReactNode
 import react.dom.*
 import react.fc
 import react.useState
@@ -13,7 +15,7 @@ import react.useState
 external interface EMDPageProps : Props {
     var pageConfig: PageConfig
     var EMDdata: String?
-    var setEMDdata: (String) -> Unit
+    var setEMDdata: (String?) -> Unit
 }
 
 // Component to render attribute selection and nested table
@@ -34,11 +36,15 @@ val emdPage = fc<EMDPageProps> { props ->
         }
 
         // Without receiver, it works but tags go to wrong level in document
-        fun RDOMBuilder<DIV>.textInput(paramName: String) {
-            input(name = paramName) {
+        fun RDOMBuilder<DIV>.textInput(paramName: String, labelString: String = "") {
+            TextField {
                 attrs {
+                    name = paramName
                     id = paramName
-                    onChangeFunction = { it ->
+                    value = params?.get(paramName) ?: ""    /// ? to test
+                    variant = FormControlVariant.outlined
+                    label = ReactNode(labelString)
+                    onChange = { it ->
                         val newValue = (it.target as HTMLInputElement).value
                         // console.log(newValue)
                         val copyParams = HashMap(params ?: emptyMap())
@@ -51,51 +57,43 @@ val emdPage = fc<EMDPageProps> { props ->
         }
 
         div {
-            + "Period Number"
-            br { }
-            textInput("period_number")
+            textInput("period_number", "Period Number")
         }
 
         div {
-            + "Run Number"
-            br { }
-            textInput("run_number")
+            textInput("run_number", "Run Number")
         }
 
         // TODO List selection
         div {
-            + "Software Version"
-            br { }
-            textInput("software_version")
+            textInput("software_version", "Software Version")
         }
 
         props.pageConfig.parameters.forEach { param ->
             div {
-                +"${param.web_name} - ${param.name}:"
-                br { }
-                textInput(param.name)
+//                +"${param.web_name} - ${param.name}:"
+//                br { }
+                textInput(param.name, param.web_name)
             }
         }
 
-        // TODO enter limit [dflt = 1000], offset
+        // TODO [dflt = 1000]
         div {
-            + "Limit:"
-            br { }
-            textInput("limit")
+            textInput("limit", "Limit:")
         }
 
         div {
-            + "Offset:"
-            br { }
-            textInput("offset")
+            textInput("offset", "Offset:")
         }
 
-        button {
-            + "Filter"
+        Button {
+
             attrs {
-                onClickFunction = {
-                    // form API request
+                + "Filter"
+                variant = ButtonVariant.contained
+                onClick = {
 
+                    // form API request
                     val paramsForURL = if (params != null) {
                         "?" + params.map{"${it.key}=${it.value}"}.filter{it.isNotBlank()}.joinToString("&")
                     } else {
@@ -116,9 +114,16 @@ val emdPage = fc<EMDPageProps> { props ->
             }
         }
 
-        button {
-            + "Reset"
-            // TODO onClick
+        Button {
+            attrs {
+                +"Reset"
+                variant = ButtonVariant.contained
+                // TODO onClick
+                onClick = {
+                    setParams(emptyMap<String, String>())
+                    props.setEMDdata(null)
+                }
+            }
         }
 
         // Table component with props taking API data state
