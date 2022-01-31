@@ -10,6 +10,13 @@
   background-color: lightgreen;
 }
 
+.red {
+  display: flex;
+  height: 500px;  /* Must have, or table does not display! */
+  width: 100%;
+  background-color: #e3b9b9;
+}
+
 table {
   border: solid black 2px;
 }

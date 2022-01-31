@@ -1,9 +1,12 @@
+import kotlinx.serialization.Serializable
 import react.Props
 import react.dom.*
 import react.fc
 import kotlin.js.Json
 import mui.material.*
 import react.ReactNode
+import mui.x.DataGrid
+
 
 external interface EMDTableProps : Props {
     // TODO make structured
@@ -12,6 +15,45 @@ external interface EMDTableProps : Props {
 }
 
 val EMDTable = fc<EMDTableProps> { props ->
+
+
+    data class Column(val field: String, val key: Int, val headerName: String, val width: Int)
+
+    val columns = arrayOf(
+        Column("id", 1, "ID", 90),
+        Column("firstName", 2, "First name", 150),
+        Column("lastName", 3, "Last name", 150)
+    )
+
+    @Serializable
+    data class Row(val id: Int, val key: Int, val firstName: String, val lastName: String)
+
+    val rows = arrayOf(
+        Row(1, 1, "Peter", "K"),
+        Row(2, 2, "Ree", "Lo"),
+        Row(3, 3, "Ada", "Loq"),
+        Row(4, 4, "Betda", "Aoq"),
+        Row(5, 5, "As", "Lkk"),
+        Row(6, 6, "Ssa", "Soq"),
+        Row(7, 7, "88da", "AXZoq"),
+        Row(8, 8, "8da", "AXZq"),
+        Row(9, 9, "a", "AXZoq"),
+        Row(10, 10, "Asda", "AXoq")
+    )
+
+
+    div("red") {
+        DataGrid {
+            attrs {
+                this.columns = columns
+                this.rows = rows
+                pageSize = 100
+                rowsPerPageOptions = arrayOf(5, 10, 100)
+                columnBuffer = 8
+            }
+        }
+    }
+
 
     div("lightgreen") {
         Divider {

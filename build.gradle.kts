@@ -80,6 +80,7 @@ kotlin {
 
                 implementation(npm("@emotion/react", "11.7.1"))
                 implementation(npm("@emotion/styled", "11.6.0"))
+                implementation(npm("@mui/x-data-grid", "5.4.0"))
             }
         }
     }
