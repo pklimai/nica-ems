@@ -1,99 +1,134 @@
 import csstype.pct
 import csstype.px
 import kotlinext.js.jso
-import kotlinx.serialization.Serializable
 import react.Props
 import react.dom.*
 import react.fc
 import kotlin.js.Json
 import mui.material.*
-import react.ReactNode
 import mui.x.DataGrid
 
 
 external interface EMDTableProps : Props {
-    // TODO make structured
     var content: String?
     var pageConfig: PageConfig
 }
 
 val EMDTable = fc<EMDTableProps> { props ->
 
+    if (props.content != null) {
 
-    val c1: dynamic = object { }
-    c1["field"] = "id"
-    c1["key"] = 1
-    c1["headerName"] = "ID"
-    c1["width"] = 90
-    val c2: dynamic = object { }
-    c2["field"] = "firstName"
-    c2["key"] = 2
-    c2["headerName"] = "First name"
-    c2["width"] = 150
-    val c3: dynamic = object { }
-    c3["field"] = "lastName"
-    c3["key"] = 3
-    c3["headerName"] = "Last name"
-    c3["width"] = 150
-
-    val columns = arrayOf(c1, c2, c3)
-
-    fun row(id: Int, key: Int, firstName: String, lastName: String): dynamic {
-        val r: dynamic = object {}
-        r["id"] = id
-        r["key"] = key
-        r["firstName"] = firstName
-        r["lastName"] = lastName
-        return r
-    }
-
-    val rows = arrayOf(
-        row(1, 1, "Peter", "K"),
-        row(2, 2, "Ree", "Lo"),
-        row(3, 3, "Ada", "Loq"),
-        row(4, 4, "Betda", "Aoq"),
-        row(5, 5, "As", "Lkk"),
-        row(6, 6, "Ssa", "Soq"),
-        row(7, 7, "88da", "AXZoq"),
-        row(8, 8, "8da", "AXZq"),
-        row(9, 9, "a", "AXZoq"),
-        row(10, 10, "Asda", "AXoq")
-    )
-
-
-    Card {
-        attrs {
-            style = jso {
-                width = 100.pct
-                height = 1500.px
-            }
+        fun column(field: String, key: String /* TODO check */, headerName: String, width: Int): dynamic {
+            val r: dynamic = object {}
+            r["field"] = field
+            r["key"] = key
+            r["headerName"] = headerName
+            r["width"] = width
+            return r
         }
-        DataGrid {
-            attrs {
-                this.columns = columns
-                this.rows = rows
-                pageSize = 100
-                rowsPerPageOptions = arrayOf(5, 10, 100)
-                columnBuffer = 8
-            }
+
+        val columns = mutableListOf(
+            column("storage_name", "storage_name", "Storage name", 100),
+            column("file_path", "file_path", "File path", 150),
+            column("event_number", "event_number", "Event number", 100),
+            column("software_version", "software_version", "Software", 100),
+            column("period_number", "period_number", "Period", 100),
+            column("run_number", "run_number", "Run", 100)
+        )
+
+        props.pageConfig.parameters.forEach { it ->
+            columns.add(column(it.name, it.name, it.web_name, 100))
         }
-    }
 
-    div("lightgreen") {
-        Divider {
+        fun row(
+            id: Int,
+            storage_name: String,
+            file_path: String,
+            event_number: Int,
+            software_version: String,
+            period_number: String,
+            run_number: String,
+            params: Json
+        ): dynamic {
+            val r: dynamic = object {}
+            r["id"] = id
+            r["storage_name"] = storage_name
+            r["file_path"] = file_path
+            r["event_number"] = event_number
+            r["software_version"] = software_version
+            r["period_number"] = period_number
+            r["run_number"] = run_number
+
+            props.pageConfig.parameters.forEach { it ->
+                val paramName = it.name
+                val paramValue = params[paramName]
+                r[paramName] = paramValue.toString()  // TODO types
+            }
+            return r
+        }
+
+        //console.log(props.content)
+        val json = JSON.parse<Json>(props.content!!)
+        //console.log(json["events"])
+        val events = json["events"].unsafeCast<Array<Json>>()
+
+        val rows = mutableListOf<dynamic>()
+
+        var id: Int = 1
+        events.forEach { event ->
+
+            // console.log(event)
+            val ref = event["reference"].unsafeCast<Json>()
+            val event_number = ref["event_number"].toString().toInt()
+            val file_path = ref["file_path"]
+            val storage_name = ref["storage_name"]
+
+            rows.add(
+                row(
+                    id++,
+                    storage_name.toString(),
+                    file_path.toString(),
+                    event_number,
+                    event["software_version"].toString(),
+                    event["period_number"].toString(),
+                    event["run_number"].toString(),
+                    // All other params
+                    event["parameters"].unsafeCast<Json>()
+                )
+            )
+
+        }
+
+
+        Card {
             attrs {
-                variant = DividerVariant.fullWidth
-
-                Chip {
-                    attrs {
-                        label = ReactNode("Basic table")
-                    }
+                style = jso {
+                    width = 100.pct
+                    height = 1500.px
+                }
+            }
+            DataGrid {
+                attrs {
+                    this.columns = columns.toTypedArray()
+                    this.rows = rows.toTypedArray()
+                    pageSize = 100
+                    rowsPerPageOptions = arrayOf(5, 10, 100)
+                    columnBuffer = 8
                 }
             }
         }
     }
 
-    div("lightgreen") {
+    else {
+        Card {
+            h3 {
+                + "No data"
+            }
+        }
+    }
+
+
+    /* div("lightgreen") {
 
         if (props.content != null) {
             table {
@@ -151,5 +186,6 @@ val EMDTable = fc<EMDTableProps> { props ->
                 +"Empty EMD data"
             }
         }
-    }
+    } */
+
 }
