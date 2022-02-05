@@ -1,5 +1,4 @@
 import csstype.pct
-import csstype.px
 import kotlinext.js.jso
 import react.Props
 import react.dom.*
@@ -100,20 +99,28 @@ val EMDTable = fc<EMDTableProps> { props ->
         }
 
 
-        Card {
-            attrs {
-                style = jso {
-                    width = 100.pct
-                    height = 1500.px
-                }
-            }
-            DataGrid {
+        div("div-emd-table-card") {
+            Card {
                 attrs {
-                    this.columns = columns.toTypedArray()
-                    this.rows = rows.toTypedArray()
-                    pageSize = 100
-                    rowsPerPageOptions = arrayOf(5, 10, 100)
-                    columnBuffer = 8
+                    style = jso {
+                        width = 100.pct
+                        height = 100.pct //1500.px
+                    }
+                }
+                DataGrid {
+                    attrs {
+                        this.columns = columns.toTypedArray()
+                        this.rows = rows.toTypedArray()
+                        pageSize = 10
+                        // TODO https://mui.com/components/data-grid/pagination/
+//                    rowsPerPageOptions = arrayOf(10, 20, 30)
+//                    onPageSizeChange = { newPageSize: Int ->
+//                        this.setPageSize(newPageSize)
+//                    }
+//                    columnBuffer = 8
+
+                    }
+
                 }
             }
         }

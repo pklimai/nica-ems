@@ -1,6 +1,6 @@
 
 body {
-  background-color: azure;
+  background-color: #c7d9d9;
 }
 
 .container-for-three {
@@ -15,27 +15,32 @@ body {
 }
 
 .homepage-div {
-  /* background-color: cyan; */
   width: 100%;
 }
 
 .div-select-catalog {
-  /* background-color: lightskyblue; */
   padding-left: 5px;
   padding-right: 5px;
   width: 220px;
   min-width: 220px;
 }
 
+/*
 .lightgreen {
   background-color: lightgreen;
-
 }
+*/
 
 .div-emd-table {
-  height: 1500px;  /* Must have, or table does not display! */
+  /* height: 1200px; */  /* Not needed anymore - spoils things!!!... */
+  display: flex;
+  flex-direction: column;
   width: 100%;
   /* background-color: #e3b9b9; */
+}
+
+.div-emd-table-card {
+  flex-grow: 1;
 }
 
 .input-div {
@@ -46,7 +51,6 @@ body {
 .divider-div {
   padding-top: 5px;
   padding-bottom: 5px;
-
 }
 
 .button-container {
@@ -54,8 +58,11 @@ body {
   justify-content: space-around;
   padding-top: 15px;
   padding-bottom: 20px;
+  margin-right: 2px;
+  margin-left: 2px;
 }
 
+/*
 table {
   border: solid black 2px;
 }
@@ -65,3 +72,4 @@ td, th {
   padding-left: 12px;
   padding-right: 12px;
 }
+*/

@@ -11,6 +11,8 @@ external interface DataGridProps: mui.system.StandardProps, react.PropsWithChild
     var pageSize: dynamic
     var rowsPerPageOptions: dynamic
     var columnBuffer: dynamic
+//    var onPageSizeChange: dynamic
+//    var setPageSize: dynamic
 }
 
 // @JsName("default")
