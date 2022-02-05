@@ -20,28 +20,44 @@ external interface EMDTableProps : Props {
 val EMDTable = fc<EMDTableProps> { props ->
 
 
-    data class Column(val field: String, val key: Int, val headerName: String, val width: Int)
+    val c1: dynamic = object { }
+    c1["field"] = "id"
+    c1["key"] = 1
+    c1["headerName"] = "ID"
+    c1["width"] = 90
+    val c2: dynamic = object { }
+    c2["field"] = "firstName"
+    c2["key"] = 2
+    c2["headerName"] = "First name"
+    c2["width"] = 150
+    val c3: dynamic = object { }
+    c3["field"] = "lastName"
+    c3["key"] = 3
+    c3["headerName"] = "Last name"
+    c3["width"] = 150
 
-    val columns = arrayOf(
-        Column("id", 1, "ID", 90),
-        Column("firstName", 2, "First name", 150),
-        Column("lastName", 3, "Last name", 150)
-    )
+    val columns = arrayOf(c1, c2, c3)
 
-    @Serializable
-    data class Row(val id: Int, val key: Int, val firstName: String, val lastName: String)
+    fun row(id: Int, key: Int, firstName: String, lastName: String): dynamic {
+        val r: dynamic = object {}
+        r["id"] = id
+        r["key"] = key
+        r["firstName"] = firstName
+        r["lastName"] = lastName
+        return r
+    }
 
     val rows = arrayOf(
-        Row(1, 1, "Peter", "K"),
-        Row(2, 2, "Ree", "Lo"),
-        Row(3, 3, "Ada", "Loq"),
-        Row(4, 4, "Betda", "Aoq"),
-        Row(5, 5, "As", "Lkk"),
-        Row(6, 6, "Ssa", "Soq"),
-        Row(7, 7, "88da", "AXZoq"),
-        Row(8, 8, "8da", "AXZq"),
-        Row(9, 9, "a", "AXZoq"),
-        Row(10, 10, "Asda", "AXoq")
+        row(1, 1, "Peter", "K"),
+        row(2, 2, "Ree", "Lo"),
+        row(3, 3, "Ada", "Loq"),
+        row(4, 4, "Betda", "Aoq"),
+        row(5, 5, "As", "Lkk"),
+        row(6, 6, "Ssa", "Soq"),
+        row(7, 7, "88da", "AXZoq"),
+        row(8, 8, "8da", "AXZq"),
+        row(9, 9, "a", "AXZoq"),
+        row(10, 10, "Asda", "AXoq")
     )
 
 
@@ -62,8 +78,6 @@ val EMDTable = fc<EMDTableProps> { props ->
             }
         }
     }
-
-
 
     div("lightgreen") {
         Divider {
