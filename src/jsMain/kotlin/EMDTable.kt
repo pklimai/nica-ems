@@ -1,3 +1,6 @@
+import csstype.pct
+import csstype.px
+import kotlinext.js.jso
 import kotlinx.serialization.Serializable
 import react.Props
 import react.dom.*
@@ -42,14 +45,21 @@ val EMDTable = fc<EMDTableProps> { props ->
     )
 
 
-
-    DataGrid {
+    Card {
         attrs {
-            this.columns = columns
-            this.rows = rows
-            pageSize = 100
-            rowsPerPageOptions = arrayOf(5, 10, 100)
-            columnBuffer = 8
+            style = jso {
+                width = 100.pct
+                height = 1500.px
+            }
+        }
+        DataGrid {
+            attrs {
+                this.columns = columns
+                this.rows = rows
+                pageSize = 100
+                rowsPerPageOptions = arrayOf(5, 10, 100)
+                columnBuffer = 8
+            }
         }
     }
 

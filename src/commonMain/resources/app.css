@@ -1,29 +1,59 @@
 
+body {
+  background-color: azure;
+}
+
 .container-for-three {
   display: flex;
   gap: 20px;
 }
 
-.yellow {
-  background-color: yellow;
+.div-filtering-fields {
+  /* background-color: yellow; */
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .homepage-div {
-  background-color: cyan;
+  /* background-color: cyan; */
+  width: 100%;
 }
 
-.lightblue {
-  background-color: lightskyblue;
+.div-select-catalog {
+  /* background-color: lightskyblue; */
+  padding-left: 5px;
+  padding-right: 5px;
+  width: 220px;
+  min-width: 220px;
 }
 
 .lightgreen {
   background-color: lightgreen;
+
 }
 
-.red {
+.div-emd-table {
   height: 1500px;  /* Must have, or table does not display! */
   width: 100%;
   background-color: #e3b9b9;
+}
+
+.input-div {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.divider-div {
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 15px;
+  padding-bottom: 20px;
 }
 
 table {

@@ -1,7 +1,13 @@
+import csstype.FlexGrow
+import csstype.px
+import kotlinext.js.jso
 import react.*
 import react.dom.*
 import kotlinx.html.js.*
 import kotlinx.coroutines.*
+import mui.material.*
+import react.dom.aria.ariaLabel
+import react.dom.html.ReactHTML
 
 
 val scope = MainScope()
@@ -22,33 +28,81 @@ val app = fc<Props> { props ->
         }
     }
 
+    Box {
+        attrs {
+            sx = jso {
+                flexGrow = FlexGrow(1.0)
+                marginBottom = 25.px
+            }
+
+        }
+
+        AppBar {
+            attrs {
+                position = AppBarPosition.static
+            }
+
+            Toolbar {
+
+                Typography {
+                    attrs {
+                        sx = jso { flexGrow = FlexGrow(1.0) }
+                        variant = "h6"
+                        component = ReactHTML.div
+                    }
+
+                    + (config?.title ?: "EMS")
+                }
+
+                Button {
+                    attrs {
+                        color = ButtonColor.inherit
+                    }
+
+                    +"Login"
+                }
+            }
+        }
+    }
+
+
     div("container-for-three") {
         // kotlin-react-dom-legacy is used here
-        div("lightblue") {
-            h1 {
-                +(config?.title ?: "NOT LOADED")
-            }
-            ul {
-                config?.pages?.forEach { item ->
-                    li {
-                        key = item.name
-                        attrs.onClickFunction = {
-                            setCurrentPage(item)
-                            // Clear data for table
-                            setEMDdata(null)
+        div("div-select-catalog") {
+            Card {
+                attrs {
+                    style = jso {
+                        paddingLeft = 25.px
+                        paddingRight = 25.px
+                    }
+                }
+
+                ul {
+                    config?.pages?.forEach { item ->
+                        li {
+                            key = item.name
+                            attrs.onClickFunction = {
+                                setCurrentPage(item)
+                                // Clear data for table
+                                setEMDdata(null)
+                            }
+                            h4 {
+                                +"[${item.name}] ${item.api_url} "
+                            }
                         }
-                        +"[${item.name}] ${item.api_url} "
                     }
-                }
 
-                li {
-                    key = "Home"
-                    attrs.onClickFunction = {
-                        setCurrentPage(null)
+                    li {
+                        key = "Home"
+                        attrs.onClickFunction = {
+                            setCurrentPage(null)
+                        }
+                        h4 {
+                            +"Home"
+                        }
                     }
-                    +"Home"
-                }
 
+                }
             }
         }
 
