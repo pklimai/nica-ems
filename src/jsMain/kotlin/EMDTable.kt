@@ -42,17 +42,17 @@ val EMDTable = fc<EMDTableProps> { props ->
     )
 
 
-    div("red") {
-        DataGrid {
-            attrs {
-                this.columns = columns
-                this.rows = rows
-                pageSize = 100
-                rowsPerPageOptions = arrayOf(5, 10, 100)
-                columnBuffer = 8
-            }
+
+    DataGrid {
+        attrs {
+            this.columns = columns
+            this.rows = rows
+            pageSize = 100
+            rowsPerPageOptions = arrayOf(5, 10, 100)
+            columnBuffer = 8
         }
     }
+
 
 
     div("lightgreen") {

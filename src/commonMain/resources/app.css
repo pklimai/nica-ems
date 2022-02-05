@@ -1,5 +1,15 @@
+
+.container-for-three {
+  display: flex;
+  gap: 20px;
+}
+
 .yellow {
   background-color: yellow;
+}
+
+.homepage-div {
+  background-color: cyan;
 }
 
 .lightblue {
@@ -11,8 +21,7 @@
 }
 
 .red {
-  display: flex;
-  height: 500px;  /* Must have, or table does not display! */
+  height: 1500px;  /* Must have, or table does not display! */
   width: 100%;
   background-color: #e3b9b9;
 }

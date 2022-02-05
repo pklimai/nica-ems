@@ -22,49 +22,51 @@ val app = fc<Props> { props ->
         }
     }
 
-    // kotlin-react-dom-legacy is used here
-    div("lightblue") {
-        h1 {
-            +(config?.title ?: "NOT LOADED")
-        }
-        ul {
-            config?.pages?.forEach { item ->
+    div("container-for-three") {
+        // kotlin-react-dom-legacy is used here
+        div("lightblue") {
+            h1 {
+                +(config?.title ?: "NOT LOADED")
+            }
+            ul {
+                config?.pages?.forEach { item ->
+                    li {
+                        key = item.name
+                        attrs.onClickFunction = {
+                            setCurrentPage(item)
+                            // Clear data for table
+                            setEMDdata(null)
+                        }
+                        +"[${item.name}] ${item.api_url} "
+                    }
+                }
+
                 li {
-                    key = item.name
+                    key = "Home"
                     attrs.onClickFunction = {
-                        setCurrentPage(item)
-                        // Clear data for table
-                        setEMDdata(null)
+                        setCurrentPage(null)
                     }
-                    +"[${item.name}] ${item.api_url} "
+                    +"Home"
                 }
-            }
 
-            li {
-                key = "Home"
-                attrs.onClickFunction = {
-                    setCurrentPage(null)
-                }
-                +"Home"
             }
-
         }
 
-        div {
-            if (currentPage == null) {
-                child(homePage)
-            } else {
-                child(emdPage) {
-                    attrs.pageConfig = currentPage
-                    attrs.EMDdata = EMDdata
-                    attrs.setEMDdata = { it: String? ->
-                        setEMDdata(it)
-                    }
+        if (currentPage == null) {
+            child(homePage)
+        } else {
+            child(emdPage) {
+                attrs.pageConfig = currentPage
+                attrs.EMDdata = EMDdata
+                attrs.setEMDdata = { it: String? ->
+                    setEMDdata(it)
                 }
             }
-
         }
+
+
     }
+
 
 }
 

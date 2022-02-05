@@ -89,13 +89,13 @@ val emdPage = fc<EMDPageProps> { props ->
         Button {
 
             attrs {
-                + "Filter"
+                +"Filter"
                 variant = ButtonVariant.contained
                 onClick = {
 
                     // form API request
                     val paramsForURL = if (params != null) {
-                        "?" + params.map{"${it.key}=${it.value}"}.filter{it.isNotBlank()}.joinToString("&")
+                        "?" + params.map { "${it.key}=${it.value}" }.filter { it.isNotBlank() }.joinToString("&")
                     } else {
                         ""
                     }
@@ -125,7 +125,9 @@ val emdPage = fc<EMDPageProps> { props ->
                 }
             }
         }
+    }
 
+    div("red") {
         // Table component with props taking API data state
         child(EMDTable) {
             attrs.content = props.EMDdata

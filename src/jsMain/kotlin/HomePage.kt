@@ -3,7 +3,7 @@ import react.dom.*
 import react.fc
 
 val homePage = fc<Props> {
-    div {
+    div("homepage-div") {
         h2 {
             +"HomePage component here"
         }
