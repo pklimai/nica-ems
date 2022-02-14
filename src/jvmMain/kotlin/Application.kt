@@ -35,7 +35,7 @@ fun Application.main() {
         // Config provided as Docker volume
         config = mapper.readValue(File(DOCKER_CONFIG_PATH), ConfigFile::class.java)
         println("Read config from $DOCKER_CONFIG_PATH")
-    } catch (e: java.lang.Exception) {
+    } catch (e: java.lang.Exception) {  // TODO avoid general exception check
         // Local test config
         config = mapper.readValue(File(TEST_CONFIG_PATH), ConfigFile::class.java)
         println("Read config file from $TEST_CONFIG_PATH")

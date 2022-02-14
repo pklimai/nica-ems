@@ -121,17 +121,17 @@ The `file_path` will be created in the `file_` table, if not there yet.
 
 ### Deploying and Testing
 
-##### Run in Docker on CentOS 8:
+##### Run in Docker on CentOS / Alma Linux example:
 
 ```
 sudo dnf install java-11-openjdk-devel
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64
 cd ~/nica-emd/
 sh gradlew installDist
-sudo docker build -t nica-emd .
-sudo docker stop nica-emd
-sudo docker rm nica-emd
-sudo docker run -d --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd
+docker build -t nica-emd:0.1.2 .
+# sudo docker stop nica-emd
+# sudo docker rm nica-emd
+sudo docker run -d --rm --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:0.1.2
 ```
 
 ##### Testing
@@ -139,4 +139,10 @@ sudo docker run -d --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/ev
 Use `testing/docker-compose.yaml` for test databases. 
 
 To test FreeIPA (LDAP), you can configure SSH tunneling such as `127.0.0.1:3890 -> bmn-ipa.jinr.ru:389`
+
+To run container in debug mode, use something like
+```
+sudo docker run -it --entrypoint=/bin/bash --name nica-emd --rm -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:0.1.2
+```
+
 
