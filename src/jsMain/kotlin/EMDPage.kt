@@ -23,6 +23,7 @@ external interface EMDPageProps : Props {
     var pageConfig: PageConfig
     var EMDdata: String?
     var setEMDdata: (String?) -> Unit
+    var condition_db: DBConnectionConfig?
 }
 
 // Component to render attribute selection and nested table
@@ -79,6 +80,24 @@ val emdPage = fc<EMDPageProps> { props ->
             // TODO List selection
             div("input-div") {
                 textInput("software_version", "Software Version")
+            }
+
+            if (props.condition_db != null) {
+                div("divider-div") {
+                    hr { }
+                }
+
+                div("input-div") {
+                    textInput("beam_particle", "Beam Particle")
+                }
+
+                div("input-div") {
+                    textInput("target_particle", "Target Particle")
+                }
+
+                div("input-div") {
+                    textInput("energy", "Energy, GeV")
+                }
             }
 
             div("divider-div") {

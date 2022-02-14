@@ -115,6 +115,7 @@ val app = fc<Props> { props ->
                 attrs.setEMDdata = { it: String? ->
                     setEMDdata(it)
                 }
+                attrs.condition_db = config?.condition_db
             }
         }
 
