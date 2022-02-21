@@ -27,12 +27,12 @@ val EMDTable = fc<EMDTableProps> { props ->
         }
 
         val columns = mutableListOf(
-            column("storage_name", "storage_name", "Storage name", 100),
-            column("file_path", "file_path", "File path", 150),
-            column("event_number", "event_number", "Event number", 100),
+            column("storage_name", "storage_name", "Storage", 122),
+            column("file_path", "file_path", "File path", 240),
+            column("event_number", "event_number", "# Event", 150),
             column("software_version", "software_version", "Software", 100),
             column("period_number", "period_number", "Period", 100),
-            column("run_number", "run_number", "Run", 100)
+            column("run_number", "run_number", "# Run", 150)
         )
 
         props.pageConfig.parameters.forEach { it ->
