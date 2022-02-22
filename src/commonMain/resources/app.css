@@ -43,6 +43,7 @@
   /* flex-grow: 1; */
   box-shadow: #00000029 0 1px 4px;
   min-height: 637px;
+  width: 100%;
   /* temporarily */
 }
 
@@ -938,30 +939,39 @@ footer {
 
 /* TABLE CSS */
 .MuiDataGrid-main{
-  padding: 0 1%;
-}
-.MuiDataGrid-main >div{
-  min-height: 3em!important;
-  background: #68a5e6;
-  letter-spacing: .2px;
-  font-size: 0.9rem;
+  min-height: 583px;
 }
 .MuiDataGrid-columnSeparator{
   display: none !important;
 }
 .MuiDataGrid-columnHeaderTitle{
   color: #000000ad;
-    font-weight: 500 !important;
-    font-size: 0.86rem;
+  font-weight: 500 !important;
+  font-size: 0.86rem;
+}
+.MuiDataGrid-row:nth-child(2n+1	){
+  background: rgba(0,0,0,.1);
 }
 .MuiDataGrid-columnHeaders{
-  padding-left: 1%;
+  min-height: 3em!important;
+  background: #68a5e6;
+  letter-spacing: .2px;
+  font-size: 0.9rem;
 }
-
-/* Border */
+.MuiDataGrid-columnHeaderTitleContainer{
+  padding-left: 5px;
+}
+.MuiDataGrid-cell{
+  padding-left: 15px;
+}
+.MuiDataGrid-row > .MuiDataGrid-cell:first-child{
+  padding-left: 15px;
+}
+/*
 .MuiDataGrid-row > .MuiDataGrid-cell:nth-child(3){
   border-right: 2px solid rgb(110 110 110 / 50%);
 }
 .MuiDataGrid-columnHeader:nth-child(3){
   border-right: 2px solid rgb(110 110 110 / 50%);
 }
+ */

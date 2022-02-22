@@ -17,26 +17,27 @@ val EMDTable = fc<EMDTableProps> { props ->
 
     if (props.content != null) {
 
-        fun column(field: String, key: String /* TODO check */, headerName: String, width: Int): dynamic {
+        fun column(field: String, key: String /* TODO check */, headerName: String,flex: Int, minWidth: Int): dynamic {
             val r: dynamic = object {}
             r["field"] = field
             r["key"] = key
             r["headerName"] = headerName
-            r["width"] = width
+            r["flex"] = flex
+            r["minWidth"] = minWidth
             return r
         }
 
         val columns = mutableListOf(
-            column("storage_name", "storage_name", "Storage", 122),
-            column("file_path", "file_path", "File path", 240),
-            column("event_number", "event_number", "# Event", 150),
-            column("software_version", "software_version", "Software", 100),
-            column("period_number", "period_number", "Period", 100),
-            column("run_number", "run_number", "# Run", 150)
+            column("storage_name", "storage_name", "Storage", 1, 100),
+            column("file_path", "file_path", "File path", 2, 260),
+            column("event_number", "event_number", "# Event", 1, 150),
+            column("software_version", "software_version", "Software", 2, 100),
+            column("period_number", "period_number", "Period", 1, 100),
+            column("run_number", "run_number", "# Run", 1, 150)
         )
 
         props.pageConfig.parameters.forEach { it ->
-            columns.add(column(it.name, it.name, it.web_name, 100))
+            columns.add(column(it.name, it.name, it.web_name, 2, 150))
         }
 
         fun row(
@@ -101,12 +102,6 @@ val EMDTable = fc<EMDTableProps> { props ->
 
         div("div-emd-table-card") {
             Card {
-                attrs {
-                    style = jso {
-                        width = 100.pct
-                        height = 100.pct //1500.px
-                    }
-                }
                 DataGrid {
                     attrs {
                         this.columns = columns.toTypedArray()
