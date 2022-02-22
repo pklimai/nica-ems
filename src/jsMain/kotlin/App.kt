@@ -88,6 +88,9 @@ val app = fc<Props> { props ->
                     div("login_block"){
                         div("wrap-form1 validate-input"){
                             input(){
+                                attrs {
+                                    placeholder="Username"
+                                }
                             } //<input type="text" #username  placeholder="Username" required>
                             span("focus-form1"){}
                             span("symbol-form1"){
@@ -97,7 +100,11 @@ val app = fc<Props> { props ->
                             }
                         }
                         div("wrap-form1 validate-input"){
-                            input(){} //<input type="text" #password type="password"  placeholder="Password" required>
+                            input(){
+                                attrs {
+                                placeholder="Password"
+                                }                            
+                            } //<input type="text" #password type="password"  placeholder="Password" required>
                             span("focus-form1"){}
                             span("symbol-form1"){
                                 div(""){
@@ -105,8 +112,16 @@ val app = fc<Props> { props ->
                                 }
                             }
                         }
-                        div("login_page__card__left__but but"){
-                            +"Sign In"
+                        div("but_login"){
+                            Button {
+                                attrs {
+                                    +"Sign In"
+                                    variant = ButtonVariant.contained
+                                    size = Size.small
+                                    onClick = {
+                                    }
+                                }
+                            }
                         }
                     }
                 }
