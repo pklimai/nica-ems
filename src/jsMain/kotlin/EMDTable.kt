@@ -29,7 +29,7 @@ val EMDTable = fc<EMDTableProps> { props ->
 
         val columns = mutableListOf(
             column("storage_name", "storage_name", "Storage", 1, 100),
-            column("file_path", "file_path", "File path", 2, 260),
+            column("file_path", "file_path", "File path", 3, 260),
             column("event_number", "event_number", "# Event", 1, 150),
             column("software_version", "software_version", "Software", 2, 100),
             column("period_number", "period_number", "Period", 1, 100),
