@@ -1,11 +1,28 @@
 import csstype.px
 import kotlinext.js.jso
 import mui.material.Card
+import mui.material.MenuItem
+import mui.material.TextField
 import react.Props
+import react.ReactNode
 import react.dom.*
 import react.fc
+import react.useState
+import kotlinx.html.js.onClickFunction
+import kotlinx.html.DIV
+import org.w3c.dom.HTMLInputElement
+
+import kotlinx.html.id
+import kotlinx.html.js.onChangeFunction
+import kotlinx.html.style
+import mui.material.*
+import react.css.css
+
+
 
 val homePage = fc<Props> {
+    val (period, setPeriod) = useState(false);
+    val (params, setParams) = useState<Map<String, String>>()
     div("home__page"){
         div(){
             div("home__page__dashboard"){
@@ -34,6 +51,9 @@ val homePage = fc<Props> {
                     }
                 }
                 div("home__page__stats__block borders stats_new_block"){
+                    attrs.onClickFunction = {
+                        setPeriod(!period)
+                    }
                     svg(){ //<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 504 504" style="enable-background:new 0 0 504 504;" xml:space="preserve"> <circle style="fill:#FFD05B;" cx="252" cy="252" r="252"/> <rect x="94.5" y="94.5" style="fill:#324A5E;" width="315" height="315"/> <g> <rect x="122.1" y="168.6" style="fill:#FFFFFF;" width="259.9" height="213.3"/> <rect x="122.1" y="121.9" style="fill:#FFFFFF;" width="32.5" height="19.2"/> </g> <rect x="175.7" y="121.9" style="fill:#F9B54C;" width="32.5" height="19.2"/> <rect x="229.4" y="121.9" style="fill:#54C0EB;" width="32.5" height="19.2"/> <rect x="144.1" y="188.1" style="fill:#F1543F;" width="37.4" height="23.6"/> <rect x="204.1" y="188.1" style="fill:#FF7058;" width="155.8" height="23.6"/> <rect x="322.5" y="238.4" style="fill:#84DBFF;" width="37.4" height="23.6"/> <rect x="144.1" y="238.4" style="fill:#54C0EB;" width="155.8" height="23.6"/> <rect x="144.1" y="288.6" style="fill:#FFD05B;" width="37.4" height="23.6"/> <rect x="204.1" y="288.6" style="fill:#F9B54C;" width="155.8" height="23.6"/> <rect x="322.5" y="338.8" style="fill:#4CDBC4;" width="37.4" height="23.6"/> <rect x="144.1" y="338.8" style="fill:#2C9984;" width="155.8" height="23.6"/> </svg>
                     }
                     div("stats_new_block__div"){
@@ -43,6 +63,23 @@ val homePage = fc<Props> {
                         div("per_number"){
                             +"7 " // из базы
                         }
+                    }
+                }
+                if(period){
+                    fun RDOMBuilder<DIV>.textSelect(paramName: String, labelString: String = ""){
+                        TextField {
+                            attrs {
+                                name = paramName
+                                id = paramName
+                                value = params?.get(paramName) ?: ""    /// ? to test
+                                variant = FormControlVariant.standard
+                                label = ReactNode(labelString)
+                                onChange = { }
+                            }
+                        }
+                    }
+                    div("home__page__stats__block3"){
+                        textSelect("period number", "Period Number")
                     }
                 }
                 /*
