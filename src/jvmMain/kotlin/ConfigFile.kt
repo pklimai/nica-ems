@@ -1,5 +1,8 @@
 package ru.mipt.npm.nica.emd
 
+/**
+ * Determines configuration file structure
+ */
 class ConfigFile(
     val event_db: DBConnectionConfig,
     val condition_db: DBConnectionConfig?,
@@ -46,3 +49,18 @@ class ParameterConfig(
     val intervals: Boolean,
     val web_name: String
 )
+
+
+fun ConfigFile.removeSensitiveData(): ConfigFile {
+    /**
+     * Removes all sensitive data (use before sending config to frontend via API)
+     */
+    return ConfigFile(
+        event_db = DBConnectionConfig("", 0, "", "", ""),
+        condition_db = null,
+        database_auth = null,
+        ldap_auth = null,
+        title = this.title,
+        pages = this.pages
+    )
+}

@@ -100,8 +100,7 @@ fun Application.main() {
             resources("")
         }
         get("/config") {
-            // TODO remove sensitive information
-            call.respond(config)
+            call.respond(config.removeSensitiveData())
         }
 
         get("/") {
