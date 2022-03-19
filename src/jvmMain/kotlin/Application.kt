@@ -89,47 +89,26 @@ fun Application.main() {
             files("/app/resources/main/static/css")  // in Docker
         }
 
-        // Multiplatform
-        get("/new") {
+        // React Web UI available on root URL
+        get("/") {
             call.respondText(
                 this::class.java.classLoader.getResource("index.html")!!.readText(),
                 ContentType.Text.Html
             )
         }
+
         static("/") {
             resources("")
         }
-        get("/config") {
-            call.respond(config.removeSensitiveData())
-        }
 
-        get("/") {
-            call.respondHtml {
-                head {
-                    title { +config.title }
-                    styleLink("/static/style.css")
-                }
-                body {
-                    h2 { +config.title }
-
-                    config.pages.forEach {
-                        h3 { +it.name }
-                        h5 { +"REST API" }
-                        p { a(href = it.api_url + "/emd") { +"API - get all events" } }
-                        h5 { +"WebUI" }
-                        p { a(href = it.web_url) { +"Search Form" } }
-                        hr {}
-                    }
-
-                    h3 { +"Auxiliary data" }
-                    p { a(href = "/dictionaries") { +"Dictionaries" } }
-
-                }
-            }
-        }
-
+        // For healthcheck
         get("/health") {
             call.respond(HttpStatusCode.OK)
+        }
+
+        // This way frontend knows about different pages, parameters, etc.
+        get("/config") {
+            call.respond(config.removeSensitiveData())
         }
 
         fun Route.optionallyAuthenticate(build: Route.() -> Unit): Route {
@@ -143,82 +122,114 @@ fun Application.main() {
             return this
         }
 
-        optionallyAuthenticate {
-            route("/dictionaries") {
-                get {
-                    call.respondHtml {
-                        head {
-                            title { +config.title }
-                            styleLink("/static/style.css")
-                        }
-                        body {
-                            a {
-                                href = "/"
-                                +"Home"
-                            }
+        // Legacy pure static HTML-based pages
+        route("/legacy") {
+            get {
+                call.respondHtml {
+                    head {
+                        title { +config.title }
+                        styleLink("/static/style.css")
+                    }
+                    body {
+                        h2 { +config.title }
 
-                            val connEMD = newEMDConnection(config, this@get.context)
-                            if (connEMD == null) {
-                                h4 { +"Event Catalogue unavailable!!!" }
-                            } else {
-                                h2 { +"Software version table" }
-                                connEMD.createStatement().executeQuery("SELECT * FROM software_").let { res ->
-                                    table {
-                                        tr {
-                                            th { +"software_id" }
-                                            th { +"software_version" }
-                                        }
-                                        while (res.next()) {
+                        config.pages.forEach {
+                            h3 { +it.name }
+                            h5 { +"REST API" }
+                            p { a(href = it.api_url + "/emd") { +"API - get all events" } }
+                            h5 { +"WebUI" }
+                            p { a(href = it.web_url) { +"Search Form" } }
+                            hr {}
+                        }
+
+                        h3 { +"Auxiliary data" }
+                        p { a(href = "/legacy/dictionaries") { +"Dictionaries" } }
+
+                    }
+                }
+            }
+
+            optionallyAuthenticate {
+                route("/dictionaries") {
+                    get {
+                        call.respondHtml {
+                            head {
+                                title { +config.title }
+                                styleLink("/static/style.css")
+                            }
+                            body {
+                                a {
+                                    href = "/"
+                                    +"Home"
+                                }
+
+                                val connEMD = newEMDConnection(config, this@get.context)
+                                if (connEMD == null) {
+                                    h4 { +"Event Catalogue unavailable!!!" }
+                                } else {
+                                    h2 { +"Software version table" }
+                                    connEMD.createStatement().executeQuery("SELECT * FROM software_").let { res ->
+                                        table {
                                             tr {
-                                                td { +res.getInt("software_id").toString() }
-                                                td { +res.getString("software_version") }
+                                                th { +"software_id" }
+                                                th { +"software_version" }
+                                            }
+                                            while (res.next()) {
+                                                tr {
+                                                    td { +res.getInt("software_id").toString() }
+                                                    td { +res.getString("software_version") }
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                h2 { +"Storage table" }
-                                connEMD.createStatement().executeQuery("SELECT * FROM storage_").let { res ->
-                                    table {
-                                        tr {
-                                            th { +"storage_id" }
-                                            th { +"storage_name" }
-                                        }
-                                        while (res.next()) {
+                                    h2 { +"Storage table" }
+                                    connEMD.createStatement().executeQuery("SELECT * FROM storage_").let { res ->
+                                        table {
                                             tr {
-                                                td { +res.getInt("storage_id").toString() }
-                                                td { +res.getString("storage_name") }
+                                                th { +"storage_id" }
+                                                th { +"storage_name" }
+                                            }
+                                            while (res.next()) {
+                                                tr {
+                                                    td { +res.getInt("storage_id").toString() }
+                                                    td { +res.getString("storage_name") }
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                h2 { +"Files table" }
-                                connEMD.createStatement().executeQuery("SELECT * FROM file_").let { res ->
-                                    table {
-                                        tr {
-                                            th { +"file_guid" }
-                                            th { +"storage_id" }
-                                            th { +"file_path" }
-                                        }
-                                        while (res.next()) {
+                                    h2 { +"Files table" }
+                                    connEMD.createStatement().executeQuery("SELECT * FROM file_").let { res ->
+                                        table {
                                             tr {
-                                                td { +res.getInt("file_guid").toString() }
-                                                td { +res.getShort("storage_id").toString() }
-                                                td { +res.getString("file_path") }
+                                                th { +"file_guid" }
+                                                th { +"storage_id" }
+                                                th { +"file_path" }
+                                            }
+                                            while (res.next()) {
+                                                tr {
+                                                    td { +res.getInt("file_guid").toString() }
+                                                    td { +res.getShort("storage_id").toString() }
+                                                    td { +res.getString("file_path") }
+                                                }
                                             }
                                         }
                                     }
+                                    connEMD.close()
                                 }
-                                connEMD.close()
                             }
                         }
                     }
                 }
             }
+
         }
+
 
         config.pages.forEach { page ->
 
             optionallyAuthenticate {
+
+                // This is legacy HTML page, keep it for now but normally not use
                 route(page.web_url) {
                     get {
 
