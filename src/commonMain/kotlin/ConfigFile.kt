@@ -1,5 +1,14 @@
+package ru.mipt.npm.nica.emd
+
 import kotlinx.serialization.Serializable
 
+/**
+ * Determines configuration file structure
+ *
+ * Note: Backend part currently uses Jackson (not kotlinx) for (de)serialization;
+ *       but frontend actually makes use of @Serializable stuff
+ *
+ */
 @Serializable
 class ConfigFile(
     val event_db: DBConnectionConfig,
@@ -47,7 +56,22 @@ class LDAPAuthConfig(
 @Serializable
 class ParameterConfig(
     val name: String,
-    val type: String,  // string/int/float/bool  TODO
+    val type: String,  // string/int/float/bool // TODO
     val intervals: Boolean,
     val web_name: String
 )
+
+
+fun ConfigFile.removeSensitiveData(): ConfigFile {
+    /**
+     * Removes all sensitive data (use before sending config to frontend via API)
+     */
+    return ConfigFile(
+        event_db = DBConnectionConfig("", 0, "", "", ""),
+        condition_db = null,
+        database_auth = null,
+        ldap_auth = null,
+        title = this.title,
+        pages = this.pages
+    )
+}

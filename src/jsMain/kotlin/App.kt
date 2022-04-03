@@ -1,3 +1,5 @@
+package ru.mipt.npm.nica.emd
+
 import csstype.px
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch

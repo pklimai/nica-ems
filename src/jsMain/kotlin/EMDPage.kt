@@ -1,3 +1,5 @@
+package ru.mipt.npm.nica.emd
+
 import csstype.*
 import kotlinext.js.jso
 import kotlinx.coroutines.launch

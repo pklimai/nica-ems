@@ -1,3 +1,5 @@
+package ru.mipt.npm.nica.emd
+
 import io.ktor.http.*
 import io.ktor.client.*
 import io.ktor.client.request.*

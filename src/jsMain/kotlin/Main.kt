@@ -1,3 +1,5 @@
+package ru.mipt.npm.nica.emd
+
 import kotlinx.browser.document
 import react.dom.render
 

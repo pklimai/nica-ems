@@ -1,3 +1,5 @@
+package ru.mipt.npm.nica.emd
+
 import kotlinx.html.DIV
 import react.Props
 import react.dom.RDOMBuilder

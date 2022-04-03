@@ -1,3 +1,5 @@
+package ru.mipt.npm.nica.emd
+
 import csstype.pct
 import kotlinext.js.jso
 import react.Props
