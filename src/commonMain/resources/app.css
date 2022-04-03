@@ -577,6 +577,10 @@ footer {
   margin-left: 30px;
 }
 
+.login-password-icon {
+  width: 18px;
+  height: 18px;
+}
 
 /* HOME */
 .home__page {

@@ -99,8 +99,8 @@ val app = fc<Props> { props ->
                             } //<input type="text" #username  placeholder="Username" required>
                             span("focus-form1") {}
                             span("symbol-form1") {
-                                div("") {
-                                    +"icon"
+                                div() {
+                                    img(classes = "login-password-icon", src = "username.png") {  }
                                 }
                             }
                         }
@@ -112,8 +112,8 @@ val app = fc<Props> { props ->
                             } //<input type="text" #password type="password"  placeholder="Password" required>
                             span("focus-form1") {}
                             span("symbol-form1") {
-                                div("") {
-                                    +"icon"
+                                div() {
+                                    img(classes = "login-password-icon", src = "password.png") {  }
                                 }
                             }
                         }
