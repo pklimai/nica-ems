@@ -47,7 +47,7 @@ class LDAPAuthConfig(
 @Serializable
 class ParameterConfig(
     val name: String,
-    val type: String,  // TODO
+    val type: String,  // string/int/float/bool  TODO
     val intervals: Boolean,
     val web_name: String
 )

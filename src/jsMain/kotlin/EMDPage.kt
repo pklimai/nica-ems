@@ -1,7 +1,4 @@
-import csstype.Height
-import csstype.NamedColor
-import csstype.pct
-import csstype.px
+import csstype.*
 import kotlinext.js.jso
 import kotlinx.coroutines.launch
 import kotlinx.html.DIV
@@ -10,7 +7,9 @@ import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
 import kotlinx.html.style
 import mui.material.*
+import mui.material.Size
 import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.HTMLSelectElement
 import react.Props
 import react.ReactNode
 import react.css.css
@@ -33,13 +32,13 @@ val emdPage = fc<EMDPageProps> { props ->
 
     // Event metadata from API
     // val (EMDData, setEMDData) = useState<String>()
-    div("new_table_page"){
+    div("new_table_page") {
         div("new_table_page__card") {
-            div("first"){
-                div("mat-table-title"){
+            div("first") {
+                div("mat-table-title") {
                     +props.pageConfig.name
                 }
-                div("form"){
+                div("form") {
                     // Without receiver, it works but tags go to wrong level in document
                     fun RDOMBuilder<DIV>.textInput(paramName: String, labelString: String = "") {
                         TextField {
@@ -58,13 +57,65 @@ val emdPage = fc<EMDPageProps> { props ->
                                 }
                                 size = Size.small
                             }
-
                         }
                     }
+
+                    fun RDOMBuilder<DIV>.boolInput(paramName: String, labelString: String = "") {
+                        FormControl {
+                            attrs {
+                                fullWidth = true
+                            }
+                            InputLabel {
+                                attrs {
+                                    id = paramName
+                                    sx = jso {
+                                        // Fixes default location - is there a better way?
+                                        marginTop = (-5).px
+                                    }
+                                }
+                                +labelString
+                            }
+                            Select {
+                                attrs {
+                                    size = Size.small
+                                    label = ReactNode(labelString)
+                                    // labelId = paramName
+                                    value =  (params?.get(paramName) ?: "").unsafeCast<Nothing?>()
+                                    onChange = { it: dynamic ->
+                                        val newValue = it.target.value    // Note: it.asDynamic() won't work
+                                        // console.log("onChange called in Select with value $newValue")
+                                        val copyParams = HashMap(params ?: emptyMap())
+                                        copyParams[paramName] = newValue
+                                        setParams(copyParams)
+                                    }
+                                }
+                                MenuItem {
+                                    attrs {
+                                        value = ""
+                                    }
+                                    +"No selection"
+                                }
+                                MenuItem {
+                                    attrs {
+                                        value = "true"
+                                    }
+                                    +"true"
+                                }
+                                MenuItem {
+                                    attrs {
+                                        value = "false"
+                                    }
+                                    +"false"
+                                }
+                            }
+                        }
+                    }
+
+                    // TODO List selection
                     div("input-div") {
                         textInput("software_version", "Software Version")
                     }
-                    
+
                     div("input-div") {
                         textInput("period_number", "Period Number")
                     }
@@ -72,9 +123,6 @@ val emdPage = fc<EMDPageProps> { props ->
                     div("input-div") {
                         textInput("run_number", "Run Number")
                     }
-
-                    // TODO List selection
-
 
                     if (props.condition_db != null) {
                         div("divider-div") {
@@ -98,7 +146,10 @@ val emdPage = fc<EMDPageProps> { props ->
 
                     props.pageConfig.parameters.forEach { param ->
                         div("input-div") {
-                            textInput(param.name, param.web_name)
+                            when (param.type) {
+                                "bool" -> boolInput(param.name, param.web_name)
+                                else -> textInput(param.name, param.web_name)
+                            }
                         }
                     }
 
@@ -107,11 +158,11 @@ val emdPage = fc<EMDPageProps> { props ->
 
                     // TODO set [dflt = 1000]
                     div("input-div") {
-                        textInput("limit", "Limit:")
+                        textInput("limit", "Limit")
                     }
 
                     div("input-div") {
-                        textInput("offset", "Offset:")
+                        textInput("offset", "Offset")
                     }
 
                     div("button-container") {
