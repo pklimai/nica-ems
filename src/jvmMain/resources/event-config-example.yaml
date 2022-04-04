@@ -58,6 +58,7 @@ pages:
     api_url: /event_api/v1/test
     web_url: /event_web/test
     db_table_name: test_event
+    default_limit_web: 100
     parameters:
       - name: track_number
         type: int

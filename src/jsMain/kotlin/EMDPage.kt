@@ -158,9 +158,8 @@ val emdPage = fc<EMDPageProps> { props ->
                     div("divider-div2") {
                     }
 
-                    // TODO set [dflt = 1000]
                     div("input-div") {
-                        textInput("limit", "Limit")
+                        textInput("limit", "Limit [dflt=${props.pageConfig.default_limit_web}]")
                     }
 
                     div("input-div") {
@@ -175,14 +174,17 @@ val emdPage = fc<EMDPageProps> { props ->
                                 size = Size.small
                                 onClick = {
                                     // form API request
-                                    val paramsForURL = if (params != null) {
-                                        "?" + params.map { "${it.key}=${it.value}" }.filter { it.isNotBlank() }
+                                    val paramsWithLimit = HashMap(params ?: emptyMap())
+                                    if (paramsWithLimit["limit"].isNullOrEmpty())
+                                        paramsWithLimit["limit"] = props.pageConfig.default_limit_web.toString()
+                                    val paramsForURL = if (paramsWithLimit.isNotEmpty()) {
+                                        "?" + paramsWithLimit.map { "${it.key}=${it.value}" }.filter { it.isNotBlank() }
                                             .joinToString("&")
                                     } else {
                                         ""
                                     }
 
-                                    console.log(params.toString())
+                                    console.log(paramsWithLimit.toString())
                                     console.log(paramsForURL)
                                     scope.launch {
                                         val emd = getEMD(props.pageConfig.api_url + "/emd" + paramsForURL)

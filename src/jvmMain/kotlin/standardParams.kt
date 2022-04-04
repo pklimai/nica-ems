@@ -7,7 +7,5 @@ val beamParticleConfig = ParameterConfig("beam_particle", "string", false, "Beam
 val targetParticleConfig = ParameterConfig("target_particle", "string", false, "Target Particle")
 val energyConfig = ParameterConfig("energy", "float", true, "Energy, GeV")
 
-// TODO type long?
-val DEFAULT_LIMIT_FOR_WEB = 1000
 val limitConfig = ParameterConfig("limit", "int", false, "Limit [$DEFAULT_LIMIT_FOR_WEB]")
 val offsetConfig = ParameterConfig("offset", "int", false, "Offset")
