@@ -134,11 +134,16 @@ docker build -t nica-emd:0.1.2 .
 sudo docker run -d --rm --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:0.1.2
 ```
 
-##### Testing
+##### Testing / debugging
 
 Use `testing/docker-compose.yaml` for test databases. 
 
 To test FreeIPA (LDAP), you can configure SSH tunneling such as `127.0.0.1:3890 -> bmn-ipa.jinr.ru:389`
+
+To view application logs:
+```
+docker logs nica-emd -f
+```
 
 To run container in debug mode, use something like
 ```
