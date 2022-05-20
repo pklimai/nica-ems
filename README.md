@@ -134,6 +134,15 @@ docker build -t nica-emd:0.1.2 .
 sudo docker run -d --rm --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:0.1.2
 ```
 
+##### Run on CentOS
+
+```
+sudo yum install java-11
+git clone https://github.com/pklimai/nica-emd
+cd nica-emd/
+sh gradlew run
+```
+
 ##### Testing / debugging
 
 Use `testing/docker-compose.yaml` for test databases. 
