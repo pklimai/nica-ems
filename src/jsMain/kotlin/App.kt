@@ -30,44 +30,6 @@ val app = fc<Props> { props ->
             setConfig(getConfig())
         }
     }
-
-    /*  Box {
-        attrs {
-            sx = jso {
-                flexGrow = FlexGrow(1.0)
-                marginBottom = 25.px
-            }
-
-        }
-
-        AppBar {
-            attrs {
-                position = AppBarPosition.static
-            }
-
-            Toolbar {
-
-                Typography {
-                    attrs {
-                        sx = jso { flexGrow = FlexGrow(1.0) }
-                        variant = "h6"
-                        component = ReactHTML.div
-                    }
-
-                    + (config?.title ?: "EMS")
-                }
-
-                Button {
-                    attrs {
-                        color = ButtonColor.inherit
-                    }
-
-                    +"Login"
-                }
-            }
-        }
-    }
-    */
     div("wrapper") {
         header() {
             nav() {
@@ -115,7 +77,7 @@ val app = fc<Props> { props ->
                             span("focus-form1") {}
                             span("symbol-form1") {
                                 div() {
-                                    img(classes = "login-password-icon", src = "password.png") {  }
+                                    img(classes = "login-password2-icon", src = "password.png") {  }
                                 }
                             }
                         }

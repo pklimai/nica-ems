@@ -1,0 +1,10 @@
+version: '3'
+services:
+    emd:
+        build: .
+        container_name: nica-emd
+        restart: always
+        ports:
+          - 80:8080
+        volumes:
+          - ./src/jvmMain/resources/event-config-example.yaml:/root/event-config.yaml
