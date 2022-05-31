@@ -36,176 +36,174 @@ val emdPage = fc<EMDPageProps> { props ->
     // val (EMDData, setEMDData) = useState<String>()
     div("new_table_page") {
         div("new_table_page__card") {
-            div("first") {
-                div("mat-table-title") {
-                    +props.pageConfig.name
+            div("mat-table-title") {
+                +props.pageConfig.name
+            }
+            div("form") {
+                // Without receiver, it works but tags go to wrong level in document
+                fun RDOMBuilder<DIV>.textInput(paramName: String, labelString: String = "") {
+                    TextField {
+                        attrs {
+                            name = paramName
+                            id = paramName
+                            value = params?.get(paramName) ?: ""    /// ? to test
+                            variant = FormControlVariant.outlined
+                            label = ReactNode(labelString)
+                            onChange = { it ->
+                                val newValue = (it.target as HTMLInputElement).value
+                                // console.log(newValue)
+                                val copyParams = HashMap(params ?: emptyMap())
+                                copyParams[paramName] = newValue
+                                setParams(copyParams)
+                            }
+                            size = Size.small
+                        }
+                    }
                 }
-                div("form") {
-                    // Without receiver, it works but tags go to wrong level in document
-                    fun RDOMBuilder<DIV>.textInput(paramName: String, labelString: String = "") {
-                        TextField {
+
+                fun RDOMBuilder<DIV>.boolInput(paramName: String, labelString: String = "") {
+                    FormControl{
+                        attrs {
+                            fullWidth = true
+                        }
+                        InputLabel {
                             attrs {
-                                name = paramName
                                 id = paramName
-                                value = params?.get(paramName) ?: ""    /// ? to test
-                                variant = FormControlVariant.outlined
+                                sx = jso {
+                                    // Fixes default location - is there a better way?
+                                    marginTop = (-5).px
+                                }
+                            }
+                            +labelString
+                        }
+                        Select{
+                            attrs {
+                                size = Size.small
                                 label = ReactNode(labelString)
-                                onChange = { it ->
-                                    val newValue = (it.target as HTMLInputElement).value
-                                    // console.log(newValue)
+                                // labelId = paramName
+                                value =  (params?.get(paramName) ?: "").unsafeCast<Nothing?>()
+                                onChange = { it: dynamic ->
+                                    val newValue = it.target.value    // Note: it.asDynamic() won't work
+                                    // console.log("onChange called in Select with value $newValue")
                                     val copyParams = HashMap(params ?: emptyMap())
                                     copyParams[paramName] = newValue
                                     setParams(copyParams)
                                 }
-                                size = Size.small
                             }
-                        }
-                    }
-
-                    fun RDOMBuilder<DIV>.boolInput(paramName: String, labelString: String = "") {
-                        FormControl {
-                            attrs {
-                                fullWidth = true
-                            }
-                            InputLabel {
+                            MenuItem {
                                 attrs {
-                                    id = paramName
-                                    sx = jso {
-                                        // Fixes default location - is there a better way?
-                                        marginTop = (-5).px
-                                    }
+                                    value = ""
                                 }
-                                +labelString
+                                +"No selection"
                             }
-                            Select {
+                            MenuItem {
                                 attrs {
-                                    size = Size.small
-                                    label = ReactNode(labelString)
-                                    // labelId = paramName
-                                    value =  (params?.get(paramName) ?: "").unsafeCast<Nothing?>()
-                                    onChange = { it: dynamic ->
-                                        val newValue = it.target.value    // Note: it.asDynamic() won't work
-                                        // console.log("onChange called in Select with value $newValue")
-                                        val copyParams = HashMap(params ?: emptyMap())
-                                        copyParams[paramName] = newValue
-                                        setParams(copyParams)
-                                    }
+                                    value = "true"
                                 }
-                                MenuItem {
-                                    attrs {
-                                        value = ""
-                                    }
-                                    +"No selection"
+                                +"true"
+                            }
+                            MenuItem {
+                                attrs {
+                                    value = "false"
                                 }
-                                MenuItem {
-                                    attrs {
-                                        value = "true"
-                                    }
-                                    +"true"
+                                +"false"
+                            }
+                        }
+                    }
+                }
+
+                // TODO List selection
+                div("input-div") {
+                    textInput("software_version", "Software Version")
+                }
+
+                div("input-div") {
+                    textInput("period_number", "Period Number")
+                }
+
+                div("input-div") {
+                    textInput("run_number", "Run Number")
+                }
+
+                if (props.condition_db != null) {
+                    div("divider-div") {
+                    }
+
+                    div("input-div") {
+                        textInput("beam_particle", "Beam Particle")
+                    }
+
+                    div("input-div") {
+                        textInput("target_particle", "Target Particle")
+                    }
+
+                    div("input-div") {
+                        textInput("energy", "Energy, GeV")
+                    }
+                }
+
+                div("divider-div2") {
+                }
+
+                props.pageConfig.parameters.forEach { param ->
+                    div("input-div") {
+                        when (param.type) {
+                            "bool" -> boolInput(param.name, param.web_name)
+                            else -> textInput(param.name, param.web_name)
+                        }
+                    }
+                }
+
+                div("divider-div2") {
+                }
+
+                div("input-div") {
+                    textInput("limit", "Limit [dflt=${props.pageConfig.default_limit_web}]")
+                }
+
+                div("input-div") {
+                    textInput("offset", "Offset")
+                }
+
+                div("button-container") {
+                    Button {
+                        attrs {
+                            +"Filter"
+                            variant = ButtonVariant.contained
+                            size = Size.small
+                            onClick = {
+                                // form API request
+                                val paramsWithLimit = HashMap(params ?: emptyMap())
+                                if (paramsWithLimit["limit"].isNullOrEmpty())
+                                    paramsWithLimit["limit"] = props.pageConfig.default_limit_web.toString()
+                                val paramsForURL = if (paramsWithLimit.isNotEmpty()) {
+                                    "?" + paramsWithLimit.map { "${it.key}=${it.value}" }.filter { it.isNotBlank() }
+                                        .joinToString("&")
+                                } else {
+                                    ""
                                 }
-                                MenuItem {
-                                    attrs {
-                                        value = "false"
-                                    }
-                                    +"false"
+
+                                console.log(paramsWithLimit.toString())
+                                console.log(paramsForURL)
+                                scope.launch {
+                                    val emd = getEMD(props.pageConfig.api_url + "/emd" + paramsForURL)
+                                    console.log(emd)
+                                    // update state with API data
+                                    props.setEMDdata(emd)
                                 }
+
                             }
                         }
                     }
 
-                    // TODO List selection
-                    div("input-div") {
-                        textInput("software_version", "Software Version")
-                    }
-
-                    div("input-div") {
-                        textInput("period_number", "Period Number")
-                    }
-
-                    div("input-div") {
-                        textInput("run_number", "Run Number")
-                    }
-
-                    if (props.condition_db != null) {
-                        div("divider-div") {
-                        }
-
-                        div("input-div") {
-                            textInput("beam_particle", "Beam Particle")
-                        }
-
-                        div("input-div") {
-                            textInput("target_particle", "Target Particle")
-                        }
-
-                        div("input-div") {
-                            textInput("energy", "Energy, GeV")
-                        }
-                    }
-
-                    div("divider-div2") {
-                    }
-
-                    props.pageConfig.parameters.forEach { param ->
-                        div("input-div") {
-                            when (param.type) {
-                                "bool" -> boolInput(param.name, param.web_name)
-                                else -> textInput(param.name, param.web_name)
-                            }
-                        }
-                    }
-
-                    div("divider-div2") {
-                    }
-
-                    div("input-div") {
-                        textInput("limit", "Limit [dflt=${props.pageConfig.default_limit_web}]")
-                    }
-
-                    div("input-div") {
-                        textInput("offset", "Offset")
-                    }
-
-                    div("button-container") {
-                        Button {
-                            attrs {
-                                +"Filter"
-                                variant = ButtonVariant.contained
-                                size = Size.small
-                                onClick = {
-                                    // form API request
-                                    val paramsWithLimit = HashMap(params ?: emptyMap())
-                                    if (paramsWithLimit["limit"].isNullOrEmpty())
-                                        paramsWithLimit["limit"] = props.pageConfig.default_limit_web.toString()
-                                    val paramsForURL = if (paramsWithLimit.isNotEmpty()) {
-                                        "?" + paramsWithLimit.map { "${it.key}=${it.value}" }.filter { it.isNotBlank() }
-                                            .joinToString("&")
-                                    } else {
-                                        ""
-                                    }
-
-                                    console.log(paramsWithLimit.toString())
-                                    console.log(paramsForURL)
-                                    scope.launch {
-                                        val emd = getEMD(props.pageConfig.api_url + "/emd" + paramsForURL)
-                                        console.log(emd)
-                                        // update state with API data
-                                        props.setEMDdata(emd)
-                                    }
-
-                                }
-                            }
-                        }
-
-                        Button {
-                            attrs {
-                                +"Reset"
-                                variant = ButtonVariant.contained
-                                size = Size.small
-                                onClick = {
-                                    setParams(emptyMap<String, String>())
-                                    props.setEMDdata(null)
-                                }
+                    Button {
+                        attrs {
+                            +"Reset"
+                            variant = ButtonVariant.contained
+                            size = Size.small
+                            onClick = {
+                                setParams(emptyMap<String, String>())
+                                props.setEMDdata(null)
                             }
                         }
                     }

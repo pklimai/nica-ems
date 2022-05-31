@@ -22,51 +22,12 @@ val app = fc<Props> { props ->
     // setCurrentPage(null) -- valid but causes too many re-renders here!
 
     val (EMDdata, setEMDdata) = useState<String>()
-
-
+    val (disp, setDisp) = useState(true);
     useEffectOnce {
         scope.launch {
             setConfig(getConfig())
         }
     }
-
-    /*  Box {
-        attrs {
-            sx = jso {
-                flexGrow = FlexGrow(1.0)
-                marginBottom = 25.px
-            }
-
-        }
-
-        AppBar {
-            attrs {
-                position = AppBarPosition.static
-            }
-
-            Toolbar {
-
-                Typography {
-                    attrs {
-                        sx = jso { flexGrow = FlexGrow(1.0) }
-                        variant = "h6"
-                        component = ReactHTML.div
-                    }
-
-                    + (config?.title ?: "EMS")
-                }
-
-                Button {
-                    attrs {
-                        color = ButtonColor.inherit
-                    }
-
-                    +"Login"
-                }
-            }
-        }
-    }
-    */
     div("wrapper") {
         header() {
             nav() {
@@ -89,47 +50,76 @@ val app = fc<Props> { props ->
                     }
                 }
                 span("example-spacer") {}
-                div("menu_name2") {
-                    div("events_icon2") {}
-                    div("login_block") {
-                        div("wrap-form1 validate-input") {
-                            input() {
-                                attrs {
-                                    placeholder = "Username"
-                                }
-                            } //<input type="text" #username  placeholder="Username" required>
-                            span("focus-form1") {}
-                            span("symbol-form1") {
-                                div() {
-                                    img(classes = "login-password-icon", src = "username.png") {  }
-                                }
-                            }
-                        }
-                        div("wrap-form1 validate-input") {
-                            input() {
-                                attrs {
-                                    placeholder = "Password"
-                                }
-                            } //<input type="text" #password type="password"  placeholder="Password" required>
-                            span("focus-form1") {}
-                            span("symbol-form1") {
-                                div() {
-                                    img(classes = "login-password-icon", src = "password.png") {  }
+                if(disp){
+                    div("menu_name2") {
+                        div("events_icon2") {}
+                        div("login_block") {
+                            div("wrap-form1 validate-input") {
+                                input() {
+                                    attrs {
+                                        placeholder = "Username"
+                                    }
+                                } //<input type="text" #username  placeholder="Username" required>
+                                span("focus-form1") {}
+                                span("symbol-form1") {
+                                    div() {
+                                        img(classes = "login-password-icon", src = "username.png") {  }
+                                    }
                                 }
                             }
-                        }
-                        div("but_login") {
-                            Button {
-                                attrs {
-                                    +"Sign In"
-                                    variant = ButtonVariant.contained
-                                    size = Size.small
-                                    onClick = {
+                            div("wrap-form1 validate-input") {
+                                input() {
+                                    attrs {
+                                        placeholder = "Password"
+                                    }
+                                } //<input type="text" #password type="password"  placeholder="Password" required>
+                                span("focus-form1") {}
+                                span("symbol-form1") {
+                                    div() {
+                                        img(classes = "login-password2-icon", src = "password.png") {  }
+                                    }
+                                }
+                            }
+                            div("but_login") {
+                                Button {
+                                    attrs {
+                                        +"Sign In"
+                                        variant = ButtonVariant.contained
+                                        size = Size.small
+                                        onClick = {
+                                            setDisp(false)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
+                    } 
+                } else{
+                 div("menu_name3") {
+                        div("events_icon3") {
+                            div("header_svg_pad"){
+                                dangerousSVG(SVGDictionaryIcon)
+                            }
+                            div("header_line"){}
+                            div("header_user_info"){
+                                dangerousSVG(SVGUserPic)
+                                div("header_svg_title"){
+                                    +"Username"
+                                }
+                            }
+                            div("header_line"){}
+                        }
+                        div() {
+                            div("header_svg_pad"){
+                                dangerousSVG(SVGLogout)
+                                attrs {
+                                    onClick = {
+                                        setDisp(true)
+                                    }
+                                }
+                            }
+                        }
+                    }    
                 }
             }
         }
@@ -195,60 +185,3 @@ val app = fc<Props> { props ->
         }
     }
 }
-
-/*
-            div("container-for-three") {
-            // kotlin-react-dom-legacy is used here
-            div("div-select-catalog") {
-                Card {
-                    attrs {
-                        style = jso {
-                            paddingLeft = 25.px
-                            paddingRight = 25.px
-                        }
-                    }
-
-                    ul {
-                        config?.pages?.forEach { item ->
-                            li {
-                                key = item.name
-                                attrs.onClickFunction = {
-                                    setCurrentPage(item)
-                                    // Clear data for table
-                                    setEMDdata(null)
-                                }
-                                h4 {
-                                    +"[${item.name}] ${item.api_url} "
-                                }
-                            }
-                        }
-
-                        li {
-                            key = "Home"
-                            attrs.onClickFunction = {
-                                setCurrentPage(null)
-                            }
-                            h4 {
-                                +"Home"
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            if (currentPage == null) {
-                child(homePage)
-            } else {
-                child(emdPage) {
-                    attrs.pageConfig = currentPage
-                    attrs.EMDdata = EMDdata
-                    attrs.setEMDdata = { it: String? ->
-                        setEMDdata(it)
-                    }
-                    attrs.condition_db = config?.condition_db
-                }
-            }
-        } */
-
-

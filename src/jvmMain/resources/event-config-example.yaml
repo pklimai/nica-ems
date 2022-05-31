@@ -1,12 +1,14 @@
 event_db:
-  host: 192.168.65.52
+  #host: 192.168.65.52
+  host: 159.93.221.14  
   port: 5000
   db_name: event_db
   user: postgres
   password: example
 
 condition_db:
-  host: 192.168.65.52
+  #host: 192.168.65.52
+  host: 159.93.221.14
   port: 5001
   db_name: bmn_db
   user: user
@@ -36,7 +38,7 @@ pages:
         intervals: true
         web_name: Total track number
 
-  - name: BM@N SRC Events
+  - name: SRC Events
     api_url: /event_api/v1/src
     web_url: /event_web/src
     db_table_name: src_event
