@@ -301,6 +301,12 @@ header nav .mat-button {
   align-items: center;
   height: 100%;
 }
+.menu_name3 {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  justify-content: center;
+}
 
 .login_block {
   display: flex;
@@ -453,6 +459,13 @@ header nav .mat-button {
   display: flex;
   border-right: 1.5px solid #4343fa83;
 }
+.events_icon3 {
+  cursor: pointer;
+  height: 100%;
+  align-items: center;
+  display: flex;
+  
+}
 
 .events_icon2 button {
   margin-right: 15px;
@@ -515,9 +528,8 @@ header nav .mat-button {
 }
 
 .sidenav .search svg {
-  width: 35px;
-  fill: #928787;
-  height: 24px;
+  width: 28px;
+  fill: #928787d4;
 }
 
 .sidenav .search__name {
@@ -1064,4 +1076,31 @@ footer {
 }
 .other_top label{
   margin-top: -9px;
+}
+.login_out__user{
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.header_svg_pad div svg{
+  height: 33px;
+}
+.header_user_info div svg{
+  height: 37px;
+}
+.header_svg_title{
+padding: 0 10px;
+font-weight: 400;
+font-size: calc(12px + 0.15625vw)!important;
+cursor: default;
+letter-spacing: .4px;
+}
+.header_user_info{
+  display: flex;
+  align-items: center;
+}
+.header_line{
+  border-right: 1.5px solid #4343fa83;
+  margin: 0 10px;
+  height: 100%;
 }
