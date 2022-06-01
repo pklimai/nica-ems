@@ -1,64 +1,64 @@
 package ru.mipt.npm.nica.emd
 
+import Highcharts
+import HighchartsReact
+import kotlinext.js.jso
 import kotlinx.html.DIV
 import kotlinx.html.js.onClickFunction
 import mui.material.FormControlVariant
 import mui.material.TextField
-import react.Props
-import react.ReactNode
+import react.*
 import react.dom.RDOMBuilder
 import react.dom.div
 import react.dom.onChange
-import react.fc
-import react.useState
 
 
 val homePage = fc<Props> {
     val (period, setPeriod) = useState(false);
     val (params, setParams) = useState<Map<String, String>>()
-    div("home__page"){
-        div(){
-            div("home__page__dashboard"){
-                div("home__page__dashboard__head"){
+    div("home__page") {
+        div() {
+            div("home__page__dashboard") {
+                div("home__page__dashboard__head") {
                     +"Event Metadata System"
                 }
-                div("home__page__dashboard__text"){
+                div("home__page__dashboard__text") {
                     +"The Event Catalogue stores summary event metadata to select necessary events by criteria"
                 }
             }
-            div("home__page__stats"){
-                div("home__page__stats__block"){
+            div("home__page__stats") {
+                div("home__page__stats__block") {
                     dangerousSVG(SVGHomeRecords)
-                    div("home__page__stats__block__column"){
-                        div("home__page__stats__block__column__stats"){
-                            div(){
+                    div("home__page__stats__block__column") {
+                        div("home__page__stats__block__column__stats") {
+                            div() {
                                 +"5000"
                             }
-                            div{
+                            div {
                                 +"Records"
                             }
                         }
-                        div("event_metadata"){
+                        div("event_metadata") {
                             +"event metadata"
                         }
                     }
                 }
-                div("home__page__stats__block borders stats_new_block"){
+                div("home__page__stats__block borders stats_new_block") {
                     attrs.onClickFunction = {
                         setPeriod(!period)
                     }
                     dangerousSVG(SVGHomePeriod)
-                    div("stats_new_block__div"){
-                        div("per"){
+                    div("stats_new_block__div") {
+                        div("per") {
                             +"Period Number —"
                         }
-                        div("per_number"){
+                        div("per_number") {
                             +"7 " // из базы
                         }
                     }
                 }
-                if(period){
-                    fun RDOMBuilder<DIV>.textSelect(paramName: String, labelString: String = ""){
+                if (period) {
+                    fun RDOMBuilder<DIV>.textSelect(paramName: String, labelString: String = "") {
                         TextField {
                             attrs {
                                 name = paramName
@@ -70,7 +70,7 @@ val homePage = fc<Props> {
                             }
                         }
                     }
-                    div("home__page__stats__block3"){
+                    div("home__page__stats__block3") {
                         textSelect("period number", "Period Number")
                     }
                 }
@@ -83,21 +83,43 @@ val homePage = fc<Props> {
                         </mat-form-field>
                     </div>
                 */
-                div("home__page__stats__block2"){
+                div("home__page__stats__block2") {
                     dangerousSVG(SVGHomeSoftware)
-                    div("stats_new_block__div"){
-                        div("per"){
+                    div("stats_new_block__div") {
+                        div("per") {
                             +"Software Version — "
                         }
-                        div("per_number"){
+                        div("per_number") {
                             +"20.12.0 " // из базы
                         }
                     }
                 }
             }
         }
-        div("charts"){
+        div("charts") {
             +"Charts"
+            div {
+                HighchartsReact {
+                    attrs {
+                        // console.log(Highcharts)
+                        this.highcharts = Highcharts   //js("Highcharts")
+                        this.options = jso {
+                            title = jso {
+                                text = "NICA GRAPHS HERE!"
+                            }
+                            series = js("[{ data: [1, 2, 3] }]")
+//                                listOf<dynamic>(
+//                                jso {
+//                                    name = "me"
+//                                    data = listOf(1, 2, 3)
+//                                }
+//                            )
+                        }
+
+
+                    }
+                }
+            }
         }
     }
 }
