@@ -11,6 +11,7 @@ import react.*
 import react.dom.RDOMBuilder
 import react.dom.div
 import react.dom.onChange
+import kotlin.js.json
 
 
 val homePage = fc<Props> {
@@ -101,22 +102,40 @@ val homePage = fc<Props> {
             div {
                 HighchartsReact {
                     attrs {
-                        // console.log(Highcharts)
-                        this.highcharts = Highcharts   //js("Highcharts")
-                        this.options = jso {
-                            title = jso {
-                                text = "NICA GRAPHS HERE!"
-                            }
-                            series = js("[{ data: [1, 2, 3] }]")
-//                                listOf<dynamic>(
-//                                jso {
-//                                    name = "me"
-//                                    data = listOf(1, 2, 3)
-//                                }
-//                            )
-                        }
+                        this.highcharts = Highcharts
+                        this.options = json(
+                            "title" to "",
+                            "chart" to js("{borderWidth: 0, plotShadow: false, margin: [0, 0, 0, 8], spacingTop: 0, spacingBottom: 0, spacingLeft: 0, spacingRight: 0, style: { fontFamily: 'Arial, Helvetica, Clean, sans-serif'} }"),
+                            "credits" to json(
+                                "enabled" to false
+                            ),
+                            "tooltip" to js("{style: { color: '#1b1818' }, backgroundColor: '#ffffff', borderRadius: 5, borderWidth: 3, headerFormat: '<small></small>', pointFormat: '{point.name}:  {point.y} MEvents' }"),
+                            "plotOptions" to json(
+                                "pie" to json(
+                                    "allowPointSelect" to true,
+                                    "cursor" to "pointer",
+                                    "startAngle" to -120,
+                                    "center" to arrayOf("50%", "50%"),
+                                    "size" to "51%",
+                                    "depth" to 15,
+                                    "colors" to arrayOf("#ff0000", "#00ff00", "#0000ff"),  // this.bname[i].color,
+                                    "dataLabels" to json(
+                                        "enabled" to true,
+                                        "distance" to 15,
+                                        "style" to js("{ fontSize: 'inherit', fontWeight: 'normal', fontFamily: 'Lato, sans-serif', lineHeight: '18px' }"),
+                                        "format" to "{point.name}: <i>{point.y} MEvents</i>"
+                                    )
 
-
+                               )
+                            ),
+                            "series" to arrayOf<dynamic>(
+                                json(
+                                    "type" to "pie",
+                                    "name" to "",
+                                    "data" to arrayOf(1, 2, 3, 4, 5)
+                                )
+                            )
+                        )
                     }
                 }
             }
