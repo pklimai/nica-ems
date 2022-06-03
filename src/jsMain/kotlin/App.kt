@@ -97,8 +97,17 @@ val app = fc<Props> { props ->
                 } else{
                  div("menu_name3") {
                         div("events_icon3") {
-                            div("header_svg_pad"){
+                            div("header_svg_pad svg_anim_di"){
                                 dangerousSVG(SVGDictionaryIcon)
+                                attrs {
+                                    onClickFunction = {
+                                        setCurrentPage(null)
+                                    }
+                                }
+
+                                span("svg_anim_di_tooltip"){
+                                    +"Dictionary"
+                                }
                             }
                             div("header_line"){}
                             div("header_user_info"){
@@ -110,11 +119,12 @@ val app = fc<Props> { props ->
                             div("header_line"){}
                         }
                         div() {
-                            div("header_svg_pad"){
+                            div("header_svg_pad svg_anim_exit"){
                                 dangerousSVG(SVGLogout)
                                 attrs {
-                                    onClick = {
+                                    onClickFunction = {
                                         setDisp(true)
+                                        setCurrentPage(null)
                                     }
                                 }
                             }
@@ -159,6 +169,7 @@ val app = fc<Props> { props ->
             }
             if (currentPage == null) {
                 child(homePage)
+                //child(dictionary) _attention_ при клике по иконке словарика надо чтобы перекидывала в другой компонент, но необходимо проверять по 2 условиям по роли и авторизации
             } else {
                 child(emdPage) {
                     attrs.pageConfig = currentPage

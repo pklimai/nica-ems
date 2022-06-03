@@ -20,7 +20,7 @@ val searchComponent = fc<SearchComponentProps> { props ->
             attrs["height"] = 29
             attrs["viewBox"] = "0 0 29 29"
             attrs["xmlns"] = "http://www.w3.org/2000/svg"
-            attrs["fill"] = if (props.highlighted) "#4343fae3" else "#928787d4"
+            attrs["fill"] = if (props.highlighted) "#5ba6ff" else "#928787d4"
             child(createElement("path", SVGPathAttrs("evenodd", "evenodd", SVGSearchEvents)))
         }
         div("search__name") {

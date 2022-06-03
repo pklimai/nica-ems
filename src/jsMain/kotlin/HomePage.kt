@@ -16,6 +16,7 @@ import kotlin.js.json
 
 val homePage = fc<Props> {
     val (period, setPeriod) = useState(false);
+    val (soft, setSoft) = useState(false);
     val (params, setParams) = useState<Map<String, String>>()
     div("home__page") {
         div() {
@@ -54,7 +55,7 @@ val homePage = fc<Props> {
                             +"Period Number —"
                         }
                         div("per_number") {
-                            +"7 " // из базы
+                            +"8 " //_attention_ из базы брать последнее значение и по умолчанию отстраивать чарты
                         }
                     }
                 }
@@ -75,70 +76,96 @@ val homePage = fc<Props> {
                         textSelect("period number", "Period Number")
                     }
                 }
-                /*
-                    <div *ngIf="per" class="home__page__stats__block3" style="box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
-                        <mat-form-field class="wform" style="margin-bottom: -10%;width: 110px;">
-                            <mat-select  placeholder="Period number" [(ngModel)]="fil.per" [ngModelOptions]="{standalone: true}">
-                                <mat-option  *ngFor="let per of data;"  [value]="per" (click)="start();">Period {{per}} </mat-option>
-                            </mat-select>
-                        </mat-form-field>
-                    </div>
-                */
-                div("home__page__stats__block2") {
+                div("home__page__stats__block2 borders right_line") {
+                    attrs.onClickFunction = {
+                        setSoft(!soft)
+                    }
                     dangerousSVG(SVGHomeSoftware)
                     div("stats_new_block__div") {
                         div("per") {
                             +"Software Version — "
                         }
                         div("per_number") {
-                            +"20.12.0 " // из базы
+                            +"20.12.0 " //_attention_ а если активировали только 1 элемент(period), а софт нет то в зарос брать по умолчанию
                         }
+                    }
+                }
+                if (soft) {
+                    fun RDOMBuilder<DIV>.textSelect(paramName: String, labelString: String = "") {
+                        TextField {
+                            attrs {
+                                name = paramName
+                                id = paramName
+                                value = params?.get(paramName) ?: ""    /// ? to test
+                                variant = FormControlVariant.standard
+                                label = ReactNode(labelString)
+                                onChange = { }
+                            }
+                        }
+                    }
+                    div("home__page__stats__block3") {
+                        textSelect("software_version", "Software Version")
                     }
                 }
             }
         }
         div("charts") {
-            +"Charts"
-            div {
-                HighchartsReact {
-                    attrs {
-                        this.highcharts = Highcharts
-                        this.options = json(
-                            "title" to "",
-                            "chart" to js("{borderWidth: 0, plotShadow: false, margin: [0, 0, 0, 8], spacingTop: 0, spacingBottom: 0, spacingLeft: 0, spacingRight: 0, style: { fontFamily: 'Arial, Helvetica, Clean, sans-serif'} }"),
-                            "credits" to json(
-                                "enabled" to false
-                            ),
-                            "tooltip" to js("{style: { color: '#1b1818' }, backgroundColor: '#ffffff', borderRadius: 5, borderWidth: 3, headerFormat: '<small></small>', pointFormat: '{point.name}:  {point.y} MEvents' }"),
-                            "plotOptions" to json(
-                                "pie" to json(
-                                    "allowPointSelect" to true,
-                                    "cursor" to "pointer",
-                                    "startAngle" to -120,
-                                    "center" to arrayOf("50%", "50%"),
-                                    "size" to "51%",
-                                    "depth" to 15,
-                                    "colors" to arrayOf("#ff0000", "#00ff00", "#0000ff"),  // this.bname[i].color,
-                                    "dataLabels" to json(
-                                        "enabled" to true,
-                                        "distance" to 15,
-                                        "style" to js("{ fontSize: 'inherit', fontWeight: 'normal', fontFamily: 'Lato, sans-serif', lineHeight: '18px' }"),
-                                        "format" to "{point.name}: <i>{point.y} MEvents</i>"
+            div("chart_bloks"){ // https://www.postgresql.org/docs/current/postgres-fdw.html
+                div("chart_bloks__title_beam_energy"){+"Beam {{i.beam}} ( E = {{i.energy}} GeV/n )"}
+                div("chart_bloks_title_total"){+"Total: {{i.total}} MEvents"}
+                div("chart_blok_svg"){
+                    HighchartsReact {
+                        attrs {
+                            this.highcharts = Highcharts
+                            this.options = json(
+                                "title" to "",
+                                "chart" to json(
+                                    "height" to 220,
+                                    "width" to 320, //сейчас широко, но когда заполнятся поля будет ровно
+                                    "borderWidth" to 0,
+                                    "plotBackgroundColor" to null, 
+                                    "plotBorderWidth" to null,
+                                    "margin" to 0,
+                                    "borderRadius" to 0,
+                                    "plotShadow" to false, 
+                                    "spacingTop" to 0, 
+                                    "spacingBottom" to 0, 
+                                    "spacingLeft" to 0, 
+                                    "spacingRight" to 0,
+                                ),
+                                "credits" to json(
+                                    "enabled" to false
+                                ),
+                                "tooltip" to js("{style: { color: '#1b1818' }, backgroundColor: '#ffffff', borderRadius: 5, borderWidth: 3, headerFormat: '<small></small>', pointFormat: '{point.name}:  {point.y} MEvents' }"),
+                                "plotOptions" to json(
+                                    "pie" to json(
+                                        "allowPointSelect" to true,
+                                        "accessibility" to false,
+                                        "cursor" to "pointer",
+                                        "size" to 100,
+                                        //"colors" to arrayOf("#ff0000", "#00ff00", "#0000ff"),   this.bname[i].color,
+                                        "dataLabels" to json(
+                                            "enabled" to true,
+                                            "distance" to 15,
+                                            "style" to js("{ fontSize: 'inherit', fontWeight: 'normal', fontFamily: 'Lato, sans-serif', lineHeight: '18px' }"),
+                                            "format" to "{point.name}: <i>{point.y} MEvents</i>"
+                                        )
                                     )
-
-                               )
-                            ),
-                            "series" to arrayOf<dynamic>(
-                                json(
-                                    "type" to "pie",
-                                    "name" to "",
-                                    "data" to arrayOf(1, 2, 3, 4, 5)
+                                ),
+                                "series" to arrayOf<dynamic>(
+                                    json(
+                                        "type" to "pie",
+                                        "name" to "",
+                                        "data" to arrayOf(1, 2, 3, 4, 5)
+                                    )
                                 )
                             )
-                        )
+                        }
                     }
                 }
             }
         }
     }
 }
+
+//_attention_ Проблема с разворачиванием баз в condition_db нет таблиц, а event даже не развернулась в докере
