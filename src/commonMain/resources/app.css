@@ -100,7 +100,9 @@ td, th {
 
 /* ADD */
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: border-box;
 }
 
@@ -110,7 +112,8 @@ td, th {
   border: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -195,11 +198,12 @@ hr {
   background-color: #f3f6fd;
   position: relative;
 }
-.menu_icon .mat-button:hover{
+
+.menu_icon .mat-button:hover {
   cursor: pointer;
 }
-.menu_icon .mat-button:active{
-}
+
+.menu_icon .mat-button:active {}
 
 .app-icon:before {
   top: -8px;
@@ -209,7 +213,8 @@ hr {
   bottom: -8px;
 }
 
-.app-icon:before, .app-icon:after {
+.app-icon:before,
+.app-icon:after {
   content: "";
   position: absolute;
   width: 16px;
@@ -301,11 +306,14 @@ header nav .mat-button {
   align-items: center;
   height: 100%;
 }
+
 .menu_name3 {
   display: flex;
   align-items: center;
   height: 100%;
   justify-content: center;
+  margin-right: 1%;
+  margin-top: 5px;
 }
 
 .login_block {
@@ -437,7 +445,7 @@ header nav .mat-button {
   width: 150px !important;
   border-radius: 1em;
   padding: 0 0em 0 52px;
-      outline: none;
+  outline: none;
 }
 
 @media (min-width: 767px) {
@@ -453,18 +461,17 @@ header nav .mat-button {
 }
 
 .events_icon2 {
-  cursor: pointer;
   height: 100%;
   align-items: center;
   display: flex;
   border-right: 1.5px solid #4343fa83;
 }
+
 .events_icon3 {
-  cursor: pointer;
   height: 100%;
   align-items: center;
   display: flex;
-  
+
 }
 
 .events_icon2 button {
@@ -485,6 +492,7 @@ header nav .mat-button {
   width: 100%;
 }
 
+
 .home__page {
   display: flex;
   flex-direction: column;
@@ -504,6 +512,7 @@ header nav .mat-button {
   padding-top: 2.8%;
   padding-left: 6px;
   min-width: calc(190px + 2.08333vw) !important;
+  background: transparent;
 }
 
 .sidenav>div {
@@ -594,6 +603,7 @@ footer {
   width: 18px;
   height: 18px;
 }
+
 .login-password2-icon {
   height: 25px;
   margin-top: 4px;
@@ -716,7 +726,7 @@ footer {
   margin-left: 20px;
 }
 
-.home__page__stats__block  div{
+.home__page__stats__block div {
   display: flex;
   align-items: center;
 }
@@ -824,7 +834,7 @@ footer {
 
 .per_number {
   margin-left: 6px;
-  margin-top: 1px;
+  margin-top: -3px;
   font-weight: 600;
   color: #5d5e61;
   font-family: "Nanum Gothic", sans-serif;
@@ -852,6 +862,14 @@ footer {
   padding-top: 1.3%;
 }
 
+.charts div {
+  padding: 1% 0%;
+  width: 26%;
+  margin: .8%;
+  border-radius: 1em;
+  font-family: "Nanum Gothic", sans-serif;
+}
+
 .new_table_page {
   display: flex;
   height: 100%;
@@ -876,7 +894,8 @@ footer {
   background: #fff;
   color: #000000de;
   box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
-  border-bottom: solid 2px #4897f8c4; border-right: solid 4px #4897f8a3; 
+  border-bottom: solid 2px #4897f8c4;
+  border-right: solid 4px #4897f8a3;
   /* temporarily */
 }
 
@@ -971,7 +990,8 @@ footer {
   font-size: calc(12px + 0.07812vw) !important;
   height: calc(28px + 0.20833vw) !important;
 }
-.but_login > button{
+
+.but_login>button {
   margin: 0 15px;
   background-color: #2862ff;
   box-shadow: 0 3px 1px -2px #0003, 0 2px 2px #00000024, 0 -2px 5px #0000001f;
@@ -1007,42 +1027,51 @@ footer {
 }
 
 /* TABLE CSS */
-.MuiDataGrid-main{
+.MuiDataGrid-main {
   min-height: 583px;
 }
-.MuiDataGrid-columnSeparator{
+
+.MuiDataGrid-columnSeparator {
   display: none !important;
 }
-.MuiDataGrid-columnHeaderTitle{
+
+.MuiDataGrid-columnHeaderTitle {
   color: #000000b9;
   font-weight: 500 !important;
   font-size: 0.85rem;
 }
-.MuiDataGrid-row:nth-child(2n+1	){
-  background: rgba(0,0,0,.1);
+
+.MuiDataGrid-row:nth-child(2n+1) {
+  background: rgba(0, 0, 0, .1);
 }
-.MuiDataGrid-columnHeaders{
-  min-height: 3em!important;
+
+.MuiDataGrid-columnHeaders {
+  min-height: 3em !important;
   background: #68a5e6;
   letter-spacing: .2px;
   font-size: 0.9rem;
 }
-.MuiDataGrid-columnHeaders > div > div:first-child{
+
+.MuiDataGrid-columnHeaders>div>div:first-child {
   padding-left: 22px;
 }
 
-.MuiDataGrid-cell{
+.MuiDataGrid-cell {
   padding-left: 20px;
 }
-.MuiDataGrid-row > .MuiDataGrid-cell:first-child{
+
+.MuiDataGrid-row>.MuiDataGrid-cell:first-child {
   padding-left: 24px;
 }
-.MuiDataGrid-virtualScroller >div{
+
+.MuiDataGrid-virtualScroller>div {
   font-size: 13.7px;
 }
-.MuiDataGrid-columnHeaderTitleContainer{
-  padding: 0!important;
+
+.MuiDataGrid-columnHeaderTitleContainer {
+  padding: 0 !important;
 }
+
 /*
 .MuiDataGrid-row > .MuiDataGrid-cell:nth-child(3){
   border-right: 2px solid rgb(110 110 110 / 50%);
@@ -1052,54 +1081,180 @@ footer {
 }
  */
 
- .home__page__stats__block3{
+.home__page__stats__block3 {
   box-shadow: rgb(100 100 111 / 20%) 0px 7px 29px 0px;
   height: 75px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #fff;
-  border-radius: 0.3rem!important;
-  padding: 1rem!important;
+  border-radius: 0.3rem !important;
+  padding: 1rem !important;
   margin-left: 20px;
   min-width: 165px;
 }
-.home__page__stats__block3 > div{
+
+.home__page__stats__block3>div {
   margin-bottom: 9%;
   width: 85%;
 }
-.home__page__stats__block3 label{
+
+.home__page__stats__block3 label {
   font-size: 0.857rem !important;
   letter-spacing: 0.1px;
   color: #000000d9 !important;
 }
-.other_top label{
+
+.other_top label {
   margin-top: -9px;
 }
-.login_out__user{
+
+.login_out__user {
   height: 100%;
   display: flex;
   align-items: center;
 }
-.header_svg_pad div svg{
+
+.header_svg_pad div svg {
+  cursor: pointer;
   height: 33px;
 }
-.header_user_info div svg{
+
+.header_user_info div svg {
   height: 37px;
 }
-.header_svg_title{
-padding: 0 10px;
-font-weight: 400;
-font-size: calc(12px + 0.15625vw)!important;
-cursor: default;
-letter-spacing: .4px;
+
+.header_svg_title {
+  padding: 0 10px;
+  font-weight: 400;
+  font-size: calc(12px + 0.15625vw) !important;
+  cursor: pointer;
+  letter-spacing: .4px;
 }
-.header_user_info{
+
+.header_user_info {
+  cursor: pointer;
   display: flex;
   align-items: center;
 }
-.header_line{
+
+.header_line {
   border-right: 1.5px solid #4343fa83;
   margin: 0 10px;
   height: 100%;
+}
+
+.svg_anim_di {
+  cursor: pointer;
+  margin-right: 10px;
+  position: relative;
+}
+
+.svg_anim_di_tooltip {
+  visibility: hidden;
+  width: fit-content;
+  background-color: #0000007e;
+  color: #fff;
+  text-align: center;
+  padding: 4px 7px 3px 7px;
+  border-radius: 6px;
+  position: absolute;
+  font-size: 11px;
+  z-index: 1;
+  left: -15px;
+  bottom: -24px;
+}
+
+.svg_anim_di:hover .svg_anim_di_tooltip {
+  visibility: visible;
+}
+
+.svg_anim_exit {
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.svg__out:hover #anim1 {
+  animation-name: anim1;
+  animation-duration: 2.2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes anim1 {
+  0% {
+    transform: translateX(-2px);
+  }
+
+  50% {
+    transform: translateX(2px);
+  }
+
+  100% {
+    transform: translateX(-2px);
+  }
+}
+.dictionary{
+  width: 100%;
+    height: 100%;
+    display: flex;
+    padding: 2%;
+    background: #e0e0e0;
+}
+.dictionary__back{
+  display: flex;
+  flex-direction: column;
+}
+.dictionary__back__card{
+  display: flex;
+  align-items: center;
+  border-left: 4px solid #2862ffc7;
+  box-shadow: #32325d40 0 2px 5px -1px, #0000004d 0 1px 3px -1px;
+  min-width: auto;
+  justify-content: center;
+  background-color: #fff;
+  border-radius: 0.3rem!important;
+  min-height: 88px;
+}
+.dictionary__back__card:last-child{
+  margin-left: 6%;
+}
+
+.dictionary__back__card button{
+  background-color: #2862ff;
+    box-shadow: 0 3px 1px -2px #0003, 0 2px 2px #00000024, 0 -2px 5px #0000001f;
+  margin-left: 15px;
+  margin-right: 15px;
+  text-transform:inherit;
+}
+.dictionary__back__card div:first-child{
+  display: flex;
+}
+.dictionary__back > div:last-child{
+  margin-left: 7%;
+}
+
+.dictionary__back svg{
+  width: 35px;
+  margin: 14px
+}
+
+.dictionary__back__input{
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: 150px;
+  font-size: 12.8px;
+  font-weight: 400;
+  line-height: 1.125;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  letter-spacing: normal;
+}
+.dictionary__back__input > div > label{
+  font-size: 13.8px;
+}
+.dictionary__back__input input{
+  padding: 2px 0 23px 0;
+}
+.flex{
+  display: flex;
 }
