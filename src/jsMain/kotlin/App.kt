@@ -10,6 +10,7 @@ import mui.material.Size
 import react.*
 import react.dom.*
 
+val DICTIONARY_PAGE = PageConfig("__dictionary", "", "", "", emptyList())
 
 val scope = MainScope()
 
@@ -101,7 +102,7 @@ val app = fc<Props> { props ->
                                 dangerousSVG(SVGDictionaryIcon)
                                 attrs {
                                     onClickFunction = {
-                                        setCurrentPage(null)
+                                        setCurrentPage(DICTIONARY_PAGE)
                                     }
                                 }
 
@@ -147,19 +148,6 @@ val app = fc<Props> { props ->
                             div("top__search") {
                                 +item.name
                             }
-
-                            inline fun RBuilder.custom(tagName: String, block: RDOMBuilder<HTMLTag>.() -> Unit) =
-                                tag(block) {
-                                    HTMLTag(
-                                        tagName,
-                                        it,
-                                        mapOf(),
-                                        null,
-                                        true,
-                                        false
-                                    ) // I dont know yet what the last 3 params mean... to lazy to look it up
-                                }
-
                             child(searchComponent) {
                                 attrs.highlighted = (currentPage == item)
                             }
@@ -169,7 +157,10 @@ val app = fc<Props> { props ->
             }
             if (currentPage == null) {
                 child(homePage)
-                //child(dictionary) _attention_ при клике по иконке словарика надо чтобы перекидывала в другой компонент, но необходимо проверять по 2 условиям по роли и авторизации
+            } else if (currentPage == DICTIONARY_PAGE) {
+                child(dictionary)
+                    // _attention_ при клике по иконке словарика надо чтобы перекидывала в другой компонент,
+                    // но необходимо проверять по 2 условиям по роли и авторизации
             } else {
                 child(emdPage) {
                     attrs.pageConfig = currentPage
