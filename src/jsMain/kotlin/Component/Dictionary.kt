@@ -22,9 +22,18 @@ import react.ReactNode
 import react.css.css
 import react.useState
 
+external interface DictionaryPageProps : Props {
+    var pageConfig: PageConfig
+    var EMDdata: String?
+    var setEMDdata: (String?) -> Unit
+}
 
-val dictionary = fc<Props> { props ->
+val dictionary = fc<DictionaryPageProps> { props ->
     val (params, setParams) = useState<Map<String, String>>()
+    scope.launch {
+        val getSoft = getEMD(props.pageConfig.api_url + "/emd")
+        val getStorage = getEMD(props.pageConfig.api_url + "/emd")
+    }
     div("dictionary") {
         div("dictionary__back"){
             div("flex"){
@@ -66,7 +75,18 @@ val dictionary = fc<Props> { props ->
                     }
                 }
            }
-           div(){}
+           div("dictionary__tables"){
+                child(SSTable){
+                    attrs.content = props.EMDdata
+                    attrs.pageConfig = props.pageConfig
+                    attrs.table = "Storage"
+                }
+                child(SSTable){
+                    attrs.content = props.EMDdata
+                    attrs.pageConfig = props.pageConfig
+                    attrs.table = "Software"
+                }
+            }
        } 
     }
 }
