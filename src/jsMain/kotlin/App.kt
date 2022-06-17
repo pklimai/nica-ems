@@ -15,11 +15,10 @@ val LOGIN_PAGE = PageConfig("__login", "", "", "", emptyList())
 
 val scope = MainScope()
 
-val app = fc<Props> { props ->
-
+val app = fc<Props> {
     val (config, setConfig) = useState<ConfigFile>()
     val (menu, setMenu) = useState(true);
-
+    val (experiment, setExperiment) = useState("BM@N")
     val (currentPage, setCurrentPage) = useState<PageConfig>()
     // setCurrentPage(null) -- valid but causes too many re-renders here!
 
@@ -117,23 +116,36 @@ val app = fc<Props> { props ->
                     config?.pages?.forEach { item ->
                         div {
                             key = item.name
+   
+                            div("top__search") {
+                                +item.name
+                                attrs.onClickFunction = {
+                                    setExperiment(item.name.split(" ")[0])
+                                    setCurrentPage(null)
+                                }
+                                if(currentPage == item){
+                                    //color:#2862ff;
+                                }
+                            }
+                            div(){
+                                child(searchComponent) {
+                                    attrs.highlighted = (currentPage == item)
+                                }
                                 attrs.onClickFunction = {
                                     setCurrentPage(item)
                                     // Clear data for table
                                     setEMDdata(null)
                                 }
-                            div("top__search") {
-                                +item.name
                             }
-                            child(searchComponent) {
-                                attrs.highlighted = (currentPage == item)
-                            }
+
                         }
                     }
                 }
             }
             if (currentPage == null) {
-                child(homePage)
+                child(homePage){
+                    attrs.experiment = experiment
+                }
             } else if (currentPage == LOGIN_PAGE) {
                 child(login)
             } else if (currentPage == DICTIONARY_PAGE) {
@@ -150,15 +162,15 @@ val app = fc<Props> { props ->
             }
         }
         footer {
-            div {
+            div("footer__home__icon") {
                 a(href = "/") {
-                    img(src = "home.png", classes = "home-icon") { }
+                    i("bx bx-home"){}
                 }
             }
             span("example-spacer") {}
             div {
                 a(href = "https://bmn.jinr.ru/", target = "_blank") {
-                    img(src = "favicon.png") {}
+                    img(src = "img/favicon.png") {}
                 }
             }
         }

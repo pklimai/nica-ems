@@ -16,8 +16,6 @@ external interface EMDTableProps : Props {
 }
 
 val EMDTable = fc<EMDTableProps> { props ->
-    console.log(props.content)
-
     if (props.content != null) {
 
         fun column(field: String, key: String /* TODO check */, headerName: String,flex: Int): dynamic {

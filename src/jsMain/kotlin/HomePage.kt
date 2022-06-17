@@ -13,11 +13,14 @@ import react.dom.div
 import react.dom.onChange
 
 
-val homePage = fc<Props> {
+external interface Side : Props {
+    var experiment: String?
+}
+val homePage = fc<Side> {props ->
     val (period, setPeriod) = useState(false);
     val (soft, setSoft) = useState(false);
     val (params, setParams) = useState<Map<String, String>>()
-    
+
     div("home__page") {
         div() {
             div("home__page__dashboard") {
@@ -33,8 +36,14 @@ val homePage = fc<Props> {
                     dangerousSVG(SVGHomeRecords)
                     div("home__page__stats__block__column") {
                         div("home__page__stats__block__column__stats") {
-                            div() {
-                                +"5000"
+                            if(props.experiment == "BM@N"){
+                                div() {
+                                    +"5000"
+                                }
+                            } else {
+                                div() {
+                                    +"6000"
+                                }
                             }
                             div {
                                 +"Total"
@@ -55,7 +64,7 @@ val homePage = fc<Props> {
                             +"Period Number —"
                         }
                         div("per_number") {
-                            +"8 " //_attention_ из базы брать последнее значение и по умолчанию отстраивать чарты
+                            +"8 " 
                         }
                     }
                 }
@@ -86,7 +95,7 @@ val homePage = fc<Props> {
                             +"Software Version — "
                         }
                         div("per_number") {
-                            +"20.12.0 " //_attention_ а если активировали только 1 элемент(period), а софт нет то в зарос брать по умолчанию
+                            +"20.12.0 "
                         }
                     }
                 }
@@ -110,7 +119,9 @@ val homePage = fc<Props> {
             }
         }
         div("charts") {
-            child(chartComponent)
+            child(chartComponent){
+                attrs.exp = props.experiment.toString()
+            }
         }
     }
 }

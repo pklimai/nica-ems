@@ -9,6 +9,7 @@ import kotlin.js.json
 
 external interface ChartComponentProps: Props {
     var highlighted: Boolean
+    var exp: String
 }
 
 val chartComponent = fc<ChartComponentProps> { props ->
