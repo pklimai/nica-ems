@@ -11,19 +11,19 @@ import react.*
 import react.dom.*
 
 val DICTIONARY_PAGE = PageConfig("__dictionary", "", "", "", emptyList())
+val LOGIN_PAGE = PageConfig("__login", "", "", "", emptyList())
 
 val scope = MainScope()
 
-val app = fc<Props> { props ->
-
+val app = fc<Props> {
     val (config, setConfig) = useState<ConfigFile>()
     val (menu, setMenu) = useState(true);
-
+    val (experiment, setExperiment) = useState("BM@N")
     val (currentPage, setCurrentPage) = useState<PageConfig>()
     // setCurrentPage(null) -- valid but causes too many re-renders here!
 
     val (EMDdata, setEMDdata) = useState<String>()
-    val (disp, setDisp) = useState(true);
+    val (auth, setAuth) = useState(true);
     useEffectOnce {
         scope.launch {
             setConfig(getConfig())
@@ -51,45 +51,21 @@ val app = fc<Props> { props ->
                     }
                 }
                 span("example-spacer") {}
-                if(disp){
+                if(auth){
                     div("menu_name2") {
                         div("events_icon2") {}
                         div("login_block") {
-                            div("wrap-form1 validate-input") {
-                                input() {
-                                    attrs {
-                                        placeholder = "Username"
-                                    }
-                                } //<input type="text" #username  placeholder="Username" required>
-                                span("focus-form1") {}
-                                span("symbol-form1") {
-                                    div() {
-                                        img(classes = "login-password-icon", src = "username.png") {  }
-                                    }
-                                }
-                            }
-                            div("wrap-form1 validate-input") {
-                                input() {
-                                    attrs {
-                                        placeholder = "Password"
-                                    }
-                                } //<input type="text" #password type="password"  placeholder="Password" required>
-                                span("focus-form1") {}
-                                span("symbol-form1") {
-                                    div() {
-                                        img(classes = "login-password2-icon", src = "password.png") {  }
-                                    }
-                                }
-                            }
                             div("but_login") {
                                 Button {
                                     attrs {
                                         +"Sign In"
                                         variant = ButtonVariant.contained
                                         size = Size.small
-                                        onClick = {
-                                            setDisp(false)
-                                        }
+                                    }
+                                }
+                                attrs {
+                                    onClickFunction = {
+                                        setCurrentPage(LOGIN_PAGE)
                                     }
                                 }
                             }
@@ -124,7 +100,7 @@ val app = fc<Props> { props ->
                                 dangerousSVG(SVGLogout)
                                 attrs {
                                     onClickFunction = {
-                                        setDisp(true)
+                                        setAuth(true)
                                         setCurrentPage(null)
                                     }
                                 }
@@ -140,27 +116,40 @@ val app = fc<Props> { props ->
                     config?.pages?.forEach { item ->
                         div {
                             key = item.name
-                            attrs.onClickFunction = {
-                                setCurrentPage(item)
-                                // Clear data for table
-                                setEMDdata(null)
-                            }
+   
                             div("top__search") {
                                 +item.name
+                                attrs.onClickFunction = {
+                                    setExperiment(item.name.split(" ")[0])
+                                    setCurrentPage(null)
+                                }
+                                if(currentPage == item){
+                                    //color:#2862ff;
+                                }
                             }
-                            child(searchComponent) {
-                                attrs.highlighted = (currentPage == item)
+                            div(){
+                                child(searchComponent) {
+                                    attrs.highlighted = (currentPage == item)
+                                }
+                                attrs.onClickFunction = {
+                                    setCurrentPage(item)
+                                    // Clear data for table
+                                    setEMDdata(null)
+                                }
                             }
+
                         }
                     }
                 }
             }
             if (currentPage == null) {
-                child(homePage)
+                child(homePage){
+                    attrs.experiment = experiment
+                }
+            } else if (currentPage == LOGIN_PAGE) {
+                child(login)
             } else if (currentPage == DICTIONARY_PAGE) {
-                child(dictionary)
-                    // _attention_ при клике по иконке словарика надо чтобы перекидывала в другой компонент,
-                    // но необходимо проверять по 2 условиям по роли и авторизации
+                child(dictionary) // color: #e13a3a;
             } else {
                 child(emdPage) {
                     attrs.pageConfig = currentPage
@@ -173,15 +162,15 @@ val app = fc<Props> { props ->
             }
         }
         footer {
-            div {
+            div("footer__home__icon") {
                 a(href = "/") {
-                    img(src = "home.png", classes = "home-icon") { }
+                    i("bx bx-home"){}
                 }
             }
             span("example-spacer") {}
             div {
                 a(href = "https://bmn.jinr.ru/", target = "_blank") {
-                    img(src = "favicon.png") {}
+                    img(src = "img/favicon.png") {}
                 }
             }
         }

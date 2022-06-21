@@ -16,30 +16,28 @@ external interface EMDTableProps : Props {
 }
 
 val EMDTable = fc<EMDTableProps> { props ->
-
     if (props.content != null) {
 
-        fun column(field: String, key: String /* TODO check */, headerName: String,flex: Int, minWidth: Int): dynamic {
+        fun column(field: String, key: String /* TODO check */, headerName: String,flex: Int): dynamic {
             val r: dynamic = object {}
             r["field"] = field
             r["key"] = key
             r["headerName"] = headerName
             r["flex"] = flex
-            r["minWidth"] = minWidth
             return r
         }
 
         val columns = mutableListOf(
-            column("storage_name", "storage_name", "Storage", 1, 100),
-            column("file_path", "file_path", "File path", 3, 260),
-            column("event_number", "event_number", "# Event", 1, 150),
-            column("software_version", "software_version", "Software", 2, 100),
-            column("period_number", "period_number", "Period", 1, 100),
-            column("run_number", "run_number", "# Run", 1, 150)
+            column("storage_name", "storage_name", "Storage", 2),
+            column("file_path", "file_path", "File path", 3),
+            column("event_number", "event_number", "# Event", 2),
+            column("software_version", "software_version", "Software", 3),
+            column("period_number", "period_number", "Period", 2),
+            column("run_number", "run_number", "# Run", 2)
         )
 
         props.pageConfig.parameters.forEach { it ->
-            columns.add(column(it.name, it.name, it.web_name, 2, 150))
+            columns.add(column(it.name, it.name, it.web_name, 2))
         }
 
         fun row(
