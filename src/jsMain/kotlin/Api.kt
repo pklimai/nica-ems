@@ -24,3 +24,7 @@ suspend fun getEMD(api_url: String): String {
 suspend fun getSoftwareVersions(): List<SoftwareVersion> {
     return jsonClient.get(endpoint + SOFTWARE_URL)
 }
+
+suspend fun getStorages(): List<Storage> {
+    return jsonClient.get(endpoint + STORAGE_URL)
+}

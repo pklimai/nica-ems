@@ -19,7 +19,7 @@ val scope = MainScope()
 
 val app = fc<Props> {
     val (config, setConfig) = useState<ConfigFile>()
-    val (menu, setMenu) = useState(true);
+    val (menu, setMenu) = useState(true)
     val (currentPage, setCurrentPage) = useState<PageConfig>()
     val (showStats, setShowStats) = useState(true) // show stats if true, else search and data
     //val (experiment, setExperiment) = useState("BM@N")
@@ -27,15 +27,15 @@ val app = fc<Props> {
     // setCurrentPage(null) -- valid but causes too many re-renders here!
 
     val (EMDdata, setEMDdata) = useState<String>()
-    val (auth, setAuth) = useState(true);
+    val (auth, setAuth) = useState(false)
     useEffectOnce {
         scope.launch {
             setConfig(getConfig())
         }
     }
     div("wrapper") {
-        header() {
-            nav() {
+        header {
+            nav {
                 div("menu_icon") {
                     div("mat-button") {
                         attrs.onClickFunction = {
@@ -47,9 +47,10 @@ val app = fc<Props> {
                         div("menu_name__text") {
                             key = "Home"
                             attrs.onClickFunction = {
-                                setCurrentPage(null)
+                                setCurrentPage(config?.pages?.first()) // Is it what we want to show as home?
+                                setShowStats(true)
                             }
-                            +"BM@N Event Metadata System"
+                            +"BM@N Event Metadata System"   // TODO - get from config
                         }
                         dangerousSVG(SVGHeaderBubbles)
                     }
@@ -146,15 +147,14 @@ val app = fc<Props> {
                     }
                 }
             }
-            //if (currentPage == null) {
-            if (showStats) {
-                child(homePage) {
-                    attrs.experiment = currentPage?.name?.split(" ")?.first() ?: "BM@N"  // TODO
-                }
-            } else if (currentPage == LOGIN_PAGE) {
+            if (currentPage == LOGIN_PAGE) {
                 child(login)
             } else if (currentPage == DICTIONARY_PAGE) {
                 child(dictionary) // color: #e13a3a;
+            } else if (showStats) {
+                child(homePage) {
+                    attrs.experiment = currentPage?.name?.split(" ")?.first() ?: "BM@N"  // TODO
+                }
             } else {
                 child(emdPage) {
                     attrs.pageConfig = currentPage!!

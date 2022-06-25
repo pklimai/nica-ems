@@ -148,6 +148,29 @@ fun Application.main() {
                     call.respond(swList)
                 }
             }
+
+            get(STORAGE_URL) {
+                val connEMD = newEMDConnection(config, this@get.context)
+                if (connEMD == null) {
+                    call.respond(HttpStatusCode.NotFound)
+                } else {
+                    val storageList = mutableListOf<Storage>().apply {
+                        connEMD.createStatement().executeQuery("SELECT * FROM storage_").let { resultSet ->
+                            while (resultSet.next()) {
+                                this@apply.add(
+                                    Storage(
+                                        resultSet.getInt("storage_id"),
+                                        resultSet.getString("storage_name")
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    connEMD.close()
+                    call.respond(storageList)
+                }
+            }
+
         }
 
         config.pages.forEach { page ->
