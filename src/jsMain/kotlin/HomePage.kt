@@ -16,6 +16,7 @@ import react.dom.onChange
 external interface Side : Props {
     var experiment: String?
 }
+
 val homePage = fc<Side> {props ->
     val (period, setPeriod) = useState(false);
     val (soft, setSoft) = useState(false);

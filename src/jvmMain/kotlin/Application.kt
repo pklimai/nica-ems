@@ -7,14 +7,12 @@ import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.ldap.*
 import io.ktor.features.*
-import io.ktor.html.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.jackson.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import kotlinx.html.*
 import org.postgresql.util.PSQLException
 import java.io.File
 import java.sql.Connection
@@ -107,7 +105,7 @@ fun Application.main() {
         }
 
         // This way frontend knows about different pages, parameters, etc.
-        get("/config") {
+        get(CONFIG_URL) {
             call.respond(config.removeSensitiveData())
         }
 
@@ -127,6 +125,30 @@ fun Application.main() {
             legacyDictionaries(config)
         }
 
+        optionallyAuthenticate {
+
+            get(SOFTWARE_URL) {
+                val connEMD = newEMDConnection(config, this@get.context)
+                if (connEMD == null) {
+                    call.respond(HttpStatusCode.NotFound)
+                } else {
+                    val swList = mutableListOf<SoftwareVersion>().apply {
+                        connEMD.createStatement().executeQuery("SELECT * FROM software_").let { resultSet ->
+                            while (resultSet.next()) {
+                                this@apply.add(
+                                    SoftwareVersion(
+                                        resultSet.getInt("software_id"),
+                                        resultSet.getString("software_version")
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    connEMD.close()
+                    call.respond(swList)
+                }
+            }
+        }
 
         config.pages.forEach { page ->
 

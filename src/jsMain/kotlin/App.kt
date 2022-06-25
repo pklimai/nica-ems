@@ -55,7 +55,7 @@ val app = fc<Props> {
                     }
                 }
                 span("example-spacer") {}
-                if(auth){
+                if (auth) {
                     div("menu_name2") {
                         div("events_icon2") {}
                         div("login_block") {
@@ -74,33 +74,32 @@ val app = fc<Props> {
                                 }
                             }
                         }
-                    } 
-                } else{
-                 div("menu_name3") {
+                    }
+                } else {
+                    div("menu_name3") {
                         div("events_icon3") {
-                            div("header_svg_pad svg_anim_di"){
+                            div("header_svg_pad svg_anim_di") {
                                 dangerousSVG(SVGDictionaryIcon)
                                 attrs {
                                     onClickFunction = {
                                         setCurrentPage(DICTIONARY_PAGE)
                                     }
                                 }
-
-                                span("svg_anim_di_tooltip"){
+                                span("svg_anim_di_tooltip") {
                                     +"Dictionary"
                                 }
                             }
-                            div("header_line"){}
-                            div("header_user_info"){
+                            div("header_line") {}
+                            div("header_user_info") {
                                 dangerousSVG(SVGUserPic)
-                                div("header_svg_title"){
+                                div("header_svg_title") {
                                     +"Username"
                                 }
                             }
-                            div("header_line"){}
+                            div("header_line") {}
                         }
-                        div() {
-                            div("header_svg_pad svg_anim_exit"){
+                        div {
+                            div("header_svg_pad svg_anim_exit") {
                                 dangerousSVG(SVGLogout)
                                 attrs {
                                     onClickFunction = {
@@ -110,7 +109,7 @@ val app = fc<Props> {
                                 }
                             }
                         }
-                    }    
+                    }
                 }
             }
         }
@@ -127,7 +126,7 @@ val app = fc<Props> {
                                 }
                                 div {
                                     +item.name
-                                    if (currentPage?.name == item.name && showStats)  {
+                                    if (currentPage?.name == item.name && showStats) {
                                         attrs["style"] = json("color" to "#2862ff")
                                     }
                                 }
@@ -149,7 +148,7 @@ val app = fc<Props> {
             }
             //if (currentPage == null) {
             if (showStats) {
-                child(homePage){
+                child(homePage) {
                     attrs.experiment = currentPage?.name?.split(" ")?.first() ?: "BM@N"  // TODO
                 }
             } else if (currentPage == LOGIN_PAGE) {
@@ -170,7 +169,7 @@ val app = fc<Props> {
         footer {
             div("footer__home__icon") {
                 a(href = "/") {
-                    i("bx bx-home"){}
+                    i("bx bx-home") {}
                 }
             }
             span("example-spacer") {}
