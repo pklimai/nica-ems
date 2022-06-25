@@ -3,12 +3,14 @@ package ru.mipt.npm.nica.emd
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.html.HTMLTag
+import kotlinx.html.colorInput
 import kotlinx.html.js.onClickFunction
 import mui.material.Button
 import mui.material.ButtonVariant
 import mui.material.Size
 import react.*
 import react.dom.*
+import kotlin.js.json
 
 val DICTIONARY_PAGE = PageConfig("__dictionary", "", "", "", emptyList())
 val LOGIN_PAGE = PageConfig("__login", "", "", "", emptyList())
@@ -18,8 +20,10 @@ val scope = MainScope()
 val app = fc<Props> {
     val (config, setConfig) = useState<ConfigFile>()
     val (menu, setMenu) = useState(true);
-    val (experiment, setExperiment) = useState("BM@N")
     val (currentPage, setCurrentPage) = useState<PageConfig>()
+    val (showStats, setShowStats) = useState(true) // show stats if true, else search and data
+    //val (experiment, setExperiment) = useState("BM@N")
+
     // setCurrentPage(null) -- valid but causes too many re-renders here!
 
     val (EMDdata, setEMDdata) = useState<String>()
@@ -116,35 +120,37 @@ val app = fc<Props> {
                     config?.pages?.forEach { item ->
                         div {
                             key = item.name
-   
                             div("top__search") {
-                                +item.name
                                 attrs.onClickFunction = {
-                                    setExperiment(item.name.split(" ")[0])
-                                    setCurrentPage(null)
+                                    setCurrentPage(item)
+                                    setShowStats(true)
                                 }
-                                if(currentPage == item){
-                                    //color:#2862ff;
+                                div {
+                                    +item.name
+                                    if (currentPage?.name == item.name && showStats)  {
+                                        attrs["style"] = json("color" to "#2862ff")
+                                    }
                                 }
                             }
-                            div(){
+                            div {
                                 child(searchComponent) {
-                                    attrs.highlighted = (currentPage == item)
+                                    attrs.highlighted = (currentPage == item && !showStats)
                                 }
                                 attrs.onClickFunction = {
                                     setCurrentPage(item)
+                                    setShowStats(false)
                                     // Clear data for table
                                     setEMDdata(null)
                                 }
                             }
-
                         }
                     }
                 }
             }
-            if (currentPage == null) {
+            //if (currentPage == null) {
+            if (showStats) {
                 child(homePage){
-                    attrs.experiment = experiment
+                    attrs.experiment = currentPage?.name?.split(" ")?.first() ?: "BM@N"  // TODO
                 }
             } else if (currentPage == LOGIN_PAGE) {
                 child(login)
@@ -152,7 +158,7 @@ val app = fc<Props> {
                 child(dictionary) // color: #e13a3a;
             } else {
                 child(emdPage) {
-                    attrs.pageConfig = currentPage
+                    attrs.pageConfig = currentPage!!
                     attrs.EMDdata = EMDdata
                     attrs.setEMDdata = { it: String? ->
                         setEMDdata(it)
