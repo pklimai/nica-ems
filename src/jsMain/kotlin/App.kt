@@ -27,6 +27,9 @@ val app = fc<Props> {
     // setCurrentPage(null) -- valid but causes too many re-renders here!
 
     val (EMDdata, setEMDdata) = useState<String>()
+    val (SWdata, setSWdata) = useState<Array<SoftwareVersion>>()
+    val (Storagedata, setStoragedata) = useState<Array<Storage>>()
+
     val (auth, setAuth) = useState(false)
     useEffectOnce {
         scope.launch {
@@ -150,7 +153,16 @@ val app = fc<Props> {
             if (currentPage == LOGIN_PAGE) {
                 child(login)
             } else if (currentPage == DICTIONARY_PAGE) {
-                child(dictionary) // color: #e13a3a;
+                child(dictionary) {// color: #e13a3a;
+                    attrs.SWdata = SWdata
+                    attrs.setSWdata = {
+                        setSWdata(it)
+                    }
+                    attrs.Storagedata = Storagedata
+                    attrs.setStoragedata = {
+                        setStoragedata(it)
+                    }
+                }
             } else if (showStats) {
                 child(homePage) {
                     attrs.experiment = currentPage?.name?.split(" ")?.first() ?: "BM@N"  // TODO

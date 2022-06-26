@@ -18,15 +18,6 @@ external interface EMDTableProps : Props {
 val EMDTable = fc<EMDTableProps> { props ->
     if (props.content != null) {
 
-        fun column(field: String, key: String /* TODO check */, headerName: String,flex: Int): dynamic {
-            val r: dynamic = object {}
-            r["field"] = field
-            r["key"] = key
-            r["headerName"] = headerName
-            r["flex"] = flex
-            return r
-        }
-
         val columns = mutableListOf(
             column("storage_name", "storage_name", "Storage", 2),
             column("file_path", "file_path", "File path", 3),

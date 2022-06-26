@@ -1,39 +1,31 @@
 package ru.mipt.npm.nica.emd
 
-import csstype.*
-import react.Props
-import react.createElement
 import react.dom.div
-import react.dom.svg
-import react.fc
-import kotlinext.js.jso
 import kotlinx.coroutines.launch
 import kotlinx.html.DIV
-import kotlinx.html.id
-import kotlinx.html.js.onChangeFunction
-import kotlinx.html.js.onClickFunction
 import react.dom.RDOMBuilder
 import mui.material.TextField
-import kotlinx.html.style
 import mui.material.*
 import mui.material.Size
-import org.w3c.dom.HTMLInputElement
-import react.ReactNode
-import react.css.css
-import react.useState
+import react.*
 
 external interface DictionaryPageProps : Props {
-    var pageConfig: PageConfig
-    var EMDdata: String?
-    var setEMDdata: (String?) -> Unit
+    var SWdata: Array<SoftwareVersion>?
+    var setSWdata: (Array<SoftwareVersion>?) -> Unit
+    var Storagedata: Array<Storage>?
+    var setStoragedata: (Array<Storage>?) -> Unit
 }
 
 val dictionary = fc<DictionaryPageProps> { props ->
     val (params, setParams) = useState<Map<String, String>>()
-    scope.launch {
-        val getSoft = getEMD(props.pageConfig.api_url + "/emd")
-        val getStorage = getEMD(props.pageConfig.api_url + "/emd")
+
+    useEffectOnce {
+        scope.launch {
+            props.setSWdata(getSoftwareVersions() as Array<SoftwareVersion>?)
+            props.setStoragedata(getStorages() as Array<Storage>?)
+        }
     }
+
     div("dictionary") {
         div("dictionary__back"){
             div("flex"){
@@ -76,16 +68,12 @@ val dictionary = fc<DictionaryPageProps> { props ->
                 }
            }
            div("dictionary__tables"){
-                child(SSTable){
-                    attrs.content = props.EMDdata
-                    attrs.pageConfig = props.pageConfig
-                    attrs.table = "Storage"
+                child(StorageTable){
+                    attrs.content = props.Storagedata
                 }
-                child(SSTable){
-                    attrs.content = props.EMDdata
-                    attrs.pageConfig = props.pageConfig
-                    attrs.table = "Software"
-                }
+//                child(SoftwareTable){
+//                    attrs.content = props.SWdata
+//                }
             }
        } 
     }

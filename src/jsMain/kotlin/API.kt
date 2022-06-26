@@ -21,10 +21,12 @@ suspend fun getEMD(api_url: String): String {
     return jsonClient.get(endpoint + api_url)
 }
 
-suspend fun getSoftwareVersions(): List<SoftwareVersion> {
-    return jsonClient.get(endpoint + SOFTWARE_URL)
+suspend fun getSoftwareVersions(): Array<SoftwareVersion> {
+    // TODO check if doing .get<String>(...) changes things here
+    // same for .asDynamic() - sometimes it needs it!?
+    return jsonClient.get<Array<SoftwareVersion>>(endpoint + SOFTWARE_URL) //.asDynamic()
 }
 
-suspend fun getStorages(): List<Storage> {
-    return jsonClient.get(endpoint + STORAGE_URL)
+suspend fun getStorages(): Array<Storage> {
+    return jsonClient.get<Array<Storage>>(endpoint + STORAGE_URL) //.asDynamic()
 }
