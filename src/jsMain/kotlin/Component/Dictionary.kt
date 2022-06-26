@@ -21,8 +21,8 @@ val dictionary = fc<DictionaryPageProps> { props ->
 
     useEffectOnce {
         scope.launch {
-            props.setSWdata(getSoftwareVersions() as Array<SoftwareVersion>?)
-            props.setStoragedata(getStorages() as Array<Storage>?)
+            props.setSWdata(getSoftwareVersions())
+            props.setStoragedata(getStorages())   // as Array<Storage>?
         }
     }
 

@@ -24,7 +24,7 @@ suspend fun getEMD(api_url: String): String {
 suspend fun getSoftwareVersions(): Array<SoftwareVersion> {
     // TODO check if doing .get<String>(...) changes things here
     // same for .asDynamic() - sometimes it needs it!?
-    return jsonClient.get<Array<SoftwareVersion>>(endpoint + SOFTWARE_URL) //.asDynamic()
+    return jsonClient.get<List<SoftwareVersion>>(endpoint + SOFTWARE_URL).toTypedArray()
 }
 
 suspend fun getStorages(): Array<Storage> {
