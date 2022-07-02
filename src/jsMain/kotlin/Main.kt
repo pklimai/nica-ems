@@ -1,12 +1,11 @@
 package ru.mipt.npm.nica.emd
 
 import kotlinx.browser.document
-import react.dom.render
+import react.create
+import react.dom.client.createRoot
 
 fun main() {
-
-    render(document.getElementById("root")!!) {
-        child(app)
-    }
-
+    createRoot(document.getElementById("root")!!).render(
+        app.create()
+    )
 }
