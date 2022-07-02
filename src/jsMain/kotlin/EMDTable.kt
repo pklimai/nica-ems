@@ -1,14 +1,11 @@
 package ru.mipt.npm.nica.emd
 
-import csstype.pct
-import kotlinext.js.jso
 import react.Props
 import react.dom.*
 import react.fc
 import kotlin.js.Json
 import mui.material.*
 import mui.x.DataGrid
-
 
 external interface EMDTableProps : Props {
     var content: String?

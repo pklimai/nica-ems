@@ -1,32 +1,13 @@
 package ru.mipt.npm.nica.emd
-import csstype.*
-import react.Props
-import react.createElement
-import react.dom.div
-import react.dom.svg
-import react.fc
-import react.*
-import react.dom.*
-import kotlinext.js.jso
-import kotlinx.coroutines.launch
-import kotlinx.html.DIV
-import kotlinx.html.id
-import kotlinx.coroutines.MainScope
-import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
-import react.dom.RDOMBuilder
-import mui.material.TextField
-import kotlinx.html.style
-import mui.material.*
-import mui.material.Size
-import org.w3c.dom.HTMLInputElement
-import react.ReactNode
-import react.css.css
-import react.useState
 import mui.material.Button
-import mui.material.Checkbox
 import mui.material.ButtonVariant
-import kotlinx.html.HTMLTag
+import mui.material.Checkbox
+import mui.material.Size
+import react.Props
+import react.dom.*
+import react.fc
+import react.useState
 
 
 external interface LoginPageProps : Props {

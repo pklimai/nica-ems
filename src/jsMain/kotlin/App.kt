@@ -2,8 +2,6 @@ package ru.mipt.npm.nica.emd
 
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import kotlinx.html.HTMLTag
-import kotlinx.html.colorInput
 import kotlinx.html.js.onClickFunction
 import mui.material.Button
 import mui.material.ButtonVariant
@@ -22,10 +20,6 @@ val app = fc<Props> {
     val (menu, setMenu) = useState(true)
     val (currentPage, setCurrentPage) = useState<PageConfig>()
     val (showStats, setShowStats) = useState(true) // show stats if true, else search and data
-    //val (experiment, setExperiment) = useState("BM@N")
-
-    // setCurrentPage(null) -- valid but causes too many re-renders here!
-
     val (EMDdata, setEMDdata) = useState<String>()
     val (SWdata, setSWdata) = useState<Array<SoftwareVersion>>()
     val (Storagedata, setStoragedata) = useState<Array<Storage>>()
@@ -108,7 +102,7 @@ val app = fc<Props> {
                                 attrs {
                                     onClickFunction = {
                                         setAuth(true)
-                                        setCurrentPage(null)
+                                        setCurrentPage(config?.pages?.first())
                                     }
                                 }
                             }

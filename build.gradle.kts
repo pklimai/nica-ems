@@ -4,8 +4,8 @@ val kotlinVersion = "1.6.21"
 val serializationVersion = "1.3.0"
 val ktorVersion = "1.6.7"
 val logbackVersion = "1.2.3"
-val reactVersion = "17.0.2-pre.292-kotlin-1.6.10"
-val muiVersion = "5.3.1-pre.292-kotlin-1.6.10"
+val reactVersion = "18.1.0-pre.345"
+val muiVersion = "5.8.5-pre.349"
 
 plugins {
     kotlin("multiplatform") version "1.6.21"
@@ -70,8 +70,8 @@ kotlin {
 
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion")
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-router-dom:6.2.1-pre.292-kotlin-1.6.10")
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-css:$reactVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-router-dom:6.3.0-pre.345")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-css:18.0.0-pre.331-kotlin-1.6.20")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-legacy:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom-legacy:$reactVersion")
 

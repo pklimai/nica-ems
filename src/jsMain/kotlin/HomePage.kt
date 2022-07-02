@@ -1,8 +1,5 @@
 package ru.mipt.npm.nica.emd
 
-import Highcharts
-import HighchartsReact
-import kotlinext.js.jso
 import kotlinx.html.DIV
 import kotlinx.html.js.onClickFunction
 import mui.material.FormControlVariant
@@ -23,7 +20,7 @@ val homePage = fc<Side> {props ->
     val (params, setParams) = useState<Map<String, String>>()
 
     div("home__page") {
-        div() {
+        div {
             div("home__page__dashboard") {
                 div("home__page__dashboard__head") {
                     +"Event Metadata System"
@@ -38,11 +35,11 @@ val homePage = fc<Side> {props ->
                     div("home__page__stats__block__column") {
                         div("home__page__stats__block__column__stats") {
                             if(props.experiment == "BM@N"){
-                                div() {
+                                div {
                                     +"5000"
                                 }
                             } else {
-                                div() {
+                                div {
                                     +"6000"
                                 }
                             }

@@ -1,21 +1,16 @@
 package ru.mipt.npm.nica.emd
 
-import csstype.*
-import kotlinext.js.jso
+import csstype.px
 import kotlinx.coroutines.launch
 import kotlinx.html.DIV
-import kotlinx.html.id
-import kotlinx.html.js.onChangeFunction
-import kotlinx.html.js.onClickFunction
-import kotlinx.html.style
+import kotlinx.js.jso   // Note package change!
 import mui.material.*
-import mui.material.Size
 import org.w3c.dom.HTMLInputElement
-import org.w3c.dom.HTMLSelectElement
 import react.Props
 import react.ReactNode
-import react.css.css
-import react.dom.*
+import react.dom.RDOMBuilder
+import react.dom.div
+import react.dom.onChange
 import react.fc
 import react.useState
 
@@ -82,7 +77,7 @@ val emdPage = fc<EMDPageProps> { props ->
                                 label = ReactNode(labelString)
                                 // labelId = paramName
                                 value =  (params?.get(paramName) ?: "").unsafeCast<Nothing?>()
-                                onChange = { it: dynamic ->
+                                onChange = { it: dynamic, it1 ->
                                     val newValue = it.target.value    // Note: it.asDynamic() won't work
                                     // console.log("onChange called in Select with value $newValue")
                                     val copyParams = HashMap(params ?: emptyMap())
