@@ -1,9 +1,10 @@
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 val kotlinVersion = "1.6.21"
-val serializationVersion = "1.3.0"
-val ktorVersion = "1.6.7"
-val logbackVersion = "1.2.3"
+val serializationVersion = "1.3.3"
+val ktorVersion = "2.0.3"
+val logbackVersion = "1.2.11"
+val kotlinxHtmlVersion = "0.7.5"
 val reactVersion = "18.1.0-pre.345"
 val muiVersion = "5.8.5-pre.349"
 
@@ -13,7 +14,7 @@ plugins {
     kotlin("plugin.serialization") version "1.6.21"
 }
 
-group = "org.example"
+group = "ru.mipt.npm.nica.emd"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -33,7 +34,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-                implementation("io.ktor:ktor-client-core:$ktorVersion")
             }
         }
         val commonTest by getting {
@@ -45,38 +45,42 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-serialization:$ktorVersion")
-                implementation("io.ktor:ktor-server-core:$ktorVersion")
-                implementation("io.ktor:ktor-server-netty:$ktorVersion")
-                implementation("ch.qos.logback:logback-classic:$logbackVersion")
-
                 implementation("org.jetbrains.kotlin:kotlin-stdlib")
-                implementation("io.ktor:ktor-html-builder:$ktorVersion")
-                implementation("io.ktor:ktor-auth:$ktorVersion")
-                implementation("io.ktor:ktor-auth-ldap:$ktorVersion")
-                implementation("io.ktor:ktor-jackson:$ktorVersion")
+                implementation("io.ktor:ktor-server-core:$ktorVersion")
+                implementation("io.ktor:ktor-server-default-headers:$ktorVersion")
+                implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
+                implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+                implementation("io.ktor:ktor-server-compression:$ktorVersion")
+                implementation("io.ktor:ktor-server-netty:$ktorVersion")
+                implementation("io.ktor:ktor-server-html-builder:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+                implementation("io.ktor:ktor-server-auth:$ktorVersion")
+                implementation("io.ktor:ktor-server-auth-ldap:$ktorVersion")
+                implementation("ch.qos.logback:logback-classic:$logbackVersion")
                 implementation("org.postgresql:postgresql:42.2.20")
                 implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-html:0.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
                 implementation("com.unboundid:unboundid-ldapsdk:6.0.1")
             }
         }
 
         val jsMain by getting {
             dependencies {
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-js:$ktorVersion")
-                implementation("io.ktor:ktor-client-json:$ktorVersion")
-                implementation("io.ktor:ktor-client-serialization:$ktorVersion")
-
+                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+                implementation("io.ktor:ktor-client-js:$ktorVersion")
+                implementation("io.ktor:ktor-serialization:$ktorVersion")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion")
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-router-dom:6.3.0-pre.345")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-css:18.0.0-pre.331-kotlin-1.6.20")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-legacy:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom-legacy:$reactVersion")
-
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-mui:$muiVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-html:0.7.3")
+                // implementation("org.jetbrains.kotlin-wrappers:kotlin-react-router-dom:6.3.0-pre.345")
+                implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
 
                 implementation(npm("@emotion/react", "11.7.1"))
                 implementation(npm("@emotion/styled", "11.6.0"))
@@ -134,8 +138,6 @@ tasks.create("stage") {
 tasks.getByName<JavaExec>("run") {
     classpath(tasks.getByName<Jar>("jvmJar")) // so that the JS artifacts generated by `jvmJar` can be found and served
 }
-
-
 
 // mainClassName = "io.ktor.server.netty.EngineMain"
 

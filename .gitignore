@@ -4,5 +4,6 @@
 /.idea/.name
 /.idea/compiler.xml
 /.idea/misc.xml
+/.idea/modules
 /testing/condition_db
 /testing/event_db

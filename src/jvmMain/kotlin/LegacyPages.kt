@@ -1,11 +1,11 @@
 package ru.mipt.npm.nica.emd
 
-import io.ktor.application.*
-import io.ktor.html.*
+import io.ktor.server.application.*
+import io.ktor.server.html.*
 import io.ktor.http.*
 import io.ktor.network.sockets.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.html.*
 
 // Legacy pure static HTML-based pages

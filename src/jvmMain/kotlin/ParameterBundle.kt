@@ -1,6 +1,6 @@
 package ru.mipt.npm.nica.emd
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 
 class ParameterBundle(
     val period_number: Parameter?,

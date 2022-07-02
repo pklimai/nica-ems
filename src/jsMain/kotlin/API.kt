@@ -1,32 +1,34 @@
 package ru.mipt.npm.nica.emd
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
 
 val jsonClient = HttpClient {
-    install(JsonFeature) { serializer = KotlinxSerializer() }
+    install(ContentNegotiation) {
+        json()
+    }
 }
 
+val stringClient = HttpClient { }
+
 suspend fun getConfig(): ConfigFile {
-    return jsonClient.get(endpoint + CONFIG_URL)
+    return jsonClient.get(endpoint + CONFIG_URL).body()
 }
 
 suspend fun getEMD(api_url: String): String {
-    return jsonClient.get(endpoint + api_url)
+    return stringClient.get(endpoint + api_url).body()
 }
 
 suspend fun getSoftwareVersions(): Array<SoftwareVersion> {
-    // TODO check if doing .get<String>(...) changes things here
-    // same for .asDynamic() - sometimes it needs it!?
-    return jsonClient.get<List<SoftwareVersion>>(endpoint + SOFTWARE_URL).toTypedArray()
+    return jsonClient.get(endpoint + SOFTWARE_URL).body()
 }
 
 suspend fun getStorages(): Array<Storage> {
-    return jsonClient.get<Array<Storage>>(endpoint + STORAGE_URL) //.asDynamic()
+    return jsonClient.get(endpoint + STORAGE_URL).body()
 }
