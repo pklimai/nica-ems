@@ -23,8 +23,10 @@ val app = fc<Props> {
     val (EMDdata, setEMDdata) = useState<String>()
     val (SWdata, setSWdata) = useState<Array<SoftwareVersion>>()
     val (Storagedata, setStoragedata) = useState<Array<Storage>>()
+    val (authenticated, setAuthenticated) = useState(false)
+    val (username, setUsername) = useState<String>("")
+    val (password, setPassword) = useState<String>("")
 
-    val (auth, setAuth) = useState(false)
     useEffectOnce {
         scope.launch {
             setConfig(getConfig())
@@ -53,7 +55,7 @@ val app = fc<Props> {
                     }
                 }
                 span("example-spacer") {}
-                if (auth) {
+                if (!authenticated) {
                     div("menu_name2") {
                         div("events_icon2") {}
                         div("login_block") {
@@ -91,7 +93,7 @@ val app = fc<Props> {
                             div("header_user_info") {
                                 dangerousSVG(SVGUserPic)
                                 div("header_svg_title") {
-                                    +"Username"
+                                    + username
                                 }
                             }
                             div("header_line") {}
@@ -101,7 +103,9 @@ val app = fc<Props> {
                                 dangerousSVG(SVGLogout)
                                 attrs {
                                     onClickFunction = {
-                                        setAuth(true)
+                                        setAuthenticated(false)
+                                        setUsername("")
+                                        setPassword("")
                                         setCurrentPage(config?.pages?.first())
                                     }
                                 }
@@ -145,7 +149,16 @@ val app = fc<Props> {
                 }
             }
             if (currentPage == LOGIN_PAGE) {
-                child(login)
+                child(login) {
+                    attrs.setValues = { username, password ->
+                        setUsername(username)
+                        setPassword(password)
+                        setAuthenticated(true)
+                        setCurrentPage(config?.pages?.first())
+
+
+                    }
+                }
             } else if (currentPage == DICTIONARY_PAGE) {
                 child(dictionary) {// color: #e13a3a;
                     attrs.SWdata = SWdata
@@ -169,6 +182,8 @@ val app = fc<Props> {
                         setEMDdata(it)
                     }
                     attrs.condition_db = config?.condition_db
+                    attrs.username = username
+                    attrs.password = password
                 }
             }
         }

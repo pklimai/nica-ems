@@ -20,6 +20,8 @@ external interface EMDPageProps : Props {
     var EMDdata: String?
     var setEMDdata: (String?) -> Unit
     var condition_db: DBConnectionConfig?
+    var username: String
+    var password: String
 }
 
 // Component to render attribute selection and nested table
@@ -71,13 +73,13 @@ val emdPage = fc<EMDPageProps> { props ->
                             }
                             +labelString
                         }
-                        Select{
+                        Select {
                             attrs {
                                 size = Size.small
                                 label = ReactNode(labelString)
                                 // labelId = paramName
                                 value =  (params?.get(paramName) ?: "").unsafeCast<Nothing?>()
-                                onChange = { it: dynamic, it1 ->
+                                onChange = { it: dynamic, _ ->
                                     val newValue = it.target.value    // Note: it.asDynamic() won't work
                                     // console.log("onChange called in Select with value $newValue")
                                     val copyParams = HashMap(params ?: emptyMap())
@@ -181,7 +183,11 @@ val emdPage = fc<EMDPageProps> { props ->
                                 console.log(paramsWithLimit.toString())
                                 console.log(paramsForURL)
                                 scope.launch {
-                                    val emd = getEMD(props.pageConfig.api_url + "/emd" + paramsForURL)
+                                    val emd = getEMD(
+                                        props.pageConfig.api_url + "/emd" + paramsForURL,
+                                        props.username,
+                                        props.password
+                                    )
                                     console.log(emd)
                                     // update state with API data
                                     props.setEMDdata(emd)

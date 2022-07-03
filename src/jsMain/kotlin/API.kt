@@ -4,6 +4,10 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.engine.js.*
+import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
 
@@ -15,14 +19,25 @@ val jsonClient = HttpClient {
     }
 }
 
-val stringClient = HttpClient { }
-
 suspend fun getConfig(): ConfigFile {
     return jsonClient.get(endpoint + CONFIG_URL).body()
 }
 
-suspend fun getEMD(api_url: String): String {
-    return stringClient.get(endpoint + api_url).body()
+suspend fun getEMD(api_url: String, username: String, password: String): String {
+    val stringClient = HttpClient(Js) {
+        install(Auth) {
+            basic {
+                credentials {
+                    BasicAuthCredentials(username = username, password = password)
+                }
+                // enable sending credentials in the initial request without waiting for a 401 (Unauthorized) response:
+                sendWithoutRequest { request -> true }
+            }
+        }
+    }
+    val res = stringClient.get(endpoint + api_url).bodyAsText()
+    stringClient.close()
+    return res
 }
 
 suspend fun getSoftwareVersions(): Array<SoftwareVersion> {
