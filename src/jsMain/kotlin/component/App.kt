@@ -171,7 +171,7 @@ val app = fc<Props> {
                     }
                 }
             } else if (showStats) {
-                child(homePage) {
+                child(statsPage) {
                     attrs.experiment = currentPage?.name?.split(" ")?.first() ?: "BM@N"  // TODO
                 }
             } else {

@@ -14,7 +14,7 @@ external interface Side : Props {
     var experiment: String?
 }
 
-val homePage = fc<Side> {props ->
+val statsPage = fc<Side> { props ->
     val (period, setPeriod) = useState(false);
     val (soft, setSoft) = useState(false);
     val (params, setParams) = useState<Map<String, String>>()

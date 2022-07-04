@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd.Service
+package ru.mipt.npm.nica.emd
 
 //if(props.table == "Software"){ //Software
 //
