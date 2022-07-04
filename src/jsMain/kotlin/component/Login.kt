@@ -12,7 +12,6 @@ import react.fc
 import react.useState
 
 external interface LoginPageProps : Props {
-    // var pageConfig: PageConfig
     var setValues: (username: String, password: String) -> Unit
 }
 

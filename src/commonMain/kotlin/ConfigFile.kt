@@ -73,7 +73,7 @@ fun ConfigFile.removeSensitiveData(): ConfigFile {
      */
     return ConfigFile(
         event_db = DBConnectionConfig("", 0, "", "", ""),
-        condition_db = null,
+        condition_db = if (condition_db == null) null else DBConnectionConfig("", 0, "", "", ""),
         database_auth = database_auth, /* Boolean so not sensitive */
         ldap_auth = if (ldap_auth == null) null else LDAPAuthConfig("", 0, "", "", "", "", ""),
         title = this.title,
@@ -81,4 +81,4 @@ fun ConfigFile.removeSensitiveData(): ConfigFile {
     )
 }
 
-fun ConfigFile.authNotRequired(): Boolean = (database_auth != true) && (ldap_auth == null)
+fun ConfigFile.authRequired(): Boolean = (database_auth == true) || (ldap_auth != null)

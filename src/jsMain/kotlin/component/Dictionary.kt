@@ -14,6 +14,9 @@ external interface DictionaryPageProps : Props {
     var setSWdata: (Array<SoftwareVersion>?) -> Unit
     var Storagedata: Array<Storage>?
     var setStoragedata: (Array<Storage>?) -> Unit
+    var config: ConfigFile?
+    var username: String
+    var password: String
 }
 
 val dictionary = fc<DictionaryPageProps> { props ->
@@ -21,8 +24,8 @@ val dictionary = fc<DictionaryPageProps> { props ->
 
     useEffectOnce {
         scope.launch {
-            props.setSWdata(getSoftwareVersions())
-            props.setStoragedata(getStorages())   // as Array<Storage>?
+            props.setSWdata(getSoftwareVersions(props.config, props.username, props.password))
+            props.setStoragedata(getStorages(props.config, props.username, props.password))
         }
     }
 

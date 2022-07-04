@@ -17,9 +17,9 @@ import react.useState
 
 external interface EMDPageProps : Props {
     var pageConfig: PageConfig
+    var config: ConfigFile?
     var EMDdata: String?
     var setEMDdata: (String?) -> Unit
-    var condition_db: DBConnectionConfig?
     var username: String
     var password: String
 }
@@ -122,7 +122,7 @@ val emdPage = fc<EMDPageProps> { props ->
                     textInput("run_number", "Run Number")
                 }
 
-                if (props.condition_db != null) {
+                if (props.config?.condition_db != null) {
                     div("divider-div") {
                     }
 
@@ -185,6 +185,7 @@ val emdPage = fc<EMDPageProps> { props ->
                                 scope.launch {
                                     val emd = getEMD(
                                         props.pageConfig.api_url + "/emd" + paramsForURL,
+                                        props.config,
                                         props.username,
                                         props.password
                                     )

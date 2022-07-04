@@ -169,6 +169,9 @@ val app = fc<Props> {
                     attrs.setStoragedata = {
                         setStoragedata(it)
                     }
+                    attrs.config = config
+                    attrs.username = username
+                    attrs.password = password
                 }
             } else if (showStats) {
                 child(statsPage) {
@@ -177,11 +180,11 @@ val app = fc<Props> {
             } else {
                 child(emdPage) {
                     attrs.pageConfig = currentPage!!
+                    attrs.config = config
                     attrs.EMDdata = EMDdata
                     attrs.setEMDdata = { it: String? ->
                         setEMDdata(it)
                     }
-                    attrs.condition_db = config?.condition_db
                     attrs.username = username
                     attrs.password = password
                 }

@@ -9,12 +9,11 @@ import react.dom.RDOMBuilder
 import react.dom.div
 import react.dom.onChange
 
-
-external interface Side : Props {
+external interface StatsPageProps : Props {
     var experiment: String?
 }
 
-val statsPage = fc<Side> { props ->
+val statsPage = fc<StatsPageProps> { props ->
     val (period, setPeriod) = useState(false);
     val (soft, setSoft) = useState(false);
     val (params, setParams) = useState<Map<String, String>>()
