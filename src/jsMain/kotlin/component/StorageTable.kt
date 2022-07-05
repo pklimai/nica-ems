@@ -10,11 +10,9 @@ external interface StorageTableProps : Props {
     var content: Array<Storage>?
 }
 
-val StorageTable = fc<StorageTableProps> { props ->
+val storageTable = fc<StorageTableProps> { props ->
 
-    console.log(props.content)
-    //val json = JSON.parse<Json>(props.content ?: "{}")
-    //console.log(json)
+    // console.log(props.content)
 
     if (props.content.isNullOrEmpty()) {
         Card {
@@ -25,13 +23,10 @@ val StorageTable = fc<StorageTableProps> { props ->
     } else {
         val columns = mutableListOf(
             column("storage_id", "storage_id", "Storage ID", 1),
-            column("storage_name", "storage_name", "Storage Name", 1),
+            column("storage_name", "storage_name", "Storage Name", 3),
         )
 
-        fun row(
-            id: Int,
-            storage_name: String
-        ): dynamic {
+        fun row(id: Int, storage_name: String): dynamic {
             val r: dynamic = object {}
             r["id"] = id
             r["storage_id"] = id
@@ -39,29 +34,27 @@ val StorageTable = fc<StorageTableProps> { props ->
             return r
         }
 
-        val rows = mutableListOf<dynamic>()
-
-        props.content?.forEach { item ->
-            val id = item.storage_id
-            val storage_name = item.storage_name
-            rows.add(row(id, storage_name))
+        val rows = buildList<dynamic> {
+            props.content?.forEach { item ->
+                this.add(row(item.storage_id, item.storage_name))
+            }
         }
-        //if (rows.size > 0) {
-            div("new_table_page") {
-                div("new_table_page__dicttable") {
-                    div("div-emd-table-card") {
-                        Card {
-                            DataGrid {
-                                attrs {
-                                    this.columns = columns.toTypedArray()
-                                    this.rows = rows.toTypedArray()
-                                    pageSize = 10
-                                }
+
+        //if (rows.size > 0)
+        div("new_table_page") {
+            div("new_table_page__dicttable") {
+                div("div-emd-table-card") {
+                    Card {
+                        DataGrid {
+                            attrs {
+                                this.columns = columns.toTypedArray()
+                                this.rows = rows.toTypedArray()
+                                pageSize = 10
                             }
                         }
                     }
                 }
             }
-        //}
+        }
     }
 }

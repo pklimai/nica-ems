@@ -75,16 +75,12 @@ val dictionary = fc<DictionaryPageProps> { props ->
             }
             div("flex") {
                 div("dictionary__tables") {
-                    child(StorageTable) {
+                    child(storageTable) {
                         attrs.content = props.Storagedata
                     }
-                    child(StorageTable) {
-                        attrs.content = props.Storagedata
+                    child(softwareTable) {
+                        attrs.content = props.SWdata
                     }
-
-//                    child(SoftwareTable){
-//                        attrs.content = props.SWdata
-//                    }
                 }
 
             }
