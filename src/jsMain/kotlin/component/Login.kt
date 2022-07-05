@@ -1,5 +1,6 @@
 package ru.mipt.npm.nica.emd
 
+import kotlinx.html.InputType
 import kotlinx.html.js.onClickFunction
 import mui.material.Button
 import mui.material.ButtonVariant
@@ -37,37 +38,43 @@ val login = fc<LoginPageProps> { props ->
                     }
                     div("login_page__card__left__text") {}
                     if (!add) {
-                        div("wrap-form1 validate-input") {
-                            input {
-                                attrs {
-                                    placeholder = "Username"
-                                    onChange = {
-                                        val newUsername = (it.target as HTMLInputElement).value
-                                        setUsername(newUsername)
+                        form {
+                            div("wrap-form1 validate-input") {
+                                input {
+                                    attrs {
+                                        placeholder = "Username"
+                                        name = "username"
+                                        type = InputType.text
+                                        onChange = {
+                                            val newUsername = (it.target as HTMLInputElement).value
+                                            setUsername(newUsername)
+                                        }
                                     }
-                                }
-                            } //<input type="text" #username  placeholder="Username" required>
-                            span("focus-form1") {}
-                            span("symbol-form1") {
-                                div {
-                                    i("bx bxs-user-account") {}
+                                } //<input type="text" #username  placeholder="Username" required>
+                                span("focus-form1") {}
+                                span("symbol-form1") {
+                                    div {
+                                        i("bx bxs-user-account") {}
+                                    }
                                 }
                             }
-                        }
-                        div("wrap-form1 validate-input") {
-                            input {
-                                attrs {
-                                    placeholder = "Password"
-                                    onChange = {
-                                        val newPassword = (it.target as HTMLInputElement).value
-                                        setPassword(newPassword)
+                            div("wrap-form1 validate-input") {
+                                input {
+                                    attrs {
+                                        placeholder = "Password"
+                                        name = "password"
+                                        type = InputType.password
+                                        onChange = {
+                                            val newPassword = (it.target as HTMLInputElement).value
+                                            setPassword(newPassword)
+                                        }
                                     }
-                                }
-                            } //<input type="text" #password type="password"  placeholder="Password" required>
-                            span("focus-form1") {}
-                            span("symbol-form1") {
-                                div {
-                                    i("bx bxs-lock-alt") {}
+                                } //<input type="text" #password type="password"  placeholder="Password" required>
+                                span("focus-form1") {}
+                                span("symbol-form1") {
+                                    div {
+                                        i("bx bxs-lock-alt") {}
+                                    }
                                 }
                             }
                         }
