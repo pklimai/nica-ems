@@ -185,8 +185,10 @@ val app = fc<Props> {
                     attrs.setEMDdata = { it: String? ->
                         setEMDdata(it)
                     }
+                    attrs.authenticated = authenticated
                     attrs.username = username
                     attrs.password = password
+                    attrs.redirectToAuth = { setCurrentPage(LOGIN_PAGE) }
                 }
             }
         }

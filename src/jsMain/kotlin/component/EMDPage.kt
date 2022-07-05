@@ -20,8 +20,10 @@ external interface EMDPageProps : Props {
     var config: ConfigFile?
     var EMDdata: String?
     var setEMDdata: (String?) -> Unit
+    var authenticated: Boolean
     var username: String
     var password: String
+    var redirectToAuth: () -> Unit
 }
 
 // Component to render attribute selection and nested table
@@ -170,30 +172,37 @@ val emdPage = fc<EMDPageProps> { props ->
                             size = Size.small
                             onClick = {
                                 // form API request
-                                val paramsWithLimit = HashMap(params ?: emptyMap())
-                                if (paramsWithLimit["limit"].isNullOrEmpty())
-                                    paramsWithLimit["limit"] = props.pageConfig.default_limit_web.toString()
-                                val paramsForURL = if (paramsWithLimit.isNotEmpty()) {
-                                    "?" + paramsWithLimit.map { "${it.key}=${it.value}" }.filter { it.isNotBlank() }
-                                        .joinToString("&")
+                                if (props.config?.authRequired() == true && !props.authenticated) {
+                                    // redirect to auth window
+                                    scope.launch {
+                                        props.redirectToAuth()
+                                    }
                                 } else {
-                                    ""
-                                }
+                                    val paramsWithLimit = HashMap(params ?: emptyMap())
+                                    if (paramsWithLimit["limit"].isNullOrEmpty())
+                                        paramsWithLimit["limit"] = props.pageConfig.default_limit_web.toString()
+                                    val paramsForURL = if (paramsWithLimit.isNotEmpty()) {
+                                        "?" + paramsWithLimit.map { "${it.key}=${it.value}" }
+                                            .filter { it.isNotBlank() }
+                                            .joinToString("&")
+                                    } else {
+                                        ""
+                                    }
 
-                                console.log(paramsWithLimit.toString())
-                                console.log(paramsForURL)
-                                scope.launch {
-                                    val emd = getEMD(
-                                        props.pageConfig.api_url + "/emd" + paramsForURL,
-                                        props.config,
-                                        props.username,
-                                        props.password
-                                    )
-                                    console.log(emd)
-                                    // update state with API data
-                                    props.setEMDdata(emd)
+                                    console.log(paramsWithLimit.toString())
+                                    console.log(paramsForURL)
+                                    scope.launch {
+                                        val emd = getEMD(
+                                            props.pageConfig.api_url + "/emd" + paramsForURL,
+                                            props.config,
+                                            props.username,
+                                            props.password
+                                        )
+                                        console.log(emd)
+                                        // update state with API data
+                                        props.setEMDdata(emd)
+                                    }
                                 }
-
                             }
                         }
                     }
