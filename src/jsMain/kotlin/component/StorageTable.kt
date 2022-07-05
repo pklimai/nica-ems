@@ -48,7 +48,7 @@ val StorageTable = fc<StorageTableProps> { props ->
         }
         //if (rows.size > 0) {
             div("new_table_page") {
-                div("new_table_page__table") {
+                div("new_table_page__dicttable") {
                     div("div-emd-table-card") {
                         Card {
                             DataGrid {

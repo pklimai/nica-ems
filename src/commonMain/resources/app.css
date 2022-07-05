@@ -999,6 +999,14 @@ footer {
   /*   box-shadow: #00000029 0 1px 4px; */
 }
 
+.new_table_page__dicttable {
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  border-radius: 0.6em !important;
+}
+
 .new_table_page__table>div>h3 {
   padding: 1.4% 2%;
   color: #000000a3;
@@ -1287,9 +1295,9 @@ footer {
 }
 
 .dictionary {
-  width: 100%;
+  width: 90%;
   height: 100%;
-  display: flex;
+  /*display: flex; */
   padding: 2%;
   background: #e0e0e0;
 }
@@ -1323,10 +1331,11 @@ footer {
   text-transform: inherit;
 }
 
+/*
 .dictionary__back__card div:first-child {
   display: flex;
 }
-
+*/
 
 .dictionary__back svg {
   width: 35px;
@@ -1398,22 +1407,25 @@ footer {
 .dictionary__tables {
   display: flex;
   margin-top: 5%;
+  width: 80%;
 }
 
 .dictionary__tables div {
-  display: flex;
+  /* display: flex;
   align-items: center;
   min-width: 311px;
   justify-content: center;
-  min-height: 63px;
+  min-height: 63px; */
   box-shadow: #32325d40 0 2px 5px -1px, #0000004d 0 1px 3px -1px;
   color: #000000a3;
   font-size: 16.5px;
 }
 
+/*
 .dictionary__tables div:last-child {
   margin-left: 6%;
 }
+*/
 
 .login {
   background: linear-gradient(to bottom,#819be242,#f4f5f9);

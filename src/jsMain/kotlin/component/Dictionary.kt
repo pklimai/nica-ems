@@ -22,6 +22,18 @@ external interface DictionaryPageProps : Props {
 val dictionary = fc<DictionaryPageProps> { props ->
     val (params, setParams) = useState<Map<String, String>>()
 
+    fun RDOMBuilder<DIV>.textInput(paramName: String, labelString: String = "") {
+        TextField {
+            attrs {
+                name = paramName
+                id = paramName
+                value = params?.get(paramName) ?: ""    /// ? to test
+                variant = FormControlVariant.outlined
+                label = ReactNode(labelString)
+            }
+        }
+    }
+
     useEffectOnce {
         scope.launch {
             props.setSWdata(getSoftwareVersions(props.config, props.username, props.password))
@@ -30,54 +42,52 @@ val dictionary = fc<DictionaryPageProps> { props ->
     }
 
     div("dictionary") {
-        div("dictionary__back"){
-            div("flex"){
-                fun RDOMBuilder<DIV>.textInput(paramName: String, labelString: String = "") {
-                    TextField {
-                        attrs {
-                            name = paramName
-                            id = paramName
-                            value = params?.get(paramName) ?: ""    /// ? to test
-                            variant = FormControlVariant.outlined
-                            label = ReactNode(labelString)
+        div("dictionary__back") {
+            div("flex") {
+                div("dictionary__tables") {
+                    div("dictionary__back__card") {
+                        dangerousSVG(SVGCloudForDict)
+                        div("dictionary__back__input") {
+                            textInput("storage_name", "Storage Name")
+                        }
+                        Button {
+                            attrs {
+                                +"Add"
+                                variant = ButtonVariant.contained
+                                size = Size.small
+                            }
+                        }
+                    }
+                    div("dictionary__back__card") {
+                        dangerousSVG(SVGSWforDict)
+                        div("dictionary__back__input") {
+                            textInput("software_version", "Software Version")
+                        }
+                        Button {
+                            attrs {
+                                +"Add"
+                                variant = ButtonVariant.contained
+                                size = Size.small
+                            }
                         }
                     }
                 }
-                div("dictionary__back__card"){
-                    dangerousSVG(SVGCloudForDict)
-                    div("dictionary__back__input") {
-                        textInput("storage_name", "Storage Name")
-                    }
-                    Button {
-                        attrs {
-                            +"Add"
-                            variant = ButtonVariant.contained
-                            size = Size.small
-                        }
-                    }
-                }
-                div("dictionary__back__card"){
-                    dangerousSVG(SVGSWforDict)
-                    div("dictionary__back__input") {
-                        textInput("software_version", "Software Version")
-                    }
-                    Button {
-                        attrs {
-                            +"Add"
-                            variant = ButtonVariant.contained
-                            size = Size.small
-                        }
-                    }
-                }
-           }
-           div("dictionary__tables"){
-                child(StorageTable){
-                    attrs.content = props.Storagedata
-                }
-//                child(SoftwareTable){
-//                    attrs.content = props.SWdata
-//                }
             }
-       } 
+            div("flex") {
+                div("dictionary__tables") {
+                    child(StorageTable) {
+                        attrs.content = props.Storagedata
+                    }
+                    child(StorageTable) {
+                        attrs.content = props.Storagedata
+                    }
+
+//                    child(SoftwareTable){
+//                        attrs.content = props.SWdata
+//                    }
+                }
+
+            }
+        }
     }
 }
