@@ -7,3 +7,4 @@
 /.idea/modules
 /testing/condition_db
 /testing/event_db
+/kotlin-js-store/yarn.lock

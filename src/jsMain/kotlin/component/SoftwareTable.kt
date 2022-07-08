@@ -14,7 +14,7 @@ val softwareTable = fc<SoftwareTableProps> { props ->
 
     val columns = mutableListOf(
         column("software_id", "software_id", "Software ID", 1),
-        column("software_version", "software_version", "Software Version", 3),
+        column("software_version", "software_version", "Software Version", 2),
     )
 
     fun row(
@@ -34,7 +34,7 @@ val softwareTable = fc<SoftwareTableProps> { props ->
         }
     }
 
-    div("new_table_page") {
+    div("dictionary_table_page") {
         div("new_table_page__dicttable") {
             div("div-emd-table-card") {
                 Card {

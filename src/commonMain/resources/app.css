@@ -596,7 +596,7 @@ header nav .mat-button {
 }
 
 .sidenav>div {
-  margin-bottom: 7%;
+  margin-bottom: 6%;
   margin-left: 6%;
   animation: translating4 .8s;
 }
@@ -999,14 +999,6 @@ footer {
   /*   box-shadow: #00000029 0 1px 4px; */
 }
 
-.new_table_page__dicttable {
-  width: 95%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden !important;
-  border-radius: 0.6em !important;
-}
-
 .new_table_page__table>div>h3 {
   padding: 1.4% 2%;
   color: #000000a3;
@@ -1241,6 +1233,7 @@ footer {
   border-right: 1.5px solid #4343fa83;
   margin: 0 10px;
   height: 100%;
+  margin-top: -6px;
 }
 
 .svg_anim_di {
@@ -1294,72 +1287,6 @@ footer {
   }
 }
 
-.dictionary {
-  width: 90%;
-  height: 100%;
-  /*display: flex; */
-  padding: 2%;
-  background: #e0e0e0;
-}
-
-.dictionary__back {
-  display: flex;
-  flex-direction: column;
-}
-
-.dictionary__back__card {
-  display: flex;
-  align-items: center;
-  border-left: 4px solid #2862ffc7;
-  box-shadow: #32325d40 0 2px 5px -1px, #0000004d 0 1px 3px -1px;
-  min-width: auto;
-  justify-content: center;
-  background-color: #fff;
-  border-radius: 0.3rem !important;
-  min-height: 88px;
-}
-
-.dictionary__back__card:last-child {
-  margin-left: 6%;
-}
-
-.dictionary__back__card button {
-  background-color: #2862ff;
-  box-shadow: 0 3px 1px -2px #0003, 0 2px 2px #00000024, 0 -2px 5px #0000001f;
-  margin-left: 15px;
-  margin-right: 15px;
-  text-transform: inherit;
-}
-
-/*
-.dictionary__back__card div:first-child {
-  display: flex;
-}
-*/
-
-.dictionary__back svg {
-  width: 35px;
-  margin: 14px
-}
-
-.dictionary__back__input {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  width: 150px;
-  font-size: 12.8px;
-  font-weight: 400;
-  line-height: 1.125;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  letter-spacing: normal;
-}
-
-.dictionary__back__input>div>label {
-  font-size: 13.8px;
-}
-
-.dictionary__back__input input {
-  padding: 2px 0 23px 0;
-}
 
 .flex {
   display: flex;
@@ -1404,28 +1331,7 @@ footer {
   max-height: inherit;
 }
 
-.dictionary__tables {
-  display: flex;
-  margin-top: 5%;
-  width: 80%;
-}
 
-.dictionary__tables div {
-  /* display: flex;
-  align-items: center;
-  min-width: 311px;
-  justify-content: center;
-  min-height: 63px; */
-  box-shadow: #32325d40 0 2px 5px -1px, #0000004d 0 1px 3px -1px;
-  color: #000000a3;
-  font-size: 16.5px;
-}
-
-/*
-.dictionary__tables div:last-child {
-  margin-left: 6%;
-}
-*/
 
 .login {
   background: linear-gradient(to bottom,#819be242,#f4f5f9);
@@ -1693,3 +1599,119 @@ footer {
 .footer__home__icon:hover i{
   opacity: 1;
 }
+.top__search:hover{
+  cursor: pointer;
+}
+/* Dictionary */
+
+.dictionary {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 2%;
+  background: linear-gradient(to bottom,#819be242,#f4f5f9);
+}
+.dictionary__top{
+  display: flex;
+}
+.dictionary__top__card {
+  display: flex;
+  align-items: center;
+  border-left: 4px solid #2862ffc7;
+  box-shadow: #32325d40 0 2px 5px -1px, #0000004d 0 1px 3px -1px;
+  justify-content: center;
+  background-color: #fff;
+  border-radius: 0.3rem !important;
+  min-height: 88px;
+  min-width: 311px;
+  color: #000000a3;
+  font-size: 16.5px;
+}
+
+.dictionary__top__card:last-child {
+  margin-left: 3%;
+}
+
+.dictionary__top__card svg {
+  width: 35px;
+  margin: 14px
+}
+
+.dictionary__top__card button {
+  background-color: #2862ff;
+  box-shadow: 0 3px 1px -2px #0003, 0 2px 2px #00000024, 0 -2px 5px #0000001f;
+  margin-left: 15px;
+  margin-right: 15px;
+  text-transform: inherit;
+}
+
+.dictionary__back__input {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: 150px;
+  font-size: 12.8px;
+  font-weight: 400;
+  line-height: 1.125;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  letter-spacing: normal;
+}
+
+.dictionary__back__input>div>label {
+  font-size: 13.8px;
+}
+
+.dictionary__back__input input {
+  padding: 2px 0 23px 0;
+}
+
+
+
+.dictionary__bottom{
+  display: flex;
+  justify-content: space-between;
+  width: 42%;
+  margin-top: 2%;
+}
+
+.dictionary__bottom > div{
+  width: 311px;
+  height: 400px;
+  margin: 0;
+}
+
+.dictionary_table_page {
+  display: flex;
+  height: 100%;
+  justify-content: space-evenly;
+  width: 100%;
+  margin: 0 auto;
+  cursor: default;
+  animation: translating2 .6s;
+}
+.dictionary_table_page .new_table_page__dicttable{
+  width: 311px;
+}
+
+.dictionary__bottom > .MuiCard-root >h3{
+  color: #000000a3;
+  font-size: 18px;
+}
+
+.dictionary__bottom > .MuiCard-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dictionary__bottom .MuiDataGrid-main{
+  min-height: 346px;
+}
+.dictionary__bottom .div-emd-table-card{
+  min-height: 346px;
+
+}
+
+
+
+/* End Dictionary */
