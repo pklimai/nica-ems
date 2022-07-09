@@ -153,6 +153,36 @@ fun Application.main() {
                 }
             }
 
+            post(SOFTWARE_URL) {
+                // e.g. POST { "software_id": 100, "software_version": "22.1" }
+                // Note: software_id is assigned automatically by the database, regardless of what is passed in JSON
+                val roles = getUserRoles(config, call)
+                if (!(roles.isWriter or roles.isAdmin)) {
+                    call.respond(HttpStatusCode.Unauthorized)
+                } else {
+                    val sw = call.receive<SoftwareVersion>()
+                    val connEMD = newEMDConnection(config, this.context)
+                    if (connEMD == null) {
+                        call.respond(HttpStatusCode.Unauthorized)
+                    } else {
+                        val query = """
+                        INSERT INTO software_ (software_version)
+                        VALUES ('${sw.software_version}')
+                    """.trimIndent()
+                        print(query)
+                        try {
+                            connEMD.createStatement().executeUpdate(query)
+                            call.response.status(HttpStatusCode.OK)
+                            call.respond("SW record was created")
+                        } catch (_: PSQLException) {  // e.g. this version already exists
+                            call.response.status(HttpStatusCode.InternalServerError)
+                        } finally {
+                            connEMD.close()
+                        }
+                    }
+                }
+            }
+
             get(STORAGE_URL) {
                 val connEMD = newEMDConnection(config, this@get.context)
                 if (connEMD == null) {
@@ -172,6 +202,35 @@ fun Application.main() {
                     }
                     connEMD.close()
                     call.respond(storageList)
+                }
+            }
+
+            post(STORAGE_URL) {
+                // Note: storage_id is assigned automatically by the database, regardless of what is passed in JSON
+                val roles = getUserRoles(config, call)
+                if (!(roles.isWriter or roles.isAdmin)) {
+                    call.respond(HttpStatusCode.Unauthorized)
+                } else {
+                    val storage = call.receive<Storage>()
+                    val connEMD = newEMDConnection(config, this.context)
+                    if (connEMD == null) {
+                        call.respond(HttpStatusCode.Unauthorized)
+                    } else {
+                        val query = """
+                        INSERT INTO storage_ (storage_name)
+                        VALUES ('${storage.storage_name}')
+                    """.trimIndent()
+                        print(query)
+                        try {
+                            connEMD.createStatement().executeUpdate(query)
+                            call.response.status(HttpStatusCode.OK)
+                            call.respond("Storage record was created")
+                        } catch (_: PSQLException) {
+                            call.response.status(HttpStatusCode.InternalServerError)
+                        } finally {
+                            connEMD.close()
+                        }
+                    }
                 }
             }
 
