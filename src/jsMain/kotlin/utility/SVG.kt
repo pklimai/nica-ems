@@ -20,7 +20,6 @@ fun RDOMBuilder<DIV>.dangerousSVG(htmlContent: String) {
             val __html = htmlContent
         }
     }
-
 }
 
 fun SVGSearchEventsDANG(fill: String) = """

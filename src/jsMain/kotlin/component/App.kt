@@ -1,6 +1,7 @@
 package ru.mipt.npm.nica.emd
 
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.html.js.onClickFunction
 import mui.material.Button
@@ -29,9 +30,12 @@ val app = fc<Props> {
 
     useEffectOnce {
         scope.launch {
-            setConfig(getConfig())
+            val newConfig = getConfig()
+            setConfig(newConfig)
+            setCurrentPage(newConfig.pages.first())
         }
     }
+
     div("wrapper") {
         header {
             nav {
@@ -93,7 +97,7 @@ val app = fc<Props> {
                             div("header_user_info") {
                                 dangerousSVG(SVGUserPic)
                                 div("header_svg_title") {
-                                    + username
+                                    +username
                                 }
                             }
                             div("header_line") {}
@@ -155,8 +159,6 @@ val app = fc<Props> {
                         setPassword(password)
                         setAuthenticated(true)
                         setCurrentPage(config?.pages?.first())
-
-
                     }
                 }
             } else if (currentPage == DICTIONARY_PAGE) {
