@@ -42,48 +42,41 @@ val dictionary = fc<DictionaryPageProps> { props ->
     }
 
     div("dictionary") {
-        div("dictionary__back") {
-            div("flex") {
-                div("dictionary__tables") {
-                    div("dictionary__back__card") {
-                        dangerousSVG(SVGCloudForDict)
-                        div("dictionary__back__input") {
-                            textInput("storage_name", "Storage Name")
-                        }
-                        Button {
-                            attrs {
-                                +"Add"
-                                variant = ButtonVariant.contained
-                                size = Size.small
-                            }
-                        }
-                    }
-                    div("dictionary__back__card") {
-                        dangerousSVG(SVGSWforDict)
-                        div("dictionary__back__input") {
-                            textInput("software_version", "Software Version")
-                        }
-                        Button {
-                            attrs {
-                                +"Add"
-                                variant = ButtonVariant.contained
-                                size = Size.small
-                            }
-                        }
+        div("dictionary__top"){
+            div("dictionary__top__card") {
+                dangerousSVG(SVGCloudForDict)
+                div("dictionary__back__input") {
+                    textInput("storage_name", "Storage Name")
+                }
+                Button {
+                    attrs {
+                        +"Add"
+                        variant = ButtonVariant.contained
+                        size = Size.small
                     }
                 }
             }
-            div("flex") {
-                div("dictionary__tables") {
-                    child(storageTable) {
-                        attrs.content = props.Storagedata
-                    }
-                    child(softwareTable) {
-                        attrs.content = props.SWdata
+            div("dictionary__top__card") {
+                dangerousSVG(SVGSWforDict)
+                div("dictionary__back__input") {
+                    textInput("software_version", "Software Version")
+                }
+                Button {
+                    attrs {
+                        +"Add"
+                        variant = ButtonVariant.contained
+                        size = Size.small
                     }
                 }
-
             }
+        }
+        div("dictionary__bottom"){
+            child(storageTable) {
+                attrs.content = props.Storagedata
+            }
+            child(softwareTable) {
+                attrs.content = props.SWdata
+            }   
         }
     }
 }

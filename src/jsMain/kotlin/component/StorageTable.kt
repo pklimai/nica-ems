@@ -23,7 +23,7 @@ val storageTable = fc<StorageTableProps> { props ->
     } else {
         val columns = mutableListOf(
             column("storage_id", "storage_id", "Storage ID", 1),
-            column("storage_name", "storage_name", "Storage Name", 3),
+            column("storage_name", "storage_name", "Storage Name", 2),
         )
 
         fun row(id: Int, storage_name: String): dynamic {
@@ -41,7 +41,7 @@ val storageTable = fc<StorageTableProps> { props ->
         }
 
         //if (rows.size > 0)
-        div("new_table_page") {
+        div("dictionary_table_page") {
             div("new_table_page__dicttable") {
                 div("div-emd-table-card") {
                     Card {
