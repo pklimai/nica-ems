@@ -85,8 +85,7 @@ val login = fc<LoginPageProps> { props ->
                                 size = Size.small
                                 onClick = {
                                     // TODO: perform actual authentication check here - db query or LDAP
-                                    console.log("Sign-In pressed with username=$username, password=$password!")
-
+                                    // console.log("Sign-In pressed with username=$username, password=$password!")
                                     props.setValues(username ?: "", password ?: "")
                                     // TODO: also derive user roles...
                                 }

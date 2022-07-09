@@ -11,38 +11,45 @@ external interface SoftwareTableProps : Props {
 }
 
 val softwareTable = fc<SoftwareTableProps> { props ->
-
-    val columns = mutableListOf(
-        column("software_id", "software_id", "Software ID", 1),
-        column("software_version", "software_version", "Software Version", 2),
-    )
-
-    fun row(
-        id: Int,
-        software_version: String
-    ): dynamic {
-        val r: dynamic = object {}
-        r["id"] = id
-        r["software_id"] = id
-        r["software_version"] = software_version
-        return r
-    }
-
-    val rows = buildList<dynamic> {
-        props.content?.forEach { item ->
-            this.add(row(item.software_id, item.software_version))
+    if (props.content.isNullOrEmpty()) {
+        Card {
+            h3 {
+                +"No data"
+            }
         }
-    }
+    } else {
 
-    div("dictionary_table_page") {
-        div("new_table_page__dicttable") {
-            div("div-emd-table-card") {
-                Card {
-                    DataGrid {
-                        attrs {
-                            this.columns = columns.toTypedArray()
-                            this.rows = rows.toTypedArray()
-                            pageSize = 10
+        val columns = mutableListOf(
+            column("software_id", "software_id", "Software ID", 1),
+            column("software_version", "software_version", "Software Version", 2),
+        )
+
+        fun row(
+            id: Int, software_version: String
+        ): dynamic {
+            val r: dynamic = object {}
+            r["id"] = id
+            r["software_id"] = id
+            r["software_version"] = software_version
+            return r
+        }
+
+        val rows = buildList<dynamic> {
+            props.content?.forEach { item ->
+                this.add(row(item.software_id, item.software_version))
+            }
+        }
+
+        div("dictionary_table_page") {
+            div("new_table_page__dicttable") {
+                div("div-emd-table-card") {
+                    Card {
+                        DataGrid {
+                            attrs {
+                                this.columns = columns.toTypedArray()
+                                this.rows = rows.toTypedArray()
+                                pageSize = 10
+                            }
                         }
                     }
                 }

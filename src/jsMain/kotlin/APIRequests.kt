@@ -8,6 +8,7 @@ import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.engine.js.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
 
@@ -72,4 +73,26 @@ suspend fun getStorages(config: ConfigFile?, username: String, password: String)
     val res = jsonClient.get(endpoint + STORAGE_URL).body<Array<Storage>>()
     jsonClient.close()
     return res
+}
+
+suspend fun postSoftwareVersion(swVer: String, config: ConfigFile?, username: String, password: String): Unit {
+    val jsonClient = jsonClientWithOptionalAuth(config, username, password)
+    jsonClient.post(endpoint + SOFTWARE_URL) {
+        setBody(SoftwareVersion(0 /* ignored */, swVer))
+        headers {
+            append(HttpHeaders.Accept, "application/json")
+            append(HttpHeaders.ContentType, "application/json")
+        }
+    }
+}
+
+suspend fun postStorage(storage: String, config: ConfigFile?, username: String, password: String): Unit {
+    val jsonClient = jsonClientWithOptionalAuth(config, username, password)
+    jsonClient.post(endpoint + STORAGE_URL) {
+        setBody(Storage(0 /* ignored */, storage))
+        headers {
+            append(HttpHeaders.Accept, "application/json")
+            append(HttpHeaders.ContentType, "application/json")
+        }
+    }
 }

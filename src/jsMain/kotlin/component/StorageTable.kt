@@ -12,8 +12,6 @@ external interface StorageTableProps : Props {
 
 val storageTable = fc<StorageTableProps> { props ->
 
-    // console.log(props.content)
-
     if (props.content.isNullOrEmpty()) {
         Card {
             h3 {
@@ -21,6 +19,7 @@ val storageTable = fc<StorageTableProps> { props ->
             }
         }
     } else {
+
         val columns = mutableListOf(
             column("storage_id", "storage_id", "Storage ID", 1),
             column("storage_name", "storage_name", "Storage Name", 2),
@@ -40,7 +39,6 @@ val storageTable = fc<StorageTableProps> { props ->
             }
         }
 
-        //if (rows.size > 0)
         div("dictionary_table_page") {
             div("new_table_page__dicttable") {
                 div("div-emd-table-card") {

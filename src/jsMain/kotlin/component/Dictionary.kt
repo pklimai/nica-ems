@@ -7,7 +7,9 @@ import react.dom.RDOMBuilder
 import mui.material.TextField
 import mui.material.*
 import mui.material.Size
+import org.w3c.dom.HTMLInputElement
 import react.*
+import react.dom.onChange
 
 external interface DictionaryPageProps : Props {
     var SWdata: Array<SoftwareVersion>?
@@ -20,19 +22,8 @@ external interface DictionaryPageProps : Props {
 }
 
 val dictionary = fc<DictionaryPageProps> { props ->
-    val (params, setParams) = useState<Map<String, String>>()
-
-    fun RDOMBuilder<DIV>.textInput(paramName: String, labelString: String = "") {
-        TextField {
-            attrs {
-                name = paramName
-                id = paramName
-                value = params?.get(paramName) ?: ""    /// ? to test
-                variant = FormControlVariant.outlined
-                label = ReactNode(labelString)
-            }
-        }
-    }
+    val (storage, setStorage) = useState<String>()
+    val (SWver, setSWver) = useState<String>()
 
     useEffectOnce {
         scope.launch {
@@ -42,41 +33,81 @@ val dictionary = fc<DictionaryPageProps> { props ->
     }
 
     div("dictionary") {
-        div("dictionary__top"){
+        div("dictionary__top") {
             div("dictionary__top__card") {
                 dangerousSVG(SVGCloudForDict)
                 div("dictionary__back__input") {
-                    textInput("storage_name", "Storage Name")
+                    TextField {
+                        attrs {
+                            id = "storage_name"
+                            value = storage ?: ""
+                            variant = FormControlVariant.outlined
+                            label = ReactNode("Storage Name")
+                            onChange = {
+                                val newStorage = (it.target as HTMLInputElement).value
+                                setStorage(newStorage)
+                            }
+                        }
+                    }
                 }
                 Button {
                     attrs {
                         +"Add"
                         variant = ButtonVariant.contained
                         size = Size.small
+                        onClick = {
+                            scope.launch {
+                                if (!storage.isNullOrEmpty()) {
+                                    postStorage(storage, props.config, props.username, props.password)
+                                    props.setStoragedata(getStorages(props.config, props.username, props.password))
+                                }
+                            }
+                            setStorage("")  // clear in the input
+                        }
                     }
                 }
             }
             div("dictionary__top__card") {
                 dangerousSVG(SVGSWforDict)
                 div("dictionary__back__input") {
-                    textInput("software_version", "Software Version")
+                    TextField {
+                        attrs {
+                            id = "software_version"
+                            value = SWver ?: ""
+                            variant = FormControlVariant.outlined
+                            label = ReactNode("Software Version")
+                            onChange = {
+                                val newSW = (it.target as HTMLInputElement).value
+                                setSWver(newSW)
+                            }
+                        }
+                    }
                 }
                 Button {
                     attrs {
                         +"Add"
                         variant = ButtonVariant.contained
                         size = Size.small
+                        onClick = {
+                            scope.launch {
+                                if (!SWver.isNullOrEmpty()) {
+                                    postSoftwareVersion(SWver, props.config, props.username, props.password)
+                                    props.setSWdata(getSoftwareVersions(props.config, props.username, props.password))
+                                }
+                            }
+                            setSWver("")  // clear in the input
+                        }
                     }
                 }
             }
         }
-        div("dictionary__bottom"){
+        div("dictionary__bottom") {
             child(storageTable) {
                 attrs.content = props.Storagedata
             }
             child(softwareTable) {
                 attrs.content = props.SWdata
-            }   
+            }
         }
     }
 }
