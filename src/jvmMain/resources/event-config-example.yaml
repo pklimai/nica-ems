@@ -1,6 +1,6 @@
 event_db:
   #host: 192.168.65.52
-  host: 159.93.221.14  
+  host: 159.93.221.14
   port: 5000
   db_name: event_db
   user: postgres
@@ -25,7 +25,7 @@ database_auth: True
 #  writer_group_dn: "cn=bmneventwriter,cn=groups,cn=accounts,dc=jinr,dc=ru"
 #  admin_group_dn: "cn=bmneventadmin,cn=groups,cn=accounts,dc=jinr,dc=ru"
 
-title: Event Index Main Page
+title: BM@N Event Metadata System
 
 pages:
   - name: BM@N Events

@@ -1,11 +1,9 @@
 package ru.mipt.npm.nica.emd
 
-import kotlinx.html.DIV
+import kotlinx.coroutines.launch
 import kotlinx.html.js.onClickFunction
-import mui.material.FormControlVariant
-import mui.material.TextField
+import mui.material.*
 import react.*
-import react.dom.RDOMBuilder
 import react.dom.div
 import react.dom.onChange
 
@@ -14,9 +12,24 @@ external interface StatsPageProps : Props {
 }
 
 val statsPage = fc<StatsPageProps> { props ->
-    val (period, setPeriod) = useState(false);
-    val (soft, setSoft) = useState(false);
-    val (params, setParams) = useState<Map<String, String>>()
+    val (periodOpened, setPeriodOpened) = useState(false)
+    val (softOpened, setSoftOpened) = useState(false)
+    val (stats, setStats) = useState<EMSStatistics>()
+    val (currentPeriod, setCurrentPeriod) = useState<String>()
+    val (currentSW, setCurrentSW) = useState<String>()
+
+    useEffectOnce {
+        scope.launch {
+            val newStats = getStats()
+            setStats(newStats)
+            //setPeriodOpened(false)
+            //setSoftOpened(false)
+            setCurrentPeriod(
+                newStats.experimentStatistics[props.experiment]?.periodStats?.keys?.toList()?.maxOf { it }.toString()
+            )
+            console.log("useEffectOnce of statsPage")
+        }
+    }
 
     div("home__page") {
         div {
@@ -33,14 +46,8 @@ val statsPage = fc<StatsPageProps> { props ->
                     dangerousSVG(SVGHomeRecords)
                     div("home__page__stats__block__column") {
                         div("home__page__stats__block__column__stats") {
-                            if(props.experiment == "BM@N"){
-                                div {
-                                    +"5000"
-                                }
-                            } else {
-                                div {
-                                    +"6000"
-                                }
+                            div {
+                                +(stats?.experimentStatistics?.get(props.experiment)?.totalRecords?.toString() ?: "HZ")
                             }
                             div {
                                 +"Total"
@@ -53,7 +60,7 @@ val statsPage = fc<StatsPageProps> { props ->
                 }
                 div("home__page__stats__block borders stats_new_block") {
                     attrs.onClickFunction = {
-                        setPeriod(!period)
+                        setPeriodOpened(!periodOpened)
                     }
                     dangerousSVG(SVGHomePeriod)
                     div("stats_new_block__div") {
@@ -61,30 +68,45 @@ val statsPage = fc<StatsPageProps> { props ->
                             +"Period Number —"
                         }
                         div("per_number") {
-                            +"8 " 
+                            +currentPeriod.toString()
                         }
                     }
                 }
-                if (period) {
-                    fun RDOMBuilder<DIV>.textSelect(paramName: String, labelString: String = "") {
-                        TextField {
+                if (periodOpened) {
+                    div("home__page__stats__block3") {
+                        FormControl {
                             attrs {
-                                name = paramName
-                                id = paramName
-                                value = params?.get(paramName) ?: ""    /// ? to test
-                                variant = FormControlVariant.standard
-                                label = ReactNode(labelString)
-                                onChange = { }
+                                fullWidth = true
+                            }
+                            InputLabel {
+                                +"Period Number"
+                            }
+                            Select {
+                                attrs {
+                                    size = Size.small
+                                    label = ReactNode("Period Number")
+                                    value = currentPeriod.unsafeCast<Nothing?>()
+                                    onChange = { it: dynamic, _ ->
+                                        setCurrentPeriod(it.target.value as String)
+                                        setPeriodOpened(false)
+                                    }
+                                }
+                                stats?.experimentStatistics?.get(props.experiment)?.periodStats?.keys?.forEach { perNum ->
+                                    MenuItem {
+                                        attrs {
+                                            value = perNum.toString()
+                                        }
+                                        +perNum.toString()
+                                    }
+                                }
+
                             }
                         }
-                    }
-                    div("home__page__stats__block3") {
-                        textSelect("period number", "Period Number")
                     }
                 }
                 div("home__page__stats__block2 borders right_line") {
                     attrs.onClickFunction = {
-                        setSoft(!soft)
+                        setSoftOpened(!softOpened)
                     }
                     dangerousSVG(SVGHomeSoftware)
                     div("stats_new_block__div") {
@@ -96,28 +118,28 @@ val statsPage = fc<StatsPageProps> { props ->
                         }
                     }
                 }
-                if (soft) {
-                    fun RDOMBuilder<DIV>.textSelect(paramName: String, labelString: String = "") {
+                if (softOpened) {
+                    div("home__page__stats__block3") {
                         TextField {
                             attrs {
-                                name = paramName
-                                id = paramName
-                                value = params?.get(paramName) ?: ""    /// ? to test
+                                name = "software_version"
+                                id = "software_version"
+                                // value = ""
                                 variant = FormControlVariant.standard
-                                label = ReactNode(labelString)
-                                onChange = { }
+                                label = ReactNode("Software Version")
+                                onChange = {
+                                }
                             }
                         }
-                    }
-                    div("home__page__stats__block3") {
-                        textSelect("software_version", "Software Version")
                     }
                 }
             }
         }
         div("charts") {
-            child(chartComponent){
-                attrs.exp = props.experiment.toString()
+            child(chartComponent) {
+                attrs {
+                    experimentStats = stats?.experimentStatistics?.get(props.experiment.toString()) // specify period, sw
+                }
             }
         }
     }

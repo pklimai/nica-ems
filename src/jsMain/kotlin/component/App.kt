@@ -1,7 +1,6 @@
 package ru.mipt.npm.nica.emd
 
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.html.js.onClickFunction
 import mui.material.Button
@@ -53,7 +52,7 @@ val app = fc<Props> {
                                 setCurrentPage(config?.pages?.first()) // Is it what we want to show as home?
                                 setShowStats(true)
                             }
-                            +"BM@N Event Metadata System"   // TODO - get from config
+                            + (config?.title ?: "Event Metadata System")
                         }
                         dangerousSVG(SVGHeaderBubbles)
                     }
