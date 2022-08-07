@@ -7,15 +7,19 @@ import Highcharts
 import HighchartsReact
 import kotlin.js.json
 
-external interface ChartComponentProps: Props {
-    var experimentStats: ExperimentStatistics?
+external interface ChartComponentProps : Props {
+    var statGraph: StatGraph?
 }
 
 val chartComponent = fc<ChartComponentProps> { props ->
-    div("chart_bloks"){
-        div("chart_bloks__title_beam_energy"){+"Beam {{i.beam}} ( E = {{i.energy}} GeV/n )"}
-        div("chart_bloks_title_total"){+"Total: {{i.total}} MEvents"}
-        div("chart_blok_svg"){
+    div("chart_bloks") {
+        div("chart_bloks__title_beam_energy") {
+            +"xxx"
+            +(props.statGraph?.title1 ?: "No graph...")
+
+        }
+        div("chart_bloks_title_total") { +"Total: {{i.total}} MEvents" }
+        div("chart_blok_svg") {
             HighchartsReact {
                 attrs {
                     this.highcharts = Highcharts
@@ -25,14 +29,14 @@ val chartComponent = fc<ChartComponentProps> { props ->
                             "height" to 220,
                             "width" to 320,
                             "borderWidth" to 0,
-                            "plotBackgroundColor" to null, 
+                            "plotBackgroundColor" to null,
                             "plotBorderWidth" to null,
                             "margin" to 0,
                             "borderRadius" to 0,
-                            "plotShadow" to false, 
-                            "spacingTop" to 0, 
-                            "spacingBottom" to 0, 
-                            "spacingLeft" to 0, 
+                            "plotShadow" to false,
+                            "spacingTop" to 0,
+                            "spacingBottom" to 0,
+                            "spacingLeft" to 0,
                             "spacingRight" to 0,
                         ),
                         "credits" to json(
@@ -57,8 +61,21 @@ val chartComponent = fc<ChartComponentProps> { props ->
                         "series" to arrayOf<dynamic>(
                             json(
                                 "type" to "pie",
-                                "name" to "",
-                                "data" to arrayOf(1, 2, 3, 4, 5)
+                                "name" to "AAA",
+                                "data" to arrayOf<dynamic>(
+                                    json(
+                                        "name" to "Chrome",
+                                        "y" to 15
+                                    ),
+                                    json(
+                                        "name" to "Firefox",
+                                        "y" to 25
+                                    ),
+                                    json(
+                                        "name" to "IE",
+                                        "y" to 1
+                                    )
+                                )
                             )
                         )
                     )
@@ -69,20 +86,18 @@ val chartComponent = fc<ChartComponentProps> { props ->
 }
 // https://www.postgresql.org/docs/current/postgres-fdw.html
 
-            
 
-
-            /*
-                div("search") {
-        svg("search__svg") {
-            attrs["width"] = 29
-            attrs["height"] = 29
-            attrs["viewBox"] = "0 0 29 29"
-            attrs["xmlns"] = "http://www.w3.org/2000/svg"
-            attrs["fill"] = if (props.highlighted) "#5ba6ff" else "#928787d4"
-            child(createElement("path", SVGPathAttrs("evenodd", "evenodd", SVGSearchEvents)))
-        }
-        div("search__name") {
-            +"Search Events"
-        }
-    } */
+/*
+    div("search") {
+svg("search__svg") {
+attrs["width"] = 29
+attrs["height"] = 29
+attrs["viewBox"] = "0 0 29 29"
+attrs["xmlns"] = "http://www.w3.org/2000/svg"
+attrs["fill"] = if (props.highlighted) "#5ba6ff" else "#928787d4"
+child(createElement("path", SVGPathAttrs("evenodd", "evenodd", SVGSearchEvents)))
+}
+div("search__name") {
++"Search Events"
+}
+} */

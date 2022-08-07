@@ -6,6 +6,7 @@ import mui.material.*
 import react.*
 import react.dom.div
 import react.dom.onChange
+import ru.mipt.npm.nica.emd.component.chartSet
 
 external interface StatsPageProps : Props {
     var experiment: String?
@@ -140,7 +141,7 @@ val statsPage = fc<StatsPageProps> { props ->
             }
         }
         div("charts") {
-            child(chartComponent) {
+            child(chartSet) {
                 attrs {
                     experimentStats = stats?.experimentStatistics?.get(props.experiment.toString()) // specify period, sw
                 }

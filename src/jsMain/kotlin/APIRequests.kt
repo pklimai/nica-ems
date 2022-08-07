@@ -110,7 +110,37 @@ suspend fun getStats(): EMSStatistics {
                     5 to PeriodStats(),
                     6 to PeriodStats(),
                     7 to PeriodStats(),
-                    8 to PeriodStats(),
+                    8 to PeriodStats(
+                        10000,
+                        mapOf(
+                            "19.1" to SWstats(
+                                arrayOf(
+                                    StatGraph(
+                                        "My Stat Graph ONE",
+                                        "",
+                                        arrayOf(
+                                            GraphSlice(1, "Fe"),
+                                            GraphSlice(2, "Cu"),
+                                            GraphSlice(3, "Be")
+                                        )
+                                    )
+                                )
+                            ),
+                            "20.1" to SWstats(
+                                arrayOf(
+                                    StatGraph(
+                                        "My Stat Graph TWO",
+                                        "",
+                                        arrayOf(
+                                            GraphSlice(4, "Au"),
+                                            GraphSlice(5, "B"),
+                                            GraphSlice(6, "C")
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
             ),
             "SRC" to ExperimentStatistics(
@@ -122,7 +152,8 @@ suspend fun getStats(): EMSStatistics {
                     4 to PeriodStats(),
                 )
             ),
-            "Test" to ExperimentStatistics(totalRecords = 90000,
+            "Test" to ExperimentStatistics(
+                totalRecords = 90000,
                 periodStats = mapOf(
                     1 to PeriodStats(),
                     2 to PeriodStats(),
