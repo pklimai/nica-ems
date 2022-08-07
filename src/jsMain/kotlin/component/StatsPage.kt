@@ -22,12 +22,16 @@ val statsPage = fc<StatsPageProps> { props ->
         scope.launch {
             val newStats = getStats()
             setStats(newStats)
-            //setPeriodOpened(false)
-            //setSoftOpened(false)
+        }
+    }
+
+    useEffect(props.experiment, stats) {  // this is dependencies list - when they change, effect is applied
+        stats?.let {
+            setPeriodOpened(false)
+            setSoftOpened(false)
             setCurrentPeriod(
-                newStats.experimentStatistics[props.experiment]?.periodStats?.keys?.toList()?.maxOf { it }.toString()
+                stats.experimentStatistics[props.experiment]?.periodStats?.keys?.toList()?.maxOf { it }.toString()
             )
-            console.log("useEffectOnce of statsPage")
         }
     }
 
