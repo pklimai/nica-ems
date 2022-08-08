@@ -5,6 +5,8 @@ import react.dom.div
 import react.fc
 import Highcharts
 import HighchartsReact
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonArray
 import kotlin.js.json
 
 external interface ChartComponentProps : Props {
@@ -14,11 +16,29 @@ external interface ChartComponentProps : Props {
 val chartComponent = fc<ChartComponentProps> { props ->
     div("chart_bloks") {
         div("chart_bloks__title_beam_energy") {
-            +"xxx"
-            +(props.statGraph?.title1 ?: "No graph...")
-
+            +(props.statGraph?.title1 ?: "")    // "Beam {{i.beam}} ( E = {{i.energy}} GeV/n )"
         }
-        div("chart_bloks_title_total") { +"Total: {{i.total}} MEvents" }
+        div("chart_bloks_title_total") {
+            +(props.statGraph?.title2 ?: "")    // "Total: {{i.total}} MEvents"
+        }
+
+        // Could not build it better...
+        val lst = buildList<dynamic> {
+            props.statGraph?.slices?.forEach { slice ->
+                add(
+                    json(
+                        "name" to slice.name,
+                        "y" to slice.value
+                    )
+                )
+            }
+        }
+        val arr = arrayOf<dynamic>(lst.size)
+        lst.forEachIndexed { index, dyn ->
+            arr[index] = dyn
+        }
+
+
         div("chart_blok_svg") {
             HighchartsReact {
                 attrs {
@@ -62,20 +82,23 @@ val chartComponent = fc<ChartComponentProps> { props ->
                             json(
                                 "type" to "pie",
                                 "name" to "AAA",
-                                "data" to arrayOf<dynamic>(
-                                    json(
-                                        "name" to "Chrome",
-                                        "y" to 15
-                                    ),
-                                    json(
-                                        "name" to "Firefox",
-                                        "y" to 25
-                                    ),
-                                    json(
-                                        "name" to "IE",
-                                        "y" to 1
-                                    )
-                                )
+
+                                "data" to arr   // TODO make not so ugly
+
+//                                "data" to arrayOf<dynamic>(
+//                                    json(
+//                                        "name" to "Chrome",
+//                                        "y" to 15
+//                                    ),
+//                                    json(
+//                                        "name" to "Firefox",
+//                                        "y" to 25
+//                                    ),
+//                                    json(
+//                                        "name" to "IE",
+//                                        "y" to 1
+//                                    )
+//                                )
                             )
                         )
                     )
@@ -84,20 +107,5 @@ val chartComponent = fc<ChartComponentProps> { props ->
         }
     }
 }
+
 // https://www.postgresql.org/docs/current/postgres-fdw.html
-
-
-/*
-    div("search") {
-svg("search__svg") {
-attrs["width"] = 29
-attrs["height"] = 29
-attrs["viewBox"] = "0 0 29 29"
-attrs["xmlns"] = "http://www.w3.org/2000/svg"
-attrs["fill"] = if (props.highlighted) "#5ba6ff" else "#928787d4"
-child(createElement("path", SVGPathAttrs("evenodd", "evenodd", SVGSearchEvents)))
-}
-div("search__name") {
-+"Search Events"
-}
-} */

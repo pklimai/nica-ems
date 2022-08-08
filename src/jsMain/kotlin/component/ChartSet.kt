@@ -7,14 +7,20 @@ import ru.mipt.npm.nica.emd.chartComponent
 
 external interface ChartSetProps : Props {
     var experimentStats: ExperimentStatistics?
-    var period: Int
-    var sw: String
+    var period: Int?
+    var sw: String?
 }
 
 var chartSet = fc<ChartSetProps> { props ->
-    child(chartComponent) {
-        attrs {
-            statGraph = props.experimentStats?.periodStats?.get(props.period)?.softwareStats?.get(props.sw)?.graphs?.get(0)
+    if (props.period != null && props.sw != null) {
+        val statGraphs = props.experimentStats?.periodStats?.filter { it.periodNumber == props.period }?.firstOrNull()?.softwareStats
+            ?.filter { it.swVer == props.sw }?.firstOrNull()?.graphs
+        statGraphs?.forEach { graph ->
+            child(chartComponent) {
+                attrs {
+                    statGraph = graph
+                }
+            }
         }
     }
 }

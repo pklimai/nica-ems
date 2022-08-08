@@ -102,39 +102,51 @@ suspend fun getStats(): EMSStatistics {
         mapOf(
             "BM@N" to ExperimentStatistics(
                 totalRecords = 50000,
-                periodStats = mapOf(
-                    1 to PeriodStats(),
-                    2 to PeriodStats(),
-                    3 to PeriodStats(),
-                    4 to PeriodStats(),
-                    5 to PeriodStats(),
-                    6 to PeriodStats(),
-                    7 to PeriodStats(),
-                    8 to PeriodStats(
+                periodStats = listOf(
+                    PeriodStats(1),
+                    PeriodStats(2),
+                    PeriodStats(3),
+                    PeriodStats(4),
+                    PeriodStats(5),
+                    PeriodStats(6),
+                    PeriodStats(7),
+                    PeriodStats(
+                        8,
                         10000,
-                        mapOf(
-                            "19.1" to SWstats(
+                        listOf(
+                            SWstats(
+                                "19.1",
                                 arrayOf(
                                     StatGraph(
                                         "My Stat Graph ONE",
                                         "",
                                         arrayOf(
-                                            GraphSlice(1, "Fe"),
-                                            GraphSlice(2, "Cu"),
-                                            GraphSlice(3, "Be")
+                                            GraphSlice("Fe", 1),
+                                            GraphSlice("Cu", 2),
+                                            GraphSlice("Be", 3)
                                         )
                                     )
                                 )
                             ),
-                            "20.1" to SWstats(
+                            SWstats(
+                                "20.1",
                                 arrayOf(
                                     StatGraph(
-                                        "My Stat Graph TWO",
+                                        "My Stat Graph TWO-1",
                                         "",
                                         arrayOf(
-                                            GraphSlice(4, "Au"),
-                                            GraphSlice(5, "B"),
-                                            GraphSlice(6, "C")
+                                            GraphSlice("Au", 4),
+                                            GraphSlice("B", 5),
+                                            GraphSlice("C", 6)
+                                        )
+                                    ),
+                                    StatGraph(
+                                        "My Stat Graph TWO-2",
+                                        "",
+                                        arrayOf(
+                                            GraphSlice("Au", 44),
+                                            GraphSlice("B", 55),
+                                            GraphSlice("C", 66)
                                         )
                                     )
                                 )
@@ -145,18 +157,56 @@ suspend fun getStats(): EMSStatistics {
             ),
             "SRC" to ExperimentStatistics(
                 totalRecords = 70000,
-                periodStats = mapOf(
-                    1 to PeriodStats(),
-                    2 to PeriodStats(),
-                    3 to PeriodStats(),
-                    4 to PeriodStats(),
+                periodStats = listOf(
+                    PeriodStats(1),
+                    PeriodStats(2),
+                    PeriodStats(3),
+                    PeriodStats(
+                        4,
+                        10000,
+                        listOf(
+                            SWstats(
+                                "19.1",
+                                arrayOf(
+                                    StatGraph(
+                                        "My Stat Graph TWO-1",
+                                        "",
+                                        arrayOf(
+                                            GraphSlice("Au", 4),
+                                            GraphSlice("B", 5),
+                                            GraphSlice("C", 6)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
             ),
             "Test" to ExperimentStatistics(
                 totalRecords = 90000,
-                periodStats = mapOf(
-                    1 to PeriodStats(),
-                    2 to PeriodStats(),
+                periodStats = listOf(
+                    PeriodStats(1),
+                    PeriodStats(
+                        2,
+                        10000,
+                        listOf(
+                            SWstats(
+                                "19.1",
+                                arrayOf(
+                                    StatGraph(
+                                        "My Stat Graph TWO-1",
+                                        "",
+                                        arrayOf(
+                                            GraphSlice("Au", 4),
+                                            GraphSlice("B", 5),
+                                            GraphSlice("C", 6)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
             )
         )

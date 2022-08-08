@@ -14,17 +14,19 @@ class EMSStatistics(
 @Serializable
 class ExperimentStatistics(
     val totalRecords: Long,
-    val periodStats: Map<PeriodNumber, PeriodStats>
+    val periodStats: List<PeriodStats>
 )
 
 @Serializable
 class PeriodStats(
+    val periodNumber: PeriodNumber,
     val periodRecords: Long? = null,  // ok to be optional?
-    val softwareStats: Map<SWver, SWstats>? = null
+    val softwareStats: List<SWstats>? = null
 )
 
 @Serializable
 class SWstats(
+    val swVer: SWver,
     val graphs: Array<StatGraph>
 )
 
@@ -37,6 +39,6 @@ class StatGraph(
 
 @Serializable
 class GraphSlice(
-    val yValue: Int,
-    val name: String
+    val name: String,
+    val value: Int
 )

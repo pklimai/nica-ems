@@ -16,7 +16,7 @@ val statsPage = fc<StatsPageProps> { props ->
     val (periodOpened, setPeriodOpened) = useState(false)
     val (softOpened, setSoftOpened) = useState(false)
     val (stats, setStats) = useState<EMSStatistics>()
-    val (currentPeriod, setCurrentPeriod) = useState<String>()
+    val (currentPeriod, setCurrentPeriod) = useState<String>()   // TODO why String?
     val (currentSW, setCurrentSW) = useState<String>()
 
     useEffectOnce {
@@ -28,11 +28,16 @@ val statsPage = fc<StatsPageProps> { props ->
 
     useEffect(props.experiment, stats) {  // this is dependencies list - when they change, effect is applied
         stats?.let {
+            console.log("In useEffect...")
             setPeriodOpened(false)
             setSoftOpened(false)
-            setCurrentPeriod(
-                stats.experimentStatistics[props.experiment]?.periodStats?.keys?.toList()?.maxOf { it }.toString()
-            )
+            val newPeriod = stats.experimentStatistics[props.experiment]?.periodStats?.last()?.periodNumber.toString()
+            console.log("New period: $newPeriod")
+            setCurrentPeriod(newPeriod)
+            val newSW =
+                stats.experimentStatistics[props.experiment]?.periodStats?.last()?.softwareStats?.last()?.swVer.toString()
+            console.log("New sw: $newSW")
+            setCurrentSW(newSW)
         }
     }
 
@@ -94,17 +99,17 @@ val statsPage = fc<StatsPageProps> { props ->
                                     onChange = { it: dynamic, _ ->
                                         setCurrentPeriod(it.target.value as String)
                                         setPeriodOpened(false)
+                                        // change software to last in list
                                     }
                                 }
-                                stats?.experimentStatistics?.get(props.experiment)?.periodStats?.keys?.forEach { perNum ->
+                                stats?.experimentStatistics?.get(props.experiment)?.periodStats?.forEach { perNum ->
                                     MenuItem {
                                         attrs {
-                                            value = perNum.toString()
+                                            value = perNum.periodNumber.toString()
                                         }
-                                        +perNum.toString()
+                                        +perNum.periodNumber.toString()
                                     }
                                 }
-
                             }
                         }
                     }
@@ -112,6 +117,7 @@ val statsPage = fc<StatsPageProps> { props ->
                 div("home__page__stats__block2 borders right_line") {
                     attrs.onClickFunction = {
                         setSoftOpened(!softOpened)
+                        setPeriodOpened(false)
                     }
                     dangerousSVG(SVGHomeSoftware)
                     div("stats_new_block__div") {
@@ -119,20 +125,38 @@ val statsPage = fc<StatsPageProps> { props ->
                             +"Software Version — "
                         }
                         div("per_number") {
-                            +"20.12.0 "
+                            +currentSW.toString()
                         }
                     }
                 }
                 if (softOpened) {
                     div("home__page__stats__block3") {
-                        TextField {
+                        FormControl {
                             attrs {
-                                name = "software_version"
-                                id = "software_version"
-                                // value = ""
-                                variant = FormControlVariant.standard
-                                label = ReactNode("Software Version")
-                                onChange = {
+                                fullWidth = true
+                            }
+                            InputLabel {
+                                +"Software Version"
+                            }
+                            Select {
+                                attrs {
+                                    size = Size.small
+                                    label = ReactNode("Software Version")
+                                    value = currentSW.unsafeCast<Nothing?>()
+                                    onChange = { it: dynamic, _ ->
+                                        setCurrentSW(it.target.value as String)
+                                        setSoftOpened(false)
+                                    }
+                                }
+                                stats?.experimentStatistics?.get(props.experiment)?.periodStats
+                                    ?.filter { it.periodNumber.toString() == currentPeriod }
+                                    ?.first()?.softwareStats?.map { it.swVer }?.forEach { sw ->
+                                    MenuItem {
+                                        attrs {
+                                            value = sw
+                                        }
+                                        +sw
+                                    }
                                 }
                             }
                         }
@@ -143,7 +167,10 @@ val statsPage = fc<StatsPageProps> { props ->
         div("charts") {
             child(chartSet) {
                 attrs {
-                    experimentStats = stats?.experimentStatistics?.get(props.experiment.toString()) // specify period, sw
+                    experimentStats =
+                        stats?.experimentStatistics?.get(props.experiment.toString())
+                    period = currentPeriod?.toInt()
+                    sw = currentSW
                 }
             }
         }
