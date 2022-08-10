@@ -19,7 +19,7 @@ external interface LoginPageProps : Props {
 val login = fc<LoginPageProps> { props ->
     val (reset, setReset) = useState(false)  // reset means user forgot password so we want to reset it
     val (add, setAdd) = useState(false)   // add means we are registering a new user
-    val (checked, setChecked) = useState(true)
+    // val (checked, setChecked) = useState(true)
     val (username, setUsername) = useState<String>()
     val (password, setPassword) = useState<String>()
 
@@ -181,7 +181,7 @@ val login = fc<LoginPageProps> { props ->
                         }
                         div("checkbox") {
                             Checkbox {}
-                            div {
+                            div("checkbox2") {
                                 +"Write permission"
                             }
                         }

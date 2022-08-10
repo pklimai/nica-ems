@@ -42,7 +42,7 @@ val statsPage = fc<StatsPageProps> { props ->
     }
 
     div("home__page") {
-        div {
+        div("home__page__stats") {
             div("home__page__dashboard") {
                 div("home__page__dashboard__head") {
                     +"Event Metadata System"
@@ -51,112 +51,110 @@ val statsPage = fc<StatsPageProps> { props ->
                     +"The Event Catalogue stores summary event metadata to select necessary events by criteria"
                 }
             }
-            div("home__page__stats") {
-                div("home__page__stats__block") {
-                    dangerousSVG(SVGHomeRecords)
-                    div("home__page__stats__block__column") {
-                        div("home__page__stats__block__column__stats") {
-                            div {
-                                +(stats?.experimentStatistics?.get(props.experiment)?.totalRecords?.toString() ?: "HZ")
-                            }
-                            div {
-                                +"Total"
-                            }
+            div("home__page__stats__block") {
+                dangerousSVG(SVGHomeRecords)
+                div("home__page__stats__block__column") {
+                    div("home__page__stats__block__column__stats") {
+                        div {
+                            +(stats?.experimentStatistics?.get(props.experiment)?.totalRecords?.toString() ?: "HZ")
                         }
-                        div("event_metadata") {
-                            +"event metadata"
+                        div {
+                            +"Total"
                         }
+                    }
+                    div("event_metadata") {
+                        +"event metadata"
                     }
                 }
-                div("home__page__stats__block borders stats_new_block") {
-                    attrs.onClickFunction = {
-                        setPeriodOpened(!periodOpened)
+            }
+            div("home__page__stats__block borders stats_new_block") {
+                attrs.onClickFunction = {
+                    setPeriodOpened(!periodOpened)
+                }
+                dangerousSVG(SVGHomePeriod)
+                div("stats_new_block__div") {
+                    div("per") {
+                        +"Period Number —"
                     }
-                    dangerousSVG(SVGHomePeriod)
-                    div("stats_new_block__div") {
-                        div("per") {
-                            +"Period Number —"
-                        }
-                        div("per_number") {
-                            +currentPeriod.toString()
-                        }
+                    div("per_number") {
+                        +currentPeriod.toString()
                     }
                 }
-                if (periodOpened) {
-                    div("home__page__stats__block3") {
-                        FormControl {
+            }
+            if (periodOpened) {
+                div("home__page__stats__block3") {
+                    FormControl {
+                        attrs {
+                            fullWidth = true
+                        }
+                        InputLabel {
+                            +"Period Number"
+                        }
+                        Select {
                             attrs {
-                                fullWidth = true
-                            }
-                            InputLabel {
-                                +"Period Number"
-                            }
-                            Select {
-                                attrs {
-                                    size = Size.small
-                                    label = ReactNode("Period Number")
-                                    value = currentPeriod.unsafeCast<Nothing?>()
-                                    onChange = { it: dynamic, _ ->
-                                        setCurrentPeriod(it.target.value as String)
-                                        setPeriodOpened(false)
-                                        // change software to last in list
-                                    }
+                                size = Size.small
+                                label = ReactNode("Period Number")
+                                value = currentPeriod.unsafeCast<Nothing?>()
+                                onChange = { it: dynamic, _ ->
+                                    setCurrentPeriod(it.target.value as String)
+                                    setPeriodOpened(false)
+                                    // change software to last in list
                                 }
-                                stats?.experimentStatistics?.get(props.experiment)?.periodStats?.forEach { perNum ->
-                                    MenuItem {
-                                        attrs {
-                                            value = perNum.periodNumber.toString()
-                                        }
-                                        +perNum.periodNumber.toString()
+                            }
+                            stats?.experimentStatistics?.get(props.experiment)?.periodStats?.forEach { perNum ->
+                                MenuItem {
+                                    attrs {
+                                        value = perNum.periodNumber.toString()
                                     }
+                                    +perNum.periodNumber.toString()
                                 }
                             }
                         }
                     }
                 }
-                div("home__page__stats__block2 borders right_line") {
-                    attrs.onClickFunction = {
-                        setSoftOpened(!softOpened)
-                        setPeriodOpened(false)
+            }
+            div("home__page__stats__block2 borders right_line") {
+                attrs.onClickFunction = {
+                    setSoftOpened(!softOpened)
+                    setPeriodOpened(false)
+                }
+                dangerousSVG(SVGHomeSoftware)
+                div("stats_new_block__div") {
+                    div("per") {
+                        +"Software Version — "
                     }
-                    dangerousSVG(SVGHomeSoftware)
-                    div("stats_new_block__div") {
-                        div("per") {
-                            +"Software Version — "
-                        }
-                        div("per_number") {
-                            +currentSW.toString()
-                        }
+                    div("per_number") {
+                        +currentSW.toString()
                     }
                 }
-                if (softOpened) {
-                    div("home__page__stats__block3") {
-                        FormControl {
+            }
+            if (softOpened) {
+                div("home__page__stats__block3") {
+                    FormControl {
+                        attrs {
+                            fullWidth = true
+                        }
+                        InputLabel {
+                            +"Software Version"
+                        }
+                        Select {
                             attrs {
-                                fullWidth = true
-                            }
-                            InputLabel {
-                                +"Software Version"
-                            }
-                            Select {
-                                attrs {
-                                    size = Size.small
-                                    label = ReactNode("Software Version")
-                                    value = currentSW.unsafeCast<Nothing?>()
-                                    onChange = { it: dynamic, _ ->
-                                        setCurrentSW(it.target.value as String)
-                                        setSoftOpened(false)
-                                    }
+                                size = Size.small
+                                label = ReactNode("Software Version")
+                                value = currentSW.unsafeCast<Nothing?>()
+                                onChange = { it: dynamic, _ ->
+                                    setCurrentSW(it.target.value as String)
+                                    setSoftOpened(false)
                                 }
-                                stats?.experimentStatistics?.get(props.experiment)?.periodStats
-                                    ?.filter { it.periodNumber.toString() == currentPeriod }
-                                    ?.first()?.softwareStats?.map { it.swVer }?.forEach { sw ->
-                                    MenuItem {
-                                        attrs {
-                                            value = sw
-                                        }
-                                        +sw
+                            }
+                            stats?.experimentStatistics?.get(props.experiment)?.periodStats
+                                ?.filter { it.periodNumber.toString() == currentPeriod }
+                                ?.first()?.softwareStats?.map { it.swVer }?.forEach { sw ->
+                                MenuItem {
+                                    attrs {
+                                        value = sw
                                     }
+                                    +sw
                                 }
                             }
                         }

@@ -145,7 +145,7 @@ val emdPage = fc<EMDPageProps> { props ->
                 }
 
                 props.pageConfig.parameters.forEach { param ->
-                    div("input-div") {
+                    div("input-div top-input") {
                         when (param.type) {
                             "bool" -> boolInput(param.name, param.web_name)
                             else -> textInput(param.name, param.web_name)
