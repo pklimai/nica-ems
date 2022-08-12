@@ -70,6 +70,7 @@ val statsPage = fc<StatsPageProps> { props ->
             div("home__page__stats__block borders stats_new_block") {
                 attrs.onClickFunction = {
                     setPeriodOpened(!periodOpened)
+                    setSoftOpened(false)
                 }
                 dangerousSVG(SVGHomePeriod)
                 div("stats_new_block__div") {
@@ -96,9 +97,13 @@ val statsPage = fc<StatsPageProps> { props ->
                                 label = ReactNode("Period Number")
                                 value = currentPeriod.unsafeCast<Nothing?>()
                                 onChange = { it: dynamic, _ ->
-                                    setCurrentPeriod(it.target.value as String)
+                                    val newPeriod = it.target.value as String
+                                    setCurrentPeriod(newPeriod)
                                     setPeriodOpened(false)
                                     // change software to last in list
+                                    val newSW =
+                                        stats?.experimentStatistics?.get(props.experiment)?.periodStats?.filter{it.periodNumber.toString() == newPeriod}?.firstOrNull()?.softwareStats?.last()?.swVer.toString()
+                                    setCurrentSW(newSW)
                                 }
                             }
                             stats?.experimentStatistics?.get(props.experiment)?.periodStats?.forEach { perNum ->
