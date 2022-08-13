@@ -39,8 +39,15 @@ suspend fun getEMD(api_url: String, config: ConfigFile?, username: String, passw
             }
         }
     }
-    val res = stringClient.get(endpoint + api_url).bodyAsText()
+    val httpResp = stringClient.get(endpoint + api_url)
     stringClient.close()
+    if (httpResp.status == HttpStatusCode.Unauthorized) {
+        // Should not get here - auth check must be done earlier
+        console.log("Got unauthorized!")
+        return """{"events":[]}"""
+    }
+    val res = httpResp.bodyAsText()
+    console.log(res)
     return res
 }
 

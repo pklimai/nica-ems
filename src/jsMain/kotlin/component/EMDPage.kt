@@ -61,7 +61,7 @@ val emdPage = fc<EMDPageProps> { props ->
                 }
 
                 fun RDOMBuilder<DIV>.boolInput(paramName: String, labelString: String = "") {
-                    FormControl{
+                    FormControl {
                         attrs {
                             fullWidth = true
                         }
@@ -80,7 +80,7 @@ val emdPage = fc<EMDPageProps> { props ->
                                 size = Size.small
                                 label = ReactNode(labelString)
                                 // labelId = paramName
-                                value =  (params?.get(paramName) ?: "").unsafeCast<Nothing?>()
+                                value = (params?.get(paramName) ?: "").unsafeCast<Nothing?>()
                                 onChange = { it: dynamic, _ ->
                                     val newValue = it.target.value    // Note: it.asDynamic() won't work
                                     // console.log("onChange called in Select with value $newValue")
@@ -192,15 +192,20 @@ val emdPage = fc<EMDPageProps> { props ->
                                     console.log(paramsWithLimit.toString())
                                     console.log(paramsForURL)
                                     scope.launch {
-                                        val emd = getEMD(
-                                            props.pageConfig.api_url + "/emd" + paramsForURL,
-                                            props.config,
-                                            props.username,
-                                            props.password
-                                        )
-                                        console.log(emd)
-                                        // update state with API data
-                                        props.setEMDdata(emd)
+                                        try {
+                                            val emd = getEMD(
+                                                props.pageConfig.api_url + "/emd" + paramsForURL,
+                                                props.config,
+                                                props.username,
+                                                props.password
+                                            )
+                                            console.log(emd)
+                                            // update state with API data
+                                            props.setEMDdata(emd)
+                                        } catch (e: Exception) {
+                                            console.log(e)
+                                        }
+
                                     }
                                 }
                             }
