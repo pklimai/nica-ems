@@ -13,6 +13,7 @@ import react.dom.div
 import react.dom.onChange
 import react.fc
 import react.useState
+import ru.mipt.npm.nica.emd.utility.EMSUnauthException
 
 
 external interface EMDPageProps : Props {
@@ -202,10 +203,10 @@ val emdPage = fc<EMDPageProps> { props ->
                                             console.log(emd)
                                             // update state with API data
                                             props.setEMDdata(emd)
-                                        } catch (e: Exception) {
-                                            console.log(e)
+                                        } catch (e: EMSUnauthException) {
+                                            // Should not normally happen
+                                            props.redirectToAuth()
                                         }
-
                                     }
                                 }
                             }

@@ -11,6 +11,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
+import ru.mipt.npm.nica.emd.utility.EMSUnauthException
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
 
@@ -42,9 +43,10 @@ suspend fun getEMD(api_url: String, config: ConfigFile?, username: String, passw
     val httpResp = stringClient.get(endpoint + api_url)
     stringClient.close()
     if (httpResp.status == HttpStatusCode.Unauthorized) {
-        // Should not get here - auth check must be done earlier
-        console.log("Got unauthorized!")
-        return """{"events":[]}"""
+        // Should not be reachable unless something improbable happened - because auth check must be done earlier
+        // but can get here in corner cases such as password on server was changed, etc.
+        console.log("Got HttpStatusCode Unauthorized!")
+        throw EMSUnauthException()
     }
     val res = httpResp.bodyAsText()
     console.log(res)
@@ -70,16 +72,22 @@ fun jsonClientWithOptionalAuth(config: ConfigFile?, username: String, password: 
 
 suspend fun getSoftwareVersions(config: ConfigFile?, username: String, password: String): Array<SoftwareVersion> {
     val jsonClient = jsonClientWithOptionalAuth(config, username, password)
-    val res = jsonClient.get(endpoint + SOFTWARE_URL).body<Array<SoftwareVersion>>()
+    val httpResponse = jsonClient.get(endpoint + SOFTWARE_URL)
     jsonClient.close()
-    return res
+    if (httpResponse.status in listOf(HttpStatusCode.Unauthorized, HttpStatusCode.NotFound)) {
+        throw EMSUnauthException()
+    }
+    return httpResponse.body<Array<SoftwareVersion>>()
 }
 
 suspend fun getStorages(config: ConfigFile?, username: String, password: String): Array<Storage> {
     val jsonClient = jsonClientWithOptionalAuth(config, username, password)
-    val res = jsonClient.get(endpoint + STORAGE_URL).body<Array<Storage>>()
+    val httpResponse = jsonClient.get(endpoint + STORAGE_URL)
     jsonClient.close()
-    return res
+    if (httpResponse.status in listOf(HttpStatusCode.Unauthorized, HttpStatusCode.NotFound)) {
+        throw EMSUnauthException()
+    }
+    return httpResponse.body<Array<Storage>>()
 }
 
 suspend fun postSoftwareVersion(swVer: String, config: ConfigFile?, username: String, password: String): Unit {
@@ -91,6 +99,7 @@ suspend fun postSoftwareVersion(swVer: String, config: ConfigFile?, username: St
             append(HttpHeaders.ContentType, "application/json")
         }
     }
+    // TODO process possible auth error
 }
 
 suspend fun postStorage(storage: String, config: ConfigFile?, username: String, password: String): Unit {

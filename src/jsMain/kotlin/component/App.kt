@@ -159,6 +159,7 @@ val app = fc<Props> {
                         setAuthenticated(true)
                         setCurrentPage(config?.pages?.first())
                     }
+                    attrs.config = config
                 }
             } else if (currentPage == DICTIONARY_PAGE) {
                 child(dictionary) {// color: #e13a3a;

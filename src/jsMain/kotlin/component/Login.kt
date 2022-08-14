@@ -1,5 +1,6 @@
 package ru.mipt.npm.nica.emd
 
+import kotlinx.coroutines.launch
 import kotlinx.html.InputType
 import kotlinx.html.js.onClickFunction
 import mui.material.Button
@@ -11,9 +12,11 @@ import react.Props
 import react.dom.*
 import react.fc
 import react.useState
+import ru.mipt.npm.nica.emd.utility.EMSUnauthException
 
 external interface LoginPageProps : Props {
     var setValues: (username: String, password: String) -> Unit
+    var config: ConfigFile?
 }
 
 val login = fc<LoginPageProps> { props ->
@@ -22,6 +25,7 @@ val login = fc<LoginPageProps> { props ->
     // val (checked, setChecked) = useState(true)
     val (username, setUsername) = useState<String>()
     val (password, setPassword) = useState<String>()
+    val (failedAuthVisible, setFailedAuthVisible) = useState<Boolean>(false)
 
     div("login") {
         div("login__page") {
@@ -77,6 +81,13 @@ val login = fc<LoginPageProps> { props ->
                                     }
                                 }
                             }
+                            if (failedAuthVisible) {
+                                div("wrap-form1 validate-input") {
+                                    p {
+                                        + "Authentication failed!"
+                                    }
+                                }
+                            }
                         }
                         Button {
                             attrs {
@@ -84,10 +95,19 @@ val login = fc<LoginPageProps> { props ->
                                 variant = ButtonVariant.contained
                                 size = Size.small
                                 onClick = {
-                                    // TODO: perform actual authentication check here - db query or LDAP
                                     // console.log("Sign-In pressed with username=$username, password=$password!")
-                                    props.setValues(username ?: "", password ?: "")
-                                    // TODO: also derive user roles...
+                                    // Performing actual authentication check here using our API
+                                    scope.launch {
+                                        try {
+                                            // Here, any other request could be used as well
+                                            getSoftwareVersions(props.config, username ?: "", password ?: "")
+                                            // If no exception, set values (this will also close auth window)
+                                            props.setValues(username ?: "", password ?: "")
+                                        } catch (e: EMSUnauthException) {
+                                            setFailedAuthVisible(true)
+                                            console.log("Auth check failed!")
+                                        }
+                                    }
                                 }
                             }
                         }
