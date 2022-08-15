@@ -1739,11 +1739,17 @@ height: 46px;
 .dictionary__bottom .MuiDataGrid-main{
   min-height: 346px;
 }
+
 .dictionary__bottom .div-emd-table-card{
   min-height: 346px;
 
 }
 
+.dictionary__p__error {
+  color: red;
+  margin: 10px;
+  padding: 10px;
+}
 
 
 /* End Dictionary */

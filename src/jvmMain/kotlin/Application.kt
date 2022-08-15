@@ -169,13 +169,19 @@ fun Application.main() {
                         INSERT INTO software_ (software_version)
                         VALUES ('${sw.software_version}')
                     """.trimIndent()
-                        print(query)
+                        // print(query)
                         try {
                             connEMD.createStatement().executeUpdate(query)
                             call.response.status(HttpStatusCode.OK)
                             call.respond("SW record was created")
-                        } catch (_: PSQLException) {  // e.g. this version already exists
-                            call.response.status(HttpStatusCode.InternalServerError)
+                        } catch (ex: PSQLException) {
+                            if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
+                                call.respond(HttpStatusCode.Unauthorized)
+                            } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
+                                call.respond(HttpStatusCode.Conflict)
+                            } else {
+                                call.respond(HttpStatusCode.InternalServerError)
+                            }
                         } finally {
                             connEMD.close()
                         }
@@ -220,20 +226,25 @@ fun Application.main() {
                         INSERT INTO storage_ (storage_name)
                         VALUES ('${storage.storage_name}')
                     """.trimIndent()
-                        print(query)
+                        // print(query)
                         try {
                             connEMD.createStatement().executeUpdate(query)
                             call.response.status(HttpStatusCode.OK)
                             call.respond("Storage record was created")
-                        } catch (_: PSQLException) {
-                            call.response.status(HttpStatusCode.InternalServerError)
+                        } catch (ex: PSQLException) {  // e.g. this version already exists
+                            if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
+                                call.respond(HttpStatusCode.Unauthorized)
+                            } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
+                                call.respond(HttpStatusCode.Conflict)
+                            } else {
+                                call.respond(HttpStatusCode.InternalServerError)
+                            }
                         } finally {
                             connEMD.close()
                         }
                     }
                 }
             }
-
         }
 
         config.pages.forEach { page ->

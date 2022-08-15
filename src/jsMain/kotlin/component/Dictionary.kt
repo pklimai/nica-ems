@@ -10,6 +10,10 @@ import mui.material.Size
 import org.w3c.dom.HTMLInputElement
 import react.*
 import react.dom.onChange
+import react.dom.p
+import ru.mipt.npm.nica.emd.utility.EMSConflictException
+import ru.mipt.npm.nica.emd.utility.EMSServerError
+import ru.mipt.npm.nica.emd.utility.EMSUnauthException
 
 external interface DictionaryPageProps : Props {
     var SWdata: Array<SoftwareVersion>?
@@ -24,6 +28,7 @@ external interface DictionaryPageProps : Props {
 val dictionary = fc<DictionaryPageProps> { props ->
     val (storage, setStorage) = useState<String>()
     val (SWver, setSWver) = useState<String>()
+    val (errorMessage, setErrorMessage) = useState<String?>(null)
 
     useEffectOnce {
         scope.launch {
@@ -33,6 +38,11 @@ val dictionary = fc<DictionaryPageProps> { props ->
     }
 
     div("dictionary") {
+        errorMessage?.let {
+            p("dictionary__p__error") {
+                +errorMessage
+            }
+        }
         div("dictionary__top") {
             div("dictionary__top__card") {
                 dangerousSVG(SVGCloudForDict)
@@ -58,11 +68,20 @@ val dictionary = fc<DictionaryPageProps> { props ->
                         onClick = {
                             scope.launch {
                                 if (!storage.isNullOrEmpty()) {
-                                    postStorage(storage, props.config, props.username, props.password)
-                                    props.setStoragedata(getStorages(props.config, props.username, props.password))
+                                    try {
+                                        postStorage(storage, props.config, props.username, props.password)
+                                        props.setStoragedata(getStorages(props.config, props.username, props.password))
+                                    } catch (_: EMSUnauthException) {
+                                        setErrorMessage("Error - unauthorized")
+                                    } catch (_: EMSConflictException) {
+                                        setErrorMessage("Error - record already exists")
+                                    } catch (_: EMSServerError) {
+                                        setErrorMessage("Server error")
+                                    }
                                 }
                             }
                             setStorage("")  // clear in the input
+                            setErrorMessage(null)
                         }
                     }
                 }
@@ -91,11 +110,26 @@ val dictionary = fc<DictionaryPageProps> { props ->
                         onClick = {
                             scope.launch {
                                 if (!SWver.isNullOrEmpty()) {
-                                    postSoftwareVersion(SWver, props.config, props.username, props.password)
-                                    props.setSWdata(getSoftwareVersions(props.config, props.username, props.password))
+                                    try {
+                                        postSoftwareVersion(SWver, props.config, props.username, props.password)
+                                        props.setSWdata(
+                                            getSoftwareVersions(
+                                                props.config,
+                                                props.username,
+                                                props.password
+                                            )
+                                        )
+                                    } catch (_: EMSUnauthException) {
+                                        setErrorMessage("Error - unauthorized")
+                                    } catch (_: EMSConflictException) {
+                                        setErrorMessage("Error - record already exists")
+                                    } catch (_: EMSServerError) {
+                                        setErrorMessage("Server error")
+                                    }
                                 }
                             }
                             setSWver("")  // clear in the input
+                            setErrorMessage(null)
                         }
                     }
                 }

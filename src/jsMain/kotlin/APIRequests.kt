@@ -11,6 +11,8 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
+import ru.mipt.npm.nica.emd.utility.EMSConflictException
+import ru.mipt.npm.nica.emd.utility.EMSServerError
 import ru.mipt.npm.nica.emd.utility.EMSUnauthException
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
@@ -92,24 +94,33 @@ suspend fun getStorages(config: ConfigFile?, username: String, password: String)
 
 suspend fun postSoftwareVersion(swVer: String, config: ConfigFile?, username: String, password: String): Unit {
     val jsonClient = jsonClientWithOptionalAuth(config, username, password)
-    jsonClient.post(endpoint + SOFTWARE_URL) {
+    val res = jsonClient.post(endpoint + SOFTWARE_URL) {
         setBody(SoftwareVersion(0 /* ignored */, swVer))
         headers {
             append(HttpHeaders.Accept, "application/json")
             append(HttpHeaders.ContentType, "application/json")
         }
     }
-    // TODO process possible auth error
+    when (res.status) {
+        HttpStatusCode.Unauthorized -> throw EMSUnauthException()
+        HttpStatusCode.Conflict -> throw EMSConflictException()
+        HttpStatusCode.InternalServerError -> throw EMSServerError()
+    }
 }
 
 suspend fun postStorage(storage: String, config: ConfigFile?, username: String, password: String): Unit {
     val jsonClient = jsonClientWithOptionalAuth(config, username, password)
-    jsonClient.post(endpoint + STORAGE_URL) {
+    val res = jsonClient.post(endpoint + STORAGE_URL) {
         setBody(Storage(0 /* ignored */, storage))
         headers {
             append(HttpHeaders.Accept, "application/json")
             append(HttpHeaders.ContentType, "application/json")
         }
+    }
+    when (res.status) {
+        HttpStatusCode.Unauthorized -> throw EMSUnauthException()
+        HttpStatusCode.Conflict -> throw EMSConflictException()
+        HttpStatusCode.InternalServerError -> throw EMSServerError()
     }
 }
 
