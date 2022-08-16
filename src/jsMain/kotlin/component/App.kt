@@ -110,6 +110,8 @@ val app = fc<Props> {
                                         setUsername("")
                                         setPassword("")
                                         setCurrentPage(config?.pages?.first())
+                                        setEMDdata("""{"events": []}""")
+                                        setShowStats(true)
                                     }
                                 }
                             }
