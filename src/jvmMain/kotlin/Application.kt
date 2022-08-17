@@ -427,12 +427,13 @@ private fun getUserRoles(config: ConfigFile, call: ApplicationCall): UserRoles {
         return UserRoles(isReader = true, isWriter = true, isAdmin = true)
     } else if (config.ldap_auth != null) {
         val username = call.principal<UserIdPrincipal>()?.name!!
-        println("AUTHENTICATED USER NAME IS: $username")
+        // println("AUTHENTICATED USER NAME IS: $username")
         val ldapConn = LDAPConnection()
         ldapConn.connect(config.ldap_auth.ldap_server, config.ldap_auth.ldap_port)
         // Perform actual authentication
         ldapConn.bind(
-            "uid=${config.ldap_auth.ldap_username},cn=users,cn=accounts,dc=jinr,dc=ru",
+            config.ldap_auth.user_dn_format.replace("%s", config.ldap_auth.ldap_username),
+            // For example, "uid=user,cn=users,cn=accounts,dc=jinr,dc=ru"
             config.ldap_auth.ldap_password
         )
 
@@ -447,9 +448,8 @@ private fun getUserRoles(config: ConfigFile, call: ApplicationCall): UserRoles {
 
         val isWriter = belongsToGroup(config.ldap_auth.writer_group_dn)
         val isAdmin = belongsToGroup(config.ldap_auth.admin_group_dn)
-        println("Writer: $isWriter, Admin: $isAdmin")
+        // println("Writer: $isWriter, Admin: $isAdmin")
         ldapConn.close()
-
         return UserRoles(isReader = true, isWriter = isWriter, isAdmin = isAdmin)
     } else {
         return UserRoles(isReader = true, isWriter = false, isAdmin = false)
