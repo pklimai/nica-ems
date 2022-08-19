@@ -106,12 +106,13 @@ val statsPage = fc<StatsPageProps> { props ->
                                     setCurrentSW(newSW)
                                 }
                             }
-                            stats?.experimentStatistics?.get(props.experiment)?.periodStats?.forEach { perNum ->
+                            stats?.experimentStatistics?.get(props.experiment)?.periodStats?.map{it.periodNumber}?.sortedByDescending{ it }?.
+                            forEach { perNum ->
                                 MenuItem {
                                     attrs {
-                                        value = perNum.periodNumber.toString()
+                                        value = perNum.toString()
                                     }
-                                    +perNum.periodNumber.toString()
+                                    +perNum.toString()
                                 }
                             }
                         }
