@@ -28,6 +28,26 @@ val login = fc<LoginPageProps> { props ->
     val (failedAuthVisible, setFailedAuthVisible) = useState<Boolean>(false)
 
     div("login") {
+        if(username == ""){
+            div("error"){
+                div("error__login"){
+                    +"Please enter your credentials:"
+                }
+                div("error__text"){
+                    +"Please enter a correct username and password."
+                }
+            }
+        } else if(failedAuthVisible){
+            div("error"){
+                div("error__login"){
+                    + "Login failed!"
+                }
+                div("error__text"){
+                    + "Please enter a correct username and password."
+                }
+            }
+        }
+
         div("login__page") {
             div("login_page__card") {
                 div("login_page__card__left") {
@@ -78,13 +98,6 @@ val login = fc<LoginPageProps> { props ->
                                 span("symbol-form1") {
                                     div {
                                         i("bx bxs-lock-alt") {}
-                                    }
-                                }
-                            }
-                            if (failedAuthVisible) {
-                                div("wrap-form1 validate-input") {
-                                    p {
-                                        + "Authentication failed!"
                                     }
                                 }
                             }
