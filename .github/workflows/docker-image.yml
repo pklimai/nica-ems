@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag nica-ems:$(date +%s)
+      run: docker build . --file Dockerfile.with-build --tag nica-ems:$(date +%s)

@@ -4,3 +4,4 @@ echo '--- Containers have been cleared'
 fi
 sh gradlew installDist
 sudo docker-compose up --build -d
+

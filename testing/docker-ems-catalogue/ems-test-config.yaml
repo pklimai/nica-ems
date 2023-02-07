@@ -1,0 +1,73 @@
+event_db:
+  host: 10.254.0.201
+  port: 5000
+  db_name: event_db
+  user: postgres
+  password: example
+
+#condition_db:
+#  host: 159.93.221.14
+#  port: 5001
+#  db_name: bmn_db
+#  user: user
+#  password: user_pass
+
+database_auth: True
+
+#ldap_auth:
+#  ldap_server: 127.0.0.1
+#  ldap_port: 3890
+#  user_dn_format: "uid=%s,cn=users,cn=accounts,dc=jinr,dc=ru"
+#  ldap_username: shift
+#  ldap_password: shift
+#  writer_group_dn: "cn=bmneventwriter,cn=groups,cn=accounts,dc=jinr,dc=ru"
+#  admin_group_dn: "cn=bmneventadmin,cn=groups,cn=accounts,dc=jinr,dc=ru"
+
+title: BM@N Event Metadata System
+
+pages:
+  - name: BM@N Events
+    api_url: /event_api/v1/bmn    # API URL
+    web_url: /event_web/bmn       # Web search form URL
+    db_table_name: bmn_event
+    parameters:
+      - name: track_number
+        type: int
+        intervals: true
+        web_name: Total track number
+
+  - name: SRC Events
+    api_url: /event_api/v1/src
+    web_url: /event_web/src
+    db_table_name: src_event
+    parameters:
+      - name: track_number
+        type: int
+        intervals: true
+        web_name: Total track number
+      - name: input_charge
+        type: float
+        intervals: true
+        web_name: Input charge
+      - name: output_charge
+        type: float
+        intervals: true
+        web_name: Output charge
+
+  - name: Test Events
+    api_url: /event_api/v1/test
+    web_url: /event_web/test
+    db_table_name: test_event
+    default_limit_web: 100
+    parameters:
+      - name: track_number
+        type: int
+        intervals: true
+        web_name: Total track number
+      - name: trigger_str
+        type: string
+        web_name: Triggers (string)
+      - name: primary_vertex
+        type: bool
+        web_name: Primary vertex
+
