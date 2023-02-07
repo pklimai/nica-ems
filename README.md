@@ -128,10 +128,10 @@ sudo dnf install java-11-openjdk-devel
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64
 cd ~/nica-emd/
 sh gradlew installDist
-docker build -t nica-emd:0.1.2 .
+docker build -t nica-emd:current .
 # sudo docker stop nica-emd
 # sudo docker rm nica-emd
-sudo docker run -d --rm --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:0.1.2
+sudo docker run -d --rm --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:current
 ```
 
 ##### Run on CentOS
@@ -141,6 +141,14 @@ sudo yum install java-11
 git clone https://github.com/pklimai/nica-emd
 cd nica-emd/
 sh gradlew run
+```
+
+##### Alternative Dockerfile
+
+To build inside Docker and run, use (note: we currently do not use 2-stage build, so image is significantly larger):
+```
+docker build -f Dockerfile.with-build -t nica-emd:buildindocker .
+docker run --rm -it -v ./ems-test-config.yaml:/root/event-config.yaml -p 80:8080 --entrypoint=/bin/bash nica-emd:buildindocker
 ```
 
 ##### Testing / debugging
@@ -156,7 +164,7 @@ docker logs nica-emd -f
 
 To run container in debug mode, use something like
 ```
-sudo docker run -it --entrypoint=/bin/bash --name nica-emd --rm -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:0.1.2
+sudo docker run -it --entrypoint=/bin/bash --name nica-emd --rm -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:current
 ```
 
 

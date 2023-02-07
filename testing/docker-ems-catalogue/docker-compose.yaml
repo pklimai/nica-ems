@@ -16,24 +16,12 @@ services:
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
   ems_web_api:
-    image: nica-emd:0.1.2
+    image: nica-emd:current
     restart: always
     ports: 
       - 80:8080
     volumes:
       - ./ems-test-config.yaml:/root/event-config.yaml
-
-#  db_condition:
-#    image: postgres
-#    environment:
-#      POSTGRES_USER: user
-#      POSTGRES_PASSWORD: user_pass
-#      POSTGRES_DB: bmn_db
-#   ports:
-#      - 5001:5432
-#    volumes:
-#      - ./condition_db/db/init/postgres:/docker-entrypoint-initdb.d
-#      - ./condition_db/db/data/postgres/data:/var/lib/postgresql/data
 
   adminer:
     image: adminer
