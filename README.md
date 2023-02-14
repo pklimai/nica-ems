@@ -124,8 +124,9 @@ The `file_path` will be created in the `file_` table, if not there yet.
 ##### Run in Docker on CentOS / Alma Linux example:
 
 ```
-sudo dnf install java-11-openjdk-devel
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64
+#sudo dnf install java-11-openjdk-devel
+#export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64
+sudo yum install java-17
 cd ~/nica-emd/
 sh gradlew installDist
 docker build -t nica-emd:current .
@@ -134,10 +135,10 @@ docker build -t nica-emd:current .
 sudo docker run -d --rm --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:current
 ```
 
-##### Run on CentOS
+##### Run on Alma Linux
 
 ```
-sudo yum install java-11
+sudo yum install java-17
 git clone https://github.com/pklimai/nica-emd
 cd nica-emd/
 sh gradlew run
