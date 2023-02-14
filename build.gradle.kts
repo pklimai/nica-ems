@@ -1,17 +1,17 @@
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
-val kotlinVersion = "1.6.21"
-val serializationVersion = "1.3.3"
-val ktorVersion = "2.0.3"
-val logbackVersion = "1.2.11"
-val kotlinxHtmlVersion = "0.7.5"
-val reactVersion = "18.1.0-pre.345"
-val muiVersion = "5.8.5-pre.349"
+val kotlinVersion = "1.6.20"
+val serializationVersion = "1.4.1"
+val ktorVersion = "2.2.3"
+val logbackVersion = "1.4.5"
+val kotlinxHtmlVersion = "0.8.0"
+val reactVersion = "18.2.0-pre.496"   //"18.1.0-pre.345"
+val muiVersion = "5.9.1-pre.496"   // "5.8.5-pre.349"
 
 plugins {
-    kotlin("multiplatform") version "1.6.21"
+    kotlin("multiplatform") version "1.6.20"
     application //to run JVM part
-    kotlin("plugin.serialization") version "1.6.21"
+    kotlin("plugin.serialization") version "1.6.20"
 }
 
 group = "ru.mipt.npm.nica.emd"
@@ -25,7 +25,7 @@ kotlin {
     jvm {
         withJava()
     }
-    js {
+    js(LEGACY) {
         browser {
             binaries.executable()
         }
@@ -76,7 +76,7 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactVersion")
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-react-css:18.0.0-pre.331-kotlin-1.6.20")
+                // implementation("org.jetbrains.kotlin-wrappers:kotlin-react-css:18.0.0-pre.331-kotlin-1.6.20")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-legacy:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom-legacy:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-mui:$muiVersion")
@@ -115,7 +115,7 @@ tasks.getByName<Jar>("jvmJar") {
 tasks {
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
-            jvmTarget = "1.8"
+            jvmTarget = "15"
         }
     }
 }

@@ -3,7 +3,7 @@ package ru.mipt.npm.nica.emd
 import csstype.px
 import kotlinx.coroutines.launch
 import kotlinx.html.DIV
-import kotlinx.js.jso   // Note package change!
+import js.core.jso   // Note package changes! kotlinext.js.jso -> kotlinx.js.jso -> ...
 import mui.material.*
 import org.w3c.dom.HTMLInputElement
 import react.Props

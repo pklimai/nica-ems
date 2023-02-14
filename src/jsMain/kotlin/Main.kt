@@ -5,7 +5,7 @@ import react.create
 import react.dom.client.createRoot
 
 fun main() {
-    createRoot(document.getElementById("root")!!).render(
+    createRoot(document.getElementById("root")!! as web.dom.Element).render(
         app.create()
     )
 }
