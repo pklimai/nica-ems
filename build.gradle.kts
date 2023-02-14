@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
-val kotlinVersion = "1.6.20"
+val kotlinVersion = "1.7.21"
 val serializationVersion = "1.4.1"
 val ktorVersion = "2.2.3"
 val logbackVersion = "1.4.5"
@@ -9,9 +9,9 @@ val reactVersion = "18.2.0-pre.496"   //"18.1.0-pre.345"
 val muiVersion = "5.9.1-pre.496"   // "5.8.5-pre.349"
 
 plugins {
-    kotlin("multiplatform") version "1.6.20"
+    kotlin("multiplatform") version "1.7.21"
     application //to run JVM part
-    kotlin("plugin.serialization") version "1.6.20"
+    kotlin("plugin.serialization") version "1.7.21"
 }
 
 group = "ru.mipt.npm.nica.emd"
