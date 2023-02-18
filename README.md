@@ -144,12 +144,12 @@ cd nica-emd/
 sh gradlew run
 ```
 
-##### Alternative Dockerfile
+##### Dockerfile with build
 
-To build inside Docker and run, use (note: we currently do not use 2-stage build, so image is significantly larger):
+To build inside Docker and run, use (note: this Dockerfile uses 2-stage build to optimize image size):
 ```
 docker build -f Dockerfile.with-build -t nica-emd:buildindocker .
-docker run --rm -it -v ./ems-test-config.yaml:/root/event-config.yaml -p 80:8080 --entrypoint=/bin/bash nica-emd:buildindocker
+docker run --rm -it -v ./ems-test-config.yaml:/root/event-config.yaml -p 80:8080 nica-emd:buildindocker
 ```
 
 ##### Testing / debugging

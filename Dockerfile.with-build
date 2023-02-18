@@ -1,13 +1,14 @@
-FROM gradle:jdk15
-EXPOSE 8080:8080
-#RUN mkdir /app
+FROM gradle:jdk15 as builder
 COPY src ./src
 COPY build.gradle.kts ./build.gradle.kts
 COPY settings.gradle.kts ./settings.gradle.kts
 RUN gradle installDist
-#COPY ./build/install/nica-emd/ /app/
-#COPY ./build/processedResources/jvm/main/ /app/resources/main
-#WORKDIR /app/bin
-WORKDIR ./build/install/nica-emd/bin/
-CMD ["./nica-emd"]
+RUN pwd
+COPY ./build/install/nica-emd/ /app/
+COPY ./build/processedResources/jvm/main/ /app/resources/main
 
+FROM azul/zulu-openjdk:17
+EXPOSE 8080:8080
+COPY --from=builder /app/ /app/
+WORKDIR /app/bin
+CMD ["./nica-emd"]

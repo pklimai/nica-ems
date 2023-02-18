@@ -16,7 +16,7 @@ services:
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
   ems_web_api:
-    image: nica-emd:current
+    image: nica-emd:buildindocker
     restart: always
     ports: 
       - 80:8080
