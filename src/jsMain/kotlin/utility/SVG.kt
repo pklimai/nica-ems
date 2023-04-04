@@ -14,10 +14,14 @@ import react.dom.div
 
 // and https://stackoverflow.com/questions/39758136/render-html-string-as-real-html-in-a-react-component
 
+external interface InnerHTML {
+    val __html: String
+}
+
 fun RDOMBuilder<DIV>.dangerousSVG(htmlContent: String) {
     div {
-        attrs["dangerouslySetInnerHTML"] = object {
-            val __html = htmlContent
+        attrs["dangerouslySetInnerHTML"] = object: InnerHTML {
+            override val __html = htmlContent
         }
     }
 }
