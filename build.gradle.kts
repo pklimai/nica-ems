@@ -25,7 +25,7 @@ kotlin {
     jvm {
         withJava()
     }
-    js(LEGACY) {
+    js(IR) {
         browser {
             binaries.executable()
         }
