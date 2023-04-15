@@ -8,6 +8,7 @@ import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.compression.*
+import io.ktor.server.plugins.openapi.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.ldap.*
 import io.ktor.server.http.*
@@ -90,6 +91,8 @@ fun Application.main() {
             files("src/jvmMain/resources/static/css")   // in dev
             files("/app/resources/main/static/css")  // in Docker
         }
+
+        openAPI(path="openapi", swaggerFile = "openapi/documentation.yaml")
 
         // React Web UI available on root URL
         get("/") {

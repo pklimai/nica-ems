@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: EMS API
+  description: Event Metadata System REST API
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1/event_api/v1
+    description: Local deployment
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 4
+        name:
+          type: string
+          example: Arthur Dent
+      # Both properties are required
+      required:
+        - id
+        - name
+paths:
+  /users:
+    get:
+      summary: Returns a list of users.
+      description: Optional extended description in CommonMark or HTML.
+      responses:
+        '200':    # status code
+          description: A JSON array of user names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

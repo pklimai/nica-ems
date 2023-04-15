@@ -1,17 +1,17 @@
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
-val kotlinVersion = "1.8.10"
-val serializationVersion = "1.4.1"
-val ktorVersion = "2.2.3"
-val logbackVersion = "1.4.5"
+val kotlinVersion = "1.8.20"
+val serializationVersion = "1.5.0"
+val ktorVersion = "2.2.4"
+val logbackVersion = "1.4.6"
 val kotlinxHtmlVersion = "0.8.0"
-val reactVersion = "18.2.0-pre.496"
-val muiVersion = "5.9.1-pre.496"
+val reactVersion = "18.2.0-pre.537"
+val muiVersion = "5.10.0-pre.537"
 
 plugins {
-    kotlin("multiplatform") version "1.8.10"
+    kotlin("multiplatform") version "1.8.20"
     application //to run JVM part
-    kotlin("plugin.serialization") version "1.8.10"
+    kotlin("plugin.serialization") version "1.8.20"
 }
 
 group = "ru.mipt.npm.nica.emd"
@@ -57,6 +57,7 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
                 implementation("io.ktor:ktor-server-auth:$ktorVersion")
                 implementation("io.ktor:ktor-server-auth-ldap:$ktorVersion")
+                implementation("io.ktor:ktor-server-openapi:$ktorVersion")
                 implementation("ch.qos.logback:logback-classic:$logbackVersion")
                 implementation("org.postgresql:postgresql:42.2.20")
                 implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.1")
