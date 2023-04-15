@@ -14,7 +14,7 @@ plugins {
     kotlin("plugin.serialization") version "1.8.20"
 }
 
-group = "ru.mipt.npm.nica.emd"
+group = "ru.mipt.npm.nica.ems"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -96,7 +96,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("ru.mipt.npm.nica.emd.ApplicationKt")
+    mainClass.set("ru.mipt.npm.nica.ems.ApplicationKt")
 }
 
 // include JS artifacts in any JAR we generate

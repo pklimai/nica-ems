@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd.utility
+package ru.mipt.npm.nica.ems.utility
 
 class EMSUnauthException: Exception()
 

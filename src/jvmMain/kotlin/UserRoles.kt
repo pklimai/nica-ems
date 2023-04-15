@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 data class UserRoles(
     val isReader: Boolean,

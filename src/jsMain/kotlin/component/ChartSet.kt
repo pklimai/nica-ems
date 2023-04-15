@@ -1,9 +1,9 @@
-package ru.mipt.npm.nica.emd.component
+package ru.mipt.npm.nica.ems.component
 
 import react.Props
 import react.fc
-import ru.mipt.npm.nica.emd.EMSStatistics
-import ru.mipt.npm.nica.emd.chartComponent
+import ru.mipt.npm.nica.ems.EMSStatistics
+import ru.mipt.npm.nica.ems.chartComponent
 
 external interface ChartSetProps : Props {
     var experimentStats: EMSStatistics?

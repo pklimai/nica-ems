@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -11,9 +11,9 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
-import ru.mipt.npm.nica.emd.utility.EMSConflictException
-import ru.mipt.npm.nica.emd.utility.EMSServerError
-import ru.mipt.npm.nica.emd.utility.EMSUnauthException
+import ru.mipt.npm.nica.ems.utility.EMSConflictException
+import ru.mipt.npm.nica.ems.utility.EMSServerError
+import ru.mipt.npm.nica.ems.utility.EMSUnauthException
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
 

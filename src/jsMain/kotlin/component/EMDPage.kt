@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 import csstype.px
 import kotlinx.coroutines.launch
@@ -13,7 +13,7 @@ import react.dom.div
 import react.dom.onChange
 import react.fc
 import react.useState
-import ru.mipt.npm.nica.emd.utility.EMSUnauthException
+import ru.mipt.npm.nica.ems.utility.EMSUnauthException
 
 
 external interface EMDPageProps : Props {

@@ -125,20 +125,20 @@ The `file_path` will be created in the `file_` table, if not there yet.
 #sudo dnf install java-11-openjdk-devel
 #export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64
 sudo yum install java-17
-cd ~/nica-emd/
+cd ~/nica-ems/
 sh gradlew installDist
-docker build -t nica-emd:current .
-# sudo docker stop nica-emd
-# sudo docker rm nica-emd
-sudo docker run -d --rm --name nica-emd -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:current
+docker build -t nica-ems:current .
+# sudo docker stop nica-ems
+# sudo docker rm nica-ems
+sudo docker run -d --rm --name nica-ems -p 80:8080 -v ~/nica-ems-config.yaml:/root/event-config.yaml nica-ems:current
 ```
 
 ##### Run on Alma Linux
 
 ```
 sudo yum install java-17
-git clone https://github.com/pklimai/nica-emd
-cd nica-emd/
+git clone https://github.com/pklimai/nica-ems
+cd nica-ems/
 sh gradlew run
 ```
 
@@ -146,8 +146,8 @@ sh gradlew run
 
 To build inside Docker and run, use (note: this Dockerfile uses 2-stage build to optimize image size):
 ```
-docker build -f Dockerfile.with-build -t nica-emd:buildindocker .
-docker run --rm -it -v ./ems-test-config.yaml:/root/event-config.yaml -p 80:8080 nica-emd:buildindocker
+docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
+docker run --rm -it -v ./ems-test-config.yaml:/root/event-config.yaml -p 80:8080 nica-ems:buildindocker
 ```
 
 ##### Testing / debugging
@@ -158,12 +158,12 @@ To test FreeIPA (LDAP), you can configure SSH tunneling such as `127.0.0.1:3890 
 
 To view application logs:
 ```
-docker logs nica-emd -f
+docker logs nica-ems -f
 ```
 
 To run container in debug mode, use something like
 ```
-sudo docker run -it --entrypoint=/bin/bash --name nica-emd --rm -p 80:8080 -v ~/nica-emd-config.yaml:/root/event-config.yaml nica-emd:current
+sudo docker run -it --entrypoint=/bin/bash --name nica-ems --rm -p 80:8080 -v ~/nica-ems-config.yaml:/root/event-config.yaml nica-ems:current
 ```
 
 

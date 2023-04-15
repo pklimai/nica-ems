@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 import react.dom.div
 import kotlinx.coroutines.launch
@@ -11,9 +11,9 @@ import org.w3c.dom.HTMLInputElement
 import react.*
 import react.dom.onChange
 import react.dom.p
-import ru.mipt.npm.nica.emd.utility.EMSConflictException
-import ru.mipt.npm.nica.emd.utility.EMSServerError
-import ru.mipt.npm.nica.emd.utility.EMSUnauthException
+import ru.mipt.npm.nica.ems.utility.EMSConflictException
+import ru.mipt.npm.nica.ems.utility.EMSServerError
+import ru.mipt.npm.nica.ems.utility.EMSUnauthException
 
 external interface DictionaryPageProps : Props {
     var SWdata: Array<SoftwareVersion>?

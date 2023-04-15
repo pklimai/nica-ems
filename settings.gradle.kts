@@ -4,4 +4,4 @@ pluginManagement {
         maven { setUrl("https://plugins.gradle.org/m2/") }
     }
 }
-rootProject.name = "nica-emd"
+rootProject.name = "nica-ems"

@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch

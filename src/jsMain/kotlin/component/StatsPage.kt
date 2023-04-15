@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 import kotlinx.coroutines.launch
 import kotlinx.html.js.onClickFunction
@@ -6,7 +6,7 @@ import mui.material.*
 import react.*
 import react.dom.div
 import react.dom.onChange
-import ru.mipt.npm.nica.emd.component.chartSet
+import ru.mipt.npm.nica.ems.component.chartSet
 
 external interface StatsPageProps : Props {
     var experiment: String?

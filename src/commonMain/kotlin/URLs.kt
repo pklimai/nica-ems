@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 const val CONFIG_URL = "/event_api/v1/config"
 const val SOFTWARE_URL = "/event_api/v1/software"

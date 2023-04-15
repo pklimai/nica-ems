@@ -2,7 +2,7 @@ version: '3'
 services:
     emd:
         build: .
-        container_name: nica-emd
+        container_name: nica-ems
         restart: always
         ports:
           - 80:8080

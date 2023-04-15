@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -461,4 +461,5 @@ private fun getUserRoles(config: ConfigFile, call: ApplicationCall): UserRoles {
 }
 
 
+// See resources.application.conf for ktor configuration
 fun main(args: Array<String>) = io.ktor.server.netty.EngineMain.main(args)

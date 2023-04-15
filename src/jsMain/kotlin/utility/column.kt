@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 fun column(field: String, key: String, headerName: String, flex: Int): dynamic {
     val r: dynamic = object {}

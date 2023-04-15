@@ -1,4 +1,4 @@
-package ru.mipt.npm.nica.emd
+package ru.mipt.npm.nica.ems
 
 import kotlinx.coroutines.launch
 import kotlinx.html.InputType
@@ -12,7 +12,7 @@ import react.Props
 import react.dom.*
 import react.fc
 import react.useState
-import ru.mipt.npm.nica.emd.utility.EMSUnauthException
+import ru.mipt.npm.nica.ems.utility.EMSUnauthException
 
 external interface LoginPageProps : Props {
     var setValues: (username: String, password: String) -> Unit
