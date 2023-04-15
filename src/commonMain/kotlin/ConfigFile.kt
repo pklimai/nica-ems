@@ -39,7 +39,7 @@ class DBConnectionConfig(
 class PageConfig(
     val name: String,
     val api_url: String,
-    val web_url: String,
+    // val web_url: String,
     val db_table_name: String,
     val parameters: List<ParameterConfig>,
     // By default, this number of records is returned in WebUI if limit is not specified

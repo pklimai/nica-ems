@@ -258,7 +258,7 @@ fun Application.main() {
 
                 route(page.api_url) {
 
-                    get("/emd") {
+                    get("/${EVENT_ENTITY_API_NAME}") {
 
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
                         val connEMD = newEMDConnection(config, this.context)
@@ -300,7 +300,7 @@ fun Application.main() {
                         }
                     }
 
-                    post("/emd") {
+                    post("/${EVENT_ENTITY_API_NAME}") {
 
                         val roles = getUserRoles(config, call)
                         if (!(roles.isWriter or roles.isAdmin)) {
@@ -376,7 +376,7 @@ fun Application.main() {
                         }
                     }
 
-                    delete("/emd") {
+                    delete("/${EVENT_ENTITY_API_NAME}") {
                         val roles = getUserRoles(config, call)
                         if (!roles.isAdmin) {
                             call.respond(HttpStatusCode.Unauthorized)
@@ -389,7 +389,8 @@ fun Application.main() {
                     get("/eventFile") {
                         // Synchronous
                         // TODO Apply all filtering, build ROOT file, return it...
-                        val f = File("src/main/resources/downloadFile.bin")
+                        println("Serving dummy eventFile...")
+                        val f = File("src/jvmMain/resources/downloadFile.bin")
                         call.respondFile(f)
                     }
 

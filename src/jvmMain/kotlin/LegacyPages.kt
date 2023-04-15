@@ -3,7 +3,6 @@ package ru.mipt.npm.nica.emd
 import io.ktor.server.application.*
 import io.ktor.server.html.*
 import io.ktor.http.*
-import io.ktor.network.sockets.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.html.*
@@ -22,9 +21,9 @@ fun Route.legacyHomePage(config: ConfigFile) = route("/legacy") {
                 config.pages.forEach {
                     h3 { +it.name }
                     h5 { +"REST API" }
-                    p { a(href = it.api_url + "/emd") { +"API - get all events" } }
+                    p { a(href = it.api_url + "/${EVENT_ENTITY_API_NAME}") { +"API - get all events" } }
                     h5 { +"WebUI" }
-                    p { a(href = it.web_url) { +"Search Form" } }
+                    p { a(href = it.api_url + "/legacy_web") { +"Search Form" } }
                     hr {}
                 }
 
@@ -107,82 +106,84 @@ fun Route.legacyDictionaries(config: ConfigFile) = route("/legacy/dictionaries")
     }
 }
 
-fun Route.legacyPage(page: PageConfig, config: ConfigFile, connCondition: java.sql.Connection?) = route(page.web_url) {
-    get {
+fun Route.legacyPage(page: PageConfig, config: ConfigFile, connCondition: java.sql.Connection?) =
+    route(page.api_url + "/legacy_web") {
+    // config parameter for URL was dropped, so we use api_url plus "/legacy_web" to make it unique
+        get {
 
-        val parameterBundle = ParameterBundle.buildFromCall(call, page)
+            val parameterBundle = ParameterBundle.buildFromCall(call, page)
 
-        // println(this.context.principal<Principal>().toString())
-        val connEMD = newEMDConnection(config, this.context)
-        if (connEMD == null) {
-            call.respond(HttpStatusCode.Unauthorized)
-        } else {
-            val softwareMap = getSoftwareMap(connEMD)
+            // println(this.context.principal<Principal>().toString())
+            val connEMD = newEMDConnection(config, this.context)
+            if (connEMD == null) {
+                call.respond(HttpStatusCode.Unauthorized)
+            } else {
+                val softwareMap = getSoftwareMap(connEMD)
 
-            call.respondHtml {
-                head {
-                    title { +page.name }
-                    styleLink("/static/style.css")
-                }
-                body {
-                    a {
-                        href = "/legacy"
-                        +"Home"
+                call.respondHtml {
+                    head {
+                        title { +page.name }
+                        styleLink("/static/style.css")
                     }
-                    h2 { +page.name }
-                    h3 { +"Enter search criteria for events" }
-                    inputParametersForm(parameterBundle, page, softwareMap, connCondition)
-
-                    h3 { +"Events found:" }
-
-                    val res = queryEMD(
-                        parameterBundle, page, connCondition, connEMD, this, DEFAULT_LIMIT_FOR_WEB
-                    )
-
-                    br {}
-                    var count = 0
-                    table {
-                        tr {
-                            th { +"storage_name" }
-                            th { +"file_path" }
-                            th { +"event_number" }
-                            th { +"software_version" }
-                            th { +"period_number" }
-                            th { +"run_number" }
-                            page.parameters.forEach {
-                                th { +it.name }
-                            }
+                    body {
+                        a {
+                            href = "/legacy"
+                            +"Home"
                         }
-                        while (res.next()) {
-                            count++
+                        h2 { +page.name }
+                        h3 { +"Enter search criteria for events" }
+                        inputParametersForm(parameterBundle, page, softwareMap, connCondition)
+
+                        h3 { +"Events found:" }
+
+                        val res = queryEMD(
+                            parameterBundle, page, connCondition, connEMD, this, DEFAULT_LIMIT_FOR_WEB
+                        )
+
+                        br {}
+                        var count = 0
+                        table {
                             tr {
-                                td { +res.getString("storage_name") }
-                                td { +res.getString("file_path") }
-                                td { +res.getInt("event_number").toString() }
-                                td { +res.getString("software_version") }
-                                td { +res.getShort("period_number").toString() }
-                                td { +res.getShort("run_number").toString() }
-                                page.parameters.forEach { parameter ->
-                                    td {
-                                        when (parameter.type) {
-                                            "int" -> +res.getInt(parameter.name).toString()
-                                            "float" -> +res.getFloat(parameter.name).toString()
-                                            "bool" -> +res.getBoolean(parameter.name).toString()
-                                            "string" -> +res.getString(parameter.name)
+                                th { +"storage_name" }
+                                th { +"file_path" }
+                                th { +"event_number" }
+                                th { +"software_version" }
+                                th { +"period_number" }
+                                th { +"run_number" }
+                                page.parameters.forEach {
+                                    th { +it.name }
+                                }
+                            }
+                            while (res.next()) {
+                                count++
+                                tr {
+                                    td { +res.getString("storage_name") }
+                                    td { +res.getString("file_path") }
+                                    td { +res.getInt("event_number").toString() }
+                                    td { +res.getString("software_version") }
+                                    td { +res.getShort("period_number").toString() }
+                                    td { +res.getShort("run_number").toString() }
+                                    page.parameters.forEach { parameter ->
+                                        td {
+                                            when (parameter.type) {
+                                                "int" -> +res.getInt(parameter.name).toString()
+                                                "float" -> +res.getFloat(parameter.name).toString()
+                                                "bool" -> +res.getBoolean(parameter.name).toString()
+                                                "string" -> +res.getString(parameter.name)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    if (count == 0) {
-                        p { +"No results matching specified criteria found in the EMD database" }
-                    }
+                        if (count == 0) {
+                            p { +"No results matching specified criteria found in the EMD database" }
+                        }
 
+                    }
                 }
+                connEMD.close()
             }
-            connEMD.close()
         }
     }
-}
 

@@ -8,11 +8,6 @@ typealias SWver = String
 
 @Serializable
 class EMSStatistics(
-    val experimentStatistics: Map<ExperimentName, ExperimentStatistics>
-)
-
-@Serializable
-class ExperimentStatistics(
     val totalRecords: Long,
     val periodStats: List<PeriodStats>
 )

@@ -195,7 +195,7 @@ val emdPage = fc<EMDPageProps> { props ->
                                     scope.launch {
                                         try {
                                             val emd = getEMD(
-                                                props.pageConfig.api_url + "/emd" + paramsForURL,
+                                                props.pageConfig.api_url + "/" + EVENT_ENTITY_API_NAME + paramsForURL,
                                                 props.config,
                                                 props.username,
                                                 props.password

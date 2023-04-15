@@ -31,11 +31,11 @@ val statsPage = fc<StatsPageProps> { props ->
             console.log("In useEffect...")
             setPeriodOpened(false)
             setSoftOpened(false)
-            val newPeriod = stats.experimentStatistics[props.experiment]?.periodStats?.last()?.periodNumber.toString()
+            val newPeriod = stats.periodStats.last()?.periodNumber.toString()
             console.log("New period: $newPeriod")
             setCurrentPeriod(newPeriod)
             val newSW =
-                stats.experimentStatistics[props.experiment]?.periodStats?.last()?.softwareStats?.last()?.swVer.toString()
+                stats.periodStats.last()?.softwareStats?.last()?.swVer.toString()
             console.log("New sw: $newSW")
             setCurrentSW(newSW)
         }
@@ -56,7 +56,7 @@ val statsPage = fc<StatsPageProps> { props ->
                 div("home__page__stats__block__column") {
                     div("home__page__stats__block__column__stats") {
                         div {
-                            +(stats?.experimentStatistics?.get(props.experiment)?.totalRecords?.toString() ?: "HZ")
+                            +(stats?.totalRecords?.toString() ?: "HZ")
                         }
                         div {
                             +"Total"
@@ -102,11 +102,11 @@ val statsPage = fc<StatsPageProps> { props ->
                                     setPeriodOpened(false)
                                     // change software to last in list
                                     val newSW =
-                                        stats?.experimentStatistics?.get(props.experiment)?.periodStats?.filter{it.periodNumber.toString() == newPeriod}?.firstOrNull()?.softwareStats?.last()?.swVer.toString()
+                                        stats?.periodStats?.filter{it.periodNumber.toString() == newPeriod}?.firstOrNull()?.softwareStats?.last()?.swVer.toString()
                                     setCurrentSW(newSW)
                                 }
                             }
-                            stats?.experimentStatistics?.get(props.experiment)?.periodStats?.map{it.periodNumber}?.sortedByDescending{ it }?.
+                            stats?.periodStats?.map{it.periodNumber}?.sortedByDescending{ it }?.
                             forEach { perNum ->
                                 MenuItem {
                                     attrs {
@@ -153,7 +153,7 @@ val statsPage = fc<StatsPageProps> { props ->
                                     setSoftOpened(false)
                                 }
                             }
-                            stats?.experimentStatistics?.get(props.experiment)?.periodStats
+                            stats?.periodStats
                                 ?.filter { it.periodNumber.toString() == currentPeriod }
                                 ?.first()?.softwareStats?.map { it.swVer }?.forEach { sw ->
                                 MenuItem {
@@ -172,7 +172,7 @@ val statsPage = fc<StatsPageProps> { props ->
             child(chartSet) {
                 attrs {
                     experimentStats =
-                        stats?.experimentStatistics?.get(props.experiment.toString())
+                        stats
                     period = currentPeriod?.toInt()
                     sw = currentSW
                 }

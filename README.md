@@ -1,5 +1,5 @@
 
-# NICA Event Metadata System (EMD) API and Web UI
+# NICA Event Metadata System (EMS) API and Web UI
 
 ### About
 
@@ -28,10 +28,8 @@ Ranges for `int` and `float` types are supported (both in Web interface and API)
 
 #### Methods supported
 
-Note: API paths are relative to `api_url` in the configuration file.
-
 ##### Get event metadata:
-`GET /emd[?parameter1=value1[&parameter2=value2[...]]]`
+`GET /event_api/v1/event[?parameter1=value1[&parameter2=value2[...]]]`
   
 Here and below, for parameter values we have 
 * Standard parameters:
@@ -51,12 +49,12 @@ Here and below, for parameter values we have
 * Any custom parameters specified in YAML file 
 
 ##### Create event records in the metadata catalog:
-`POST /emd`
+`POST /event_api/v1/event`
 
 Message body must contain the JSON list of events using format as given below.  
 
 ##### TODO: Delete event records from the metadata catalog
-`DELETE /emd`
+`DELETE /event_api/v1/event`
 
 Message body must contain the JSON list of events (only `reference:` part required).
 
@@ -64,12 +62,12 @@ Message body must contain the JSON list of events (only `reference:` part requir
 `GET /count[?parameter1=value1[&parameter2=value2[...]]]`
 
 ##### TODO: Get event records as a ROOT file (synchronous)
-`GET /eventFile[?parameter1=value1[&parameter2=value2[...]]]`
+`GET /event_api/v1/eventFile[?parameter1=value1[&parameter2=value2[...]]]`
 
 File is built and downloaded immediately (same HTTP session) 
 
 ##### TODO: Get event records as a ROOT file reference (asynchronous)
-`GET /eventFileRef[?parameter1=value1[&parameter2=value2[...]]]`
+`GET /event_api/v1/eventFileRef[?parameter1=value1[&parameter2=value2[...]]]`
 
 Returns the path to generated file, OR need to initially provide file path in request?
 
@@ -97,7 +95,7 @@ Both GET and POST use the same format for events, like this:
 
 For example here is how you can create events in the catalog using `curl` tool:
 ```
-curl -X POST -u USER:PASS -H "Content-Type: application/json" http://127.0.0.1/event_api/v1/bmn/emd -d '
+curl -X POST -u USER:PASS -H "Content-Type: application/json" http://127.0.0.1/event_api/v1/event -d '
 [
 {
  "reference": {

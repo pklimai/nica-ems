@@ -10,8 +10,8 @@ import react.*
 import react.dom.*
 import kotlin.js.json
 
-val DICTIONARY_PAGE = PageConfig("__dictionary", "", "", "", emptyList())
-val LOGIN_PAGE = PageConfig("__login", "", "", "", emptyList())
+val DICTIONARY_PAGE = PageConfig("__dictionary", "", "", emptyList())
+val LOGIN_PAGE = PageConfig("__login", "", "", emptyList())
 
 val scope = MainScope()
 

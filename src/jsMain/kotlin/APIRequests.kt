@@ -125,111 +125,54 @@ suspend fun postStorage(storage: String, config: ConfigFile?, username: String, 
 }
 
 suspend fun getStats(): EMSStatistics {
+    // TODO query STATISTICS_URL
     return EMSStatistics(
-        mapOf(
-            "BM@N" to ExperimentStatistics(
-                totalRecords = 50000,
-                periodStats = listOf(
-                    PeriodStats(1),
-                    PeriodStats(2),
-                    PeriodStats(3),
-                    PeriodStats(4),
-                    PeriodStats(5),
-                    PeriodStats(6),
-                    PeriodStats(7),
-                    PeriodStats(
-                        8,
-                        10000,
-                        listOf(
-                            SWstats(
-                                "19.1",
+        totalRecords = 50000,
+        periodStats = listOf(
+            PeriodStats(1),
+            PeriodStats(2),
+            PeriodStats(3),
+            PeriodStats(4),
+            PeriodStats(5),
+            PeriodStats(6),
+            PeriodStats(7),
+            PeriodStats(
+                8,
+                10000,
+                listOf(
+                    SWstats(
+                        "19.1",
+                        arrayOf(
+                            StatGraph(
+                                "My Stat Graph ONE",
+                                "",
                                 arrayOf(
-                                    StatGraph(
-                                        "My Stat Graph ONE",
-                                        "",
-                                        arrayOf(
-                                            GraphSlice("Fe", 1),
-                                            GraphSlice("Cu", 2),
-                                            GraphSlice("Be", 3)
-                                        )
-                                    )
+                                    GraphSlice("Fe", 1),
+                                    GraphSlice("Cu", 2),
+                                    GraphSlice("Be", 3)
+                                )
+                            )
+                        )
+                    ),
+                    SWstats(
+                        "20.1",
+                        arrayOf(
+                            StatGraph(
+                                "My Stat Graph TWO-1",
+                                "",
+                                arrayOf(
+                                    GraphSlice("Au", 4),
+                                    GraphSlice("B", 5),
+                                    GraphSlice("C", 6)
                                 )
                             ),
-                            SWstats(
-                                "20.1",
+                            StatGraph(
+                                "My Stat Graph TWO-2",
+                                "",
                                 arrayOf(
-                                    StatGraph(
-                                        "My Stat Graph TWO-1",
-                                        "",
-                                        arrayOf(
-                                            GraphSlice("Au", 4),
-                                            GraphSlice("B", 5),
-                                            GraphSlice("C", 6)
-                                        )
-                                    ),
-                                    StatGraph(
-                                        "My Stat Graph TWO-2",
-                                        "",
-                                        arrayOf(
-                                            GraphSlice("Au", 44),
-                                            GraphSlice("B", 55),
-                                            GraphSlice("C", 66)
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            "SRC" to ExperimentStatistics(
-                totalRecords = 70000,
-                periodStats = listOf(
-                    PeriodStats(1),
-                    PeriodStats(2),
-                    PeriodStats(3),
-                    PeriodStats(
-                        4,
-                        10000,
-                        listOf(
-                            SWstats(
-                                "19.1",
-                                arrayOf(
-                                    StatGraph(
-                                        "My Stat Graph TWO-1",
-                                        "",
-                                        arrayOf(
-                                            GraphSlice("Au", 4),
-                                            GraphSlice("B", 5),
-                                            GraphSlice("C", 6)
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            "Test" to ExperimentStatistics(
-                totalRecords = 90000,
-                periodStats = listOf(
-                    PeriodStats(1),
-                    PeriodStats(
-                        2,
-                        10000,
-                        listOf(
-                            SWstats(
-                                "19.1",
-                                arrayOf(
-                                    StatGraph(
-                                        "My Stat Graph TWO-1",
-                                        "",
-                                        arrayOf(
-                                            GraphSlice("Au", 4),
-                                            GraphSlice("B", 5),
-                                            GraphSlice("C", 6)
-                                        )
-                                    )
+                                    GraphSlice("Au", 44),
+                                    GraphSlice("B", 55),
+                                    GraphSlice("C", 66)
                                 )
                             )
                         )
@@ -237,5 +180,5 @@ suspend fun getStats(): EMSStatistics {
                 )
             )
         )
-    ) // TODO use STATISTICS_URL
+    )
 }
