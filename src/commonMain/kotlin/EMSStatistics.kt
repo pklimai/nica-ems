@@ -2,7 +2,6 @@ package ru.mipt.npm.nica.ems
 
 import kotlinx.serialization.Serializable
 
-typealias ExperimentName = String
 typealias PeriodNumber = Int
 typealias SWver = String
 

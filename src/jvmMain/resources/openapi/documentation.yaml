@@ -1,37 +1,142 @@
 openapi: 3.0.0
+
 info:
   title: EMS API
   description: Event Metadata System REST API
   version: 1.0.0
+
 servers:
-  - url: http://127.0.0.1/event_api/v1
+  - url: http://127.0.0.1:8080/event_api/v1
     description: Local deployment
+
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+
   schemas:
-    User:
+
+    Storage:
       type: object
+      description: Storage used for experiment data files
       properties:
-        id:
+        storage_id:
           type: integer
           example: 4
-        name:
+        storage_name:
           type: string
-          example: Arthur Dent
-      # Both properties are required
+          example: data1
       required:
-        - id
-        - name
+        - storage_id
+        - storage_name
+
+    Software:
+      type: object
+      description: Software version used to process files
+      properties:
+        software_id:
+          type: integer
+          example: 8
+        software_version:
+          type: string
+          example: "20.1"
+      required:
+        - software_id
+        - software_version
+
+    Reference:
+      type: object
+      description: Reference to event's storage/file/event_number
+      properties:
+        storage_name:
+          type: string
+          example: data1
+        file_path:
+          type: string
+          example: /var/tmp/file1.root
+        event_number:
+          type: integer
+          example: 100000
+      required:
+        - storage_name
+        - file_path
+        - event_number
+
+    Parameters:
+      description: Map of optional parameters key/values, according to EMS config
+      type: object
+      # Generally a Map<String, Any>
+
+    EventRepr:
+      type: object
+      description: Single event metadata
+      properties:
+        reference:
+          $ref: '#/components/schemas/Reference'
+        software_version:
+          type: string
+          example: "20.1"
+        period_number:
+          type: integer   # short
+          example: 8
+        run_number:
+          type: integer
+          example: 5000
+        parameters:
+          $ref: '#/components/schemas/Parameters'
+      required:
+        - reference
+        - software_version
+        - period_number
+        - run_number
+        - parameters
+
 paths:
-  /users:
+  /storage:
     get:
-      summary: Returns a list of users.
-      description: Optional extended description in CommonMark or HTML.
+      summary: Returns a list of storages.
+      # description: Optional extended description in CommonMark or HTML.
+      security:
+        - basicAuth: []
       responses:
         '200':    # status code
-          description: A JSON array of user names
+          description: A JSON array of storages
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  type: string
+                  $ref: '#/components/schemas/Storage'
+
+  /software:
+    get:
+      summary: Returns a list of software versions.
+      # description: Optional extended description in CommonMark or HTML.
+      security:
+        - basicAuth: []
+      responses:
+        '200':    # status code
+          description: A JSON array of storages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Software'
+
+  /event:
+    get:
+      summary: Returns event metadata
+      security:
+        - basicAuth: [ ]
+      responses:
+        '200': # status code
+          description: A JSON array of event objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventRepr'
+
