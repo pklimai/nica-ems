@@ -38,9 +38,9 @@ pages:
         type: int
         intervals: true
         web_name: Total track number
-      - name: trigger_str
-        type: string
-        web_name: Triggers (string)
-      - name: primary_vertex
-        type: bool
-        web_name: Primary vertex
+#      - name: trigger_str
+#        type: string
+#        web_name: Triggers (string)
+#      - name: primary_vertex
+#        type: bool
+#        web_name: Primary vertex

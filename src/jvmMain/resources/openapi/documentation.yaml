@@ -67,6 +67,10 @@ components:
       description: Map of optional parameters key/values, according to EMS config
       type: object
       # Generally a Map<String, Any>
+      properties:
+        track_number:
+          type: integer
+          example: 30
 
     EventRepr:
       type: object
@@ -101,13 +105,28 @@ paths:
         - basicAuth: []
       responses:
         '200':    # status code
-          description: A JSON array of storages
+          description: A JSON array of storage objects
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Storage'
+
+    post:
+      summary: Create new storage record
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Storage'
+
+      responses:
+        '200':
+          description: Created new storage record
+
 
   /software:
     get:
@@ -117,7 +136,7 @@ paths:
         - basicAuth: []
       responses:
         '200':    # status code
-          description: A JSON array of storages
+          description: A JSON array of software version objects
           content:
             application/json:
               schema:
@@ -125,11 +144,53 @@ paths:
                 items:
                   $ref: '#/components/schemas/Software'
 
+    post:
+      summary: Create new software record
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Software'
+
+      responses:
+        '200':
+          description: Created new software record
+
+
   /event:
     get:
       summary: Returns event metadata
       security:
         - basicAuth: [ ]
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: Limit on the number of events
+        - in: query
+          name: offset
+          schema:
+            type: integer
+          description: Offset for obtained events (typically used with limit)
+        - in: query
+          name: software_version
+          schema:
+            type: string
+          description: Software version for events
+        - in: query
+          name: period_number
+          schema:
+            type: string
+          description: Period number (possibly range) for requested events
+        - in: query
+          name: run_number
+          schema:
+            type: string
+          description: Run number (possibly range) for requested events
+
       responses:
         '200': # status code
           description: A JSON array of event objects
@@ -139,4 +200,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EventRepr'
+
+    post:
+      summary: Add event metadata to catalogue
+      security:
+        - basicAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EventRepr'
+      responses:
+        '200':
+          description: Events were created
 
