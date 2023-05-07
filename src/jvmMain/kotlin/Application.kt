@@ -261,6 +261,9 @@ fun Application.main() {
                     get("/${EVENT_ENTITY_API_NAME}") {
 
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
+                        if (parameterBundle.hasInvalidParameters()) {
+                            call.respond(HttpStatusCode.BadRequest)
+                        }
                         val connEMD = newEMDConnection(config, this.context)
                         if (connEMD == null) {
                             call.respond(HttpStatusCode.Unauthorized)

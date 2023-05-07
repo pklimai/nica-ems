@@ -44,4 +44,17 @@ class ParameterBundle(
             )
         }
     }
+
+    fun hasInvalidParameters(): Boolean {
+        if (period_number?.validParameter == false || run_number?.validParameter == false
+                // software_version TODO ?
+                || beam_particle?.validParameter == false || target_particle?.validParameter == false ||
+                energy?.validParameter == false || limit?.validParameter == false ||
+                offset?.validParameter == false) return true
+        parametersSupplied.forEach { (name, value) ->
+            if (value.validParameter == false) return true
+        }
+        return false
+    }
+
 }

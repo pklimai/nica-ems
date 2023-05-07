@@ -13,6 +13,7 @@ import react.dom.div
 import react.dom.onChange
 import react.fc
 import react.useState
+import ru.mipt.npm.nica.ems.utility.EMSBadRequestException
 import ru.mipt.npm.nica.ems.utility.EMSUnauthException
 
 
@@ -206,6 +207,10 @@ val emdPage = fc<EMDPageProps> { props ->
                                         } catch (e: EMSUnauthException) {
                                             // Should not normally happen
                                             props.redirectToAuth()
+                                        } catch (e: EMSBadRequestException) {
+                                            // Wrong parameters were specified, e.g. incorrect range
+                                            // TODO possibly toast about server returned error
+                                            props.setEMDdata(null)
                                         }
                                     }
                                 }

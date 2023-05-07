@@ -11,6 +11,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.browser.window
+import ru.mipt.npm.nica.ems.utility.EMSBadRequestException
 import ru.mipt.npm.nica.ems.utility.EMSConflictException
 import ru.mipt.npm.nica.ems.utility.EMSServerError
 import ru.mipt.npm.nica.ems.utility.EMSUnauthException
@@ -49,6 +50,9 @@ suspend fun getEMD(api_url: String, config: ConfigFile?, username: String, passw
         // but can get here in corner cases such as password on server was changed, etc.
         console.log("Got HttpStatusCode Unauthorized!")
         throw EMSUnauthException()
+    } else if (httpResp.status == HttpStatusCode.BadRequest) {
+        console.log("Got BadRequest response code!")
+        throw EMSBadRequestException()
     }
     val res = httpResp.bodyAsText()
     console.log(res)
