@@ -38,8 +38,8 @@ create table event
     run_number int not null check (run_number >= 0),
 
     track_number int not null default (-1),
-    trigger_str varchar (30) not null,
-    primary_vertex bool not null
+--    trigger_str varchar (30) not null,
+--    primary_vertex bool not null
 );
 
 -- create table bmn_event
