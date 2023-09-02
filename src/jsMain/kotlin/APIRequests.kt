@@ -129,7 +129,15 @@ suspend fun postStorage(storage: String, config: ConfigFile?, username: String, 
 }
 
 suspend fun getStats(): EMSStatistics {
-    // TODO query STATISTICS_URL
+    val jsonClient = HttpClient {
+        install(ContentNegotiation) {
+            json()
+        }
+    }
+    val res = jsonClient.get(endpoint + STATISTICS_URL).body<EMSStatistics>()
+    jsonClient.close()
+    return res
+/*
     return EMSStatistics(
         totalRecords = 50000,
         periodStats = listOf(
@@ -185,4 +193,6 @@ suspend fun getStats(): EMSStatistics {
             )
         )
     )
+*/
+
 }

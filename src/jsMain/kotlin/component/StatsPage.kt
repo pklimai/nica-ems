@@ -56,7 +56,7 @@ val statsPage = fc<StatsPageProps> { props ->
                 div("home__page__stats__block__column") {
                     div("home__page__stats__block__column__stats") {
                         div {
-                            +(stats?.totalRecords?.toString() ?: "HZ")
+                            +(stats?.totalRecords?.toString() ?: "<total>")
                         }
                         div {
                             +"Total"

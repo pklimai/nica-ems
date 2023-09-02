@@ -4,7 +4,7 @@ event_db:
   port: 5000
   db_name: event_db
   user: postgres
-  password: example
+  password: example  # Note: needed anyway - for getting stats
 
 condition_db:
   host: 192.168.65.52

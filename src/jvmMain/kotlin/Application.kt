@@ -18,6 +18,7 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.json.Json
 import org.postgresql.util.PSQLException
 import java.io.File
 import java.sql.Connection
@@ -92,7 +93,7 @@ fun Application.main() {
             files("/app/resources/main/static/css")  // in Docker
         }
 
-        openAPI(path="openapi", swaggerFile = "openapi/documentation.yaml")
+        openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
 
         // React Web UI available on root URL
         get("/") {
@@ -114,6 +115,25 @@ fun Application.main() {
         // This way frontend knows about different pages, parameters, etc.
         get(CONFIG_URL) {
             call.respond(config.removeSensitiveData())
+        }
+
+        get(STATISTICS_URL) {
+            val connEMD = newEMDConnection(config, this@get.context, forStatsGetting = true)
+            if (connEMD == null) {
+                call.respond(HttpStatusCode.NotFound)
+            } else {
+                connEMD.createStatement().executeQuery("SELECT json_stats FROM statistics ORDER BY id DESC LIMIT 1")
+                    .let { resultSet ->
+                        if (resultSet.next()) {
+                            val r = resultSet.getString("json_stats")
+                            connEMD.close()
+                            call.response.header("Content-Type", "application/json")
+                            call.respondText(r)
+                        } else {
+                            call.respond(HttpStatusCode.NotFound)
+                        }
+                    }
+            }
         }
 
         fun Route.optionallyAuthenticate(build: Route.() -> Unit): Route {
@@ -409,11 +429,11 @@ fun Application.main() {
     }
 }
 
-fun newEMDConnection(config: ConfigFile, context: ApplicationCall): Connection? {
+fun newEMDConnection(config: ConfigFile, context: ApplicationCall, forStatsGetting: Boolean = false): Connection? {
     val urlEventDB =
         "jdbc:postgresql://${config.event_db.host}:${config.event_db.port}/${config.event_db.db_name}"
     // val connEMD = DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
-    if (config.database_auth == true) {
+    if (config.database_auth == true && !forStatsGetting) {
         val user = context.principal<UserIdPwPrincipal>()!!.name
         val pass = context.principal<UserIdPwPrincipal>()!!.pw
         try {
@@ -423,7 +443,7 @@ fun newEMDConnection(config: ConfigFile, context: ApplicationCall): Connection? 
             return null
         }
     } else {
-        // LDAP or no auth at all
+        // LDAP or no auth at all, or we are collecting stats for homepage
         return DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
     }
 }
