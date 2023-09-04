@@ -62,7 +62,7 @@ val chartComponent = fc<ChartComponentProps> { props ->
                         "credits" to json(
                             "enabled" to false
                         ),
-                        "tooltip" to js("{style: { color: '#1b1818' }, backgroundColor: '#ffffff', borderRadius: 5, borderWidth: 3, headerFormat: '<small></small>', pointFormat: '{point.name}:  {point.y} MEvents' }"),
+                        "tooltip" to js("{style: { color: '#1b1818' }, backgroundColor: '#ffffff', borderRadius: 5, borderWidth: 3, headerFormat: '<small></small>', pointFormat: '{point.name}: {point.y} events' }"), // MEvents
                         "plotOptions" to json(
                             "pie" to json(
                                 "allowPointSelect" to true,
@@ -74,7 +74,7 @@ val chartComponent = fc<ChartComponentProps> { props ->
                                     "enabled" to true,
                                     "distance" to 15,
                                     "style" to js("{ fontSize: 'inherit', fontWeight: 'normal', fontFamily: 'Lato, sans-serif', lineHeight: '18px' }"),
-                                    "format" to "{point.name}: <i>{point.y} MEvents</i>"
+                                    "format" to "{point.name}: <i>{point.y} events</i>" // MEvents
                                 )
                             )
                         ),

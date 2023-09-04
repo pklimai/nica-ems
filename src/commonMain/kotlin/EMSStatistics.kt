@@ -14,7 +14,7 @@ class EMSStatistics(
 @Serializable
 class PeriodStats(
     val periodNumber: PeriodNumber,
-    val periodRecords: Long? = null,  // ok to be optional?
+    val periodRecords: Long? = null,  // optional, currently not actually shown in graphs
     val softwareStats: List<SWstats>? = null
 )
 
