@@ -100,6 +100,7 @@ paths:
   /storage:
     get:
       summary: Returns a list of storages.
+      operationId: storageGet
       # description: Optional extended description in CommonMark or HTML.
       security:
         - basicAuth: []
@@ -115,6 +116,7 @@ paths:
 
     post:
       summary: Create new storage record
+      operationId: storagePost
       security:
         - basicAuth: []
       requestBody:
@@ -132,6 +134,7 @@ paths:
     get:
       summary: Returns a list of software versions.
       # description: Optional extended description in CommonMark or HTML.
+      operationId: softwareGet
       security:
         - basicAuth: []
       responses:
@@ -146,6 +149,7 @@ paths:
 
     post:
       summary: Create new software record
+      operationId: softwarePost
       security:
         - basicAuth: []
       requestBody:
@@ -162,6 +166,7 @@ paths:
   /event:
     get:
       summary: Returns event metadata
+      operationId: eventGet
       security:
         - basicAuth: [ ]
       parameters:
@@ -203,6 +208,7 @@ paths:
 
     post:
       summary: Add event metadata to catalogue
+      operationId: eventPost
       security:
         - basicAuth: [ ]
       requestBody:
