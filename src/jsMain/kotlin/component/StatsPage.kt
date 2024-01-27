@@ -31,11 +31,10 @@ val statsPage = fc<StatsPageProps> { props ->
             console.log("In useEffect...")
             setPeriodOpened(false)
             setSoftOpened(false)
-            val newPeriod = stats.periodStats.last()?.periodNumber.toString()
+            val newPeriod = stats.periodStats.lastOrNull()?.periodNumber.toString()
             console.log("New period: $newPeriod")
             setCurrentPeriod(newPeriod)
-            val newSW =
-                stats.periodStats.last()?.softwareStats?.last()?.swVer.toString()
+            val newSW = stats.periodStats.lastOrNull()?.softwareStats?.last()?.swVer.toString()
             console.log("New sw: $newSW")
             setCurrentSW(newSW)
         }
@@ -56,7 +55,7 @@ val statsPage = fc<StatsPageProps> { props ->
                 div("home__page__stats__block__column") {
                     div("home__page__stats__block__column__stats") {
                         div {
-                            +(stats?.totalRecords?.toString() ?: "<total>")
+                            +(stats?.totalRecords?.toString() ?: "(no stats)")
                         }
                         div {
                             +"Total"
@@ -78,7 +77,7 @@ val statsPage = fc<StatsPageProps> { props ->
                         +"Period Number —"
                     }
                     div("per_number") {
-                        +currentPeriod.toString()
+                        + (currentPeriod ?: "(no stats)")
                     }
                 }
             }
@@ -130,7 +129,7 @@ val statsPage = fc<StatsPageProps> { props ->
                         +"Software Version — "
                     }
                     div("per_number") {
-                        +currentSW.toString()
+                        + (currentSW ?: "(no stats)")
                     }
                 }
             }
