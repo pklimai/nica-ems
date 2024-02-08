@@ -1,17 +1,17 @@
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
-val kotlinVersion = "1.8.20"
-val serializationVersion = "1.5.0"
-val ktorVersion = "2.2.4"
-val logbackVersion = "1.4.6"
-val kotlinxHtmlVersion = "0.8.0"
+val kotlinVersion = "1.9.22"
+val serializationVersion = "1.6.2"
+val ktorVersion = "2.3.8"
+val logbackVersion = "1.4.14"
+val kotlinxHtmlVersion = "0.11.0"
 val reactVersion = "18.2.0-pre.537"
 val muiVersion = "5.10.0-pre.537"
 
 plugins {
-    kotlin("multiplatform") version "1.8.20"
+    kotlin("multiplatform") version "1.9.22"
     application //to run JVM part
-    kotlin("plugin.serialization") version "1.8.20"
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 group = "ru.mipt.npm.nica.ems"
@@ -33,7 +33,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
+                runtimeOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
             }
         }
         val commonTest by getting {
