@@ -144,10 +144,11 @@ sh gradlew run
 
 ##### Dockerfile with build
 
-To build inside Docker and run, use (note: this Dockerfile uses 2-stage build to optimize image size):
+To build inside Docker and run, use e.g. (note: Dockerfile.with-build uses 2-stage build to optimize 
+resulting container image size):
 ```
-docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
-docker run --rm -it -v ./ems-test-config.yaml:/root/event-config.yaml -p 80:8080 nica-ems:buildindocker
+sudo docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
+sudo docker run --rm -it -v $(pwd)/ems-test-config.yaml:/root/event-config.yaml -p 80:8080 nica-ems:buildindocker
 ```
 
 ##### Testing / debugging

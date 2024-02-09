@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 
 val kotlinVersion = "1.9.22"
-val serializationVersion = "1.5.0"
-val ktorVersion = "2.2.4"
-val logbackVersion = "1.4.6"
-val kotlinxHtmlVersion = "0.8.0"
+val serializationVersion = "1.6.2"
+val ktorVersion = "2.2.4"  // TODO upgrade
+val logbackVersion = "1.4.14"
+val kotlinxHtmlVersion = "0.8.0" // TODO upgrade
 val reactVersion = "18.2.0-pre.537"
 val muiVersion = "5.10.0-pre.537"
 

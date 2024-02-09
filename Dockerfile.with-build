@@ -1,4 +1,4 @@
-FROM gradle:jdk15 as builder
+FROM gradle:7.6.4-jdk17 as builder
 COPY src ./src
 COPY build.gradle.kts ./build.gradle.kts
 COPY settings.gradle.kts ./settings.gradle.kts
