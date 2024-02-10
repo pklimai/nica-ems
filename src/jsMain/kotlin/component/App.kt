@@ -65,10 +65,10 @@ val app = fc<Props> {
                             div("but_login") {
                                 Button {
                                     attrs {
-                                        +"Sign In"
                                         variant = ButtonVariant.contained
                                         size = Size.small
                                     }
+                                    +"Sign In"
                                 }
                                 attrs {
                                     onClickFunction = {

@@ -5,8 +5,8 @@ val serializationVersion = "1.6.2"
 val ktorVersion = "2.3.8"
 val logbackVersion = "1.4.14"
 val kotlinxHtmlVersion = "0.9.1" // TODO upgrade - works with 0.9.1 and fails with 0.10.1, 0.11.0
-val reactVersion = "18.2.0-pre.537"
-val muiVersion = "5.10.0-pre.537"
+val reactVersion = "18.2.0-pre.695"  // https://mvnrepository.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-react
+val muiVersion = "5.15.7-pre.695"    // https://mvnrepository.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-mui-material
 
 plugins {
     kotlin("multiplatform") version "1.9.22"
@@ -80,9 +80,10 @@ kotlin {
                 // implementation("org.jetbrains.kotlin-wrappers:kotlin-react-css:18.0.0-pre.331-kotlin-1.6.20")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-legacy:$reactVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom-legacy:$reactVersion")
-                implementation("org.jetbrains.kotlin-wrappers:kotlin-mui:$muiVersion")
+                implementation("org.jetbrains.kotlin-wrappers:kotlin-mui-material:$muiVersion")
                 // implementation("org.jetbrains.kotlin-wrappers:kotlin-react-router-dom:6.3.0-pre.345")
                 implementation("org.jetbrains.kotlinx:kotlinx-html:$kotlinxHtmlVersion")
+                //implementation("org.jetbrains.kotlin-wrappers:kotlin-css:1.0.0-pre.695")
 
                 implementation(npm("@emotion/react", "11.7.1"))
                 implementation(npm("@emotion/styled", "11.6.0"))

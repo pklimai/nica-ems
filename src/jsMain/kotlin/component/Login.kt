@@ -104,7 +104,6 @@ val login = fc<LoginPageProps> { props ->
                         }
                         Button {
                             attrs {
-                                +"Sign In"
                                 variant = ButtonVariant.contained
                                 size = Size.small
                                 onClick = {
@@ -123,6 +122,7 @@ val login = fc<LoginPageProps> { props ->
                                     }
                                 }
                             }
+                            +"Sign In"
                         }
                         div("login_page__card__left__password") {
                             +"Forgot your password?"
@@ -148,13 +148,13 @@ val login = fc<LoginPageProps> { props ->
                                 div {
                                     Button {
                                         attrs {
-                                            +"Reset"
                                             variant = ButtonVariant.contained
                                             size = Size.small
                                             onClick = {
                                                 setReset(false)
                                             }
                                         }
+                                        +"Reset"
                                     }
                                 }
                             }
@@ -220,10 +220,10 @@ val login = fc<LoginPageProps> { props ->
                         }
                         Button {
                             attrs {
-                                +"Create Account"
                                 variant = ButtonVariant.contained
                                 size = Size.small
                             }
+                            +"Create Account"
                         }
                     }
                 }
@@ -244,26 +244,26 @@ val login = fc<LoginPageProps> { props ->
                             div("div__width") {
                                 Button {
                                     attrs {
-                                        +"Back to Sign In"
                                         variant = ButtonVariant.contained
                                         size = Size.small
                                         onClick = {
                                             setAdd(false)
                                         }
                                     }
+                                    +"Back to Sign In"
                                 }
                             }
                         } else {
                             div("div__width") {
                                 Button {
                                     attrs {
-                                        +"Create Account"
                                         variant = ButtonVariant.contained
                                         size = Size.small
                                         onClick = {
                                             setAdd(true)
                                         }
                                     }
+                                    +"Create Account"
                                 }
                             }
                         }

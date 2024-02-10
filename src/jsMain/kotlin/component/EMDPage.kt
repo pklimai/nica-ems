@@ -1,20 +1,17 @@
 package ru.mipt.npm.nica.ems
 
-import csstype.px
+import js.intl.Sensitivity
 import kotlinx.coroutines.launch
 import kotlinx.html.DIV
-import js.core.jso   // Note package changes! kotlinext.js.jso -> kotlinx.js.jso -> ...
 import mui.material.*
 import org.w3c.dom.HTMLInputElement
-import react.Props
-import react.ReactNode
-import react.dom.RDOMBuilder
-import react.dom.div
-import react.dom.onChange
-import react.fc
-import react.useState
+import org.w3c.dom.Text
+import react.*
 import ru.mipt.npm.nica.ems.utility.EMSBadRequestException
 import ru.mipt.npm.nica.ems.utility.EMSUnauthException
+// import js.core.jso  // Note package changes!  kotlinext.js.jso -> kotlinx.js.jso -> js.core.jso -> js.objects.jso
+// import kotlinx.css.px  // was csstype.px
+import react.dom.*
 
 
 external interface EMDPageProps : Props {
@@ -70,10 +67,10 @@ val emdPage = fc<EMDPageProps> { props ->
                         InputLabel {
                             attrs {
                                 id = paramName
-                                sx = jso {
-                                    // Fixes default location - is there a better way?
-                                    marginTop = (-5).px
-                                }
+//                                sx = jso {
+//                                    // Fixes default location - is there a better way?
+//                                    marginTop = (-5).px
+//                                }
                             }
                             +labelString
                         }
@@ -169,7 +166,6 @@ val emdPage = fc<EMDPageProps> { props ->
                 div("button-container") {
                     Button {
                         attrs {
-                            +"Filter"
                             variant = ButtonVariant.contained
                             size = Size.small
                             onClick = {
@@ -216,11 +212,11 @@ val emdPage = fc<EMDPageProps> { props ->
                                 }
                             }
                         }
+                        +"Filter"
                     }
 
                     Button {
                         attrs {
-                            +"Reset"
                             variant = ButtonVariant.contained
                             size = Size.small
                             onClick = {
@@ -228,6 +224,7 @@ val emdPage = fc<EMDPageProps> { props ->
                                 props.setEMDdata(null)
                             }
                         }
+                        +"Reset"
                     }
                 }
             }

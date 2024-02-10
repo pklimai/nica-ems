@@ -62,7 +62,6 @@ val dictionary = fc<DictionaryPageProps> { props ->
                 }
                 Button {
                     attrs {
-                        +"Add"
                         variant = ButtonVariant.contained
                         size = Size.small
                         onClick = {
@@ -84,6 +83,7 @@ val dictionary = fc<DictionaryPageProps> { props ->
                             setErrorMessage(null)
                         }
                     }
+                    +"Add"
                 }
             }
             div("dictionary__top__card") {
@@ -104,7 +104,6 @@ val dictionary = fc<DictionaryPageProps> { props ->
                 }
                 Button {
                     attrs {
-                        +"Add"
                         variant = ButtonVariant.contained
                         size = Size.small
                         onClick = {
@@ -132,6 +131,7 @@ val dictionary = fc<DictionaryPageProps> { props ->
                             setErrorMessage(null)
                         }
                     }
+                    +"Add"
                 }
             }
         }
