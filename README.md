@@ -22,7 +22,8 @@ Each page has its own URL for Web and API endpoint.
 Supported parameter types are currently: `int`, `float`, `string`, `bool`.
 
 Ranges for `int` and `float` types are supported (both in Web interface and API) using `:` separator 
-(e.g. `track-number=10:15`). The range is inclusive (that is, start and end of an interval are included). 
+(for example `track-number=10:15`). Such range is inclusive (that is, start and end of an interval are included). 
+Intervals unbound from one side are also supported (for example, `track-number=10:` or `track-number=:15`).
 
 ## API
 
