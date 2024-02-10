@@ -101,7 +101,7 @@ application {
 }
 
 // include JS artifacts in any JAR we generate
-tasks.getByName<Jar>("jvmJar") {
+tasks.named<Jar>("jvmJar").configure {
     val taskName = if (project.hasProperty("isProduction")
         || project.gradle.startParameter.taskNames.contains("installDist")
     ) {
@@ -109,9 +109,9 @@ tasks.getByName<Jar>("jvmJar") {
     } else {
         "jsBrowserDevelopmentWebpack"
     }
-    val webpackTask = tasks.getByName<KotlinWebpack>(taskName)
+    val webpackTask = tasks.named<KotlinWebpack>(taskName)
     dependsOn(webpackTask) // make sure JS gets compiled first
-    from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) // bring output file along into the JAR
+    from(webpackTask.map { it.mainOutputFile.get().asFile }) // bring output file along into the JAR
 }
 
 tasks {
