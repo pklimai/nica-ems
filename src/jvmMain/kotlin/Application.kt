@@ -83,10 +83,11 @@ fun Application.main() {
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
-        staticFiles("static", File("src/jvmMain/resources/static/css"))  // in dev
-        staticFiles("static", File("/app/resources/main/static/css"))    // in Docker
-        staticResources("/", "")
 
+        // Files from resources/static
+        staticResources("static", "static")
+
+        // OpenAPI (aka Swagger) page
         openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
 
         // React Web UI available on root URL
@@ -97,7 +98,7 @@ fun Application.main() {
             )
         }
 
-        // For healthcheck
+        // For health check
         get("/health") {
             call.respond(HttpStatusCode.OK)
         }
@@ -399,17 +400,16 @@ fun Application.main() {
                         }
                     }
 
+                    // Synchronous - build a file with some ROOT macro and return it
                     get("/eventFile") {
-                        // Synchronous
-                        // TODO Apply all filtering, build ROOT file, return it...
+                        // TODO Apply all filtering, build ROOT file
                         println("Serving dummy eventFile...")
-                        val f = File("src/jvmMain/resources/downloadFile.bin")
-                        call.respondFile(f)
+                        val f = Thread.currentThread().getContextClassLoader().getResource("static/downloadFile.bin")!!.file
+                        call.respondFile(File(f))
                     }
 
+                    // Asynchronous - to return reference to the file that WILL be created in some time
                     get("/eventFileRef") {
-                        // Asynchronous
-                        // Maybe rename to /eventFileSync, /eventFileAsync ?
                         TODO()
                     }
 
