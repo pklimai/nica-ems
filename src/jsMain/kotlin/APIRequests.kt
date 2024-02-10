@@ -38,7 +38,7 @@ suspend fun getEMD(api_url: String, config: ConfigFile?, username: String, passw
                         BasicAuthCredentials(username = username, password = password)
                     }
                     // enable sending credentials in the initial request without waiting for a 401 (Unauthorized) response:
-                    sendWithoutRequest { request -> true }
+                    sendWithoutRequest { /* request */ _ -> true }
                 }
             }
         }
@@ -70,7 +70,7 @@ fun jsonClientWithOptionalAuth(config: ConfigFile?, username: String, password: 
                     credentials {
                         BasicAuthCredentials(username = username, password = password)
                     }
-                    sendWithoutRequest { request -> true }
+                    sendWithoutRequest { /* request */ _ -> true }
                 }
             }
         }
