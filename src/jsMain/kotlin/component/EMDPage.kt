@@ -67,10 +67,9 @@ val emdPage = fc<EMDPageProps> { props ->
                         InputLabel {
                             attrs {
                                 id = paramName
-//                                sx = jso {
-//                                    // Fixes default location - is there a better way?
-//                                    marginTop = (-5).px
-//                                }
+                                val sxObject: dynamic = object {}
+                                sxObject["marginTop"] = "-5px"
+                                sx = sxObject  // Fixes default location - is there a better way?
                             }
                             +labelString
                         }
