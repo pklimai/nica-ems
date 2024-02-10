@@ -11,23 +11,19 @@ import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.openapi.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.ldap.*
-import io.ktor.server.http.*
 import io.ktor.http.*
 import io.ktor.server.http.content.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.Json
 import org.postgresql.util.PSQLException
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
 
-
-// val DRIVER = "org.postgresql.Driver"
-val DOCKER_CONFIG_PATH = "/root/event-config.yaml"
-val TEST_CONFIG_PATH = "src/jvmMain/resources/event-config-example.yaml"
+const val DOCKER_CONFIG_PATH = "/root/event-config.yaml"
+const val TEST_CONFIG_PATH = "src/jvmMain/resources/event-config-example.yaml"
 
 fun Application.main() {
 
@@ -87,11 +83,9 @@ fun Application.main() {
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
-        static("static") {
-            // http://127.0.0.1:8080/static/style.css
-            files("src/jvmMain/resources/static/css")   // in dev
-            files("/app/resources/main/static/css")  // in Docker
-        }
+        staticFiles("static", File("src/jvmMain/resources/static/css"))  // in dev
+        staticFiles("static", File("/app/resources/main/static/css"))    // in Docker
+        staticResources("/", "")
 
         openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
 
@@ -101,10 +95,6 @@ fun Application.main() {
                 this::class.java.classLoader.getResource("index.html")!!.readText(),
                 ContentType.Text.Html
             )
-        }
-
-        static("/") {
-            resources("")
         }
 
         // For healthcheck
@@ -288,7 +278,7 @@ fun Application.main() {
                         if (connEMD == null) {
                             call.respond(HttpStatusCode.Unauthorized)
                         } else {
-                            val softwareMap = getSoftwareMap(connEMD)
+                            // val softwareMap = getSoftwareMap(connEMD)  // not used for now
                             val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
 
                             val lstEvents = ArrayList<EventRepr>()
