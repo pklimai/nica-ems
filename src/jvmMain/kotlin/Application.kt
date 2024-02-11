@@ -22,8 +22,7 @@ import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
 
-const val DOCKER_CONFIG_PATH = "/root/event-config.yaml"
-const val TEST_CONFIG_PATH = "./event-config-example.yaml"
+const val CONFIG_PATH = "./ems.config.yaml"
 
 fun Application.main() {
 
@@ -32,13 +31,13 @@ fun Application.main() {
 
     var config: ConfigFile
     try {
-        // Config provided as Docker volume
-        config = mapper.readValue(File(DOCKER_CONFIG_PATH), ConfigFile::class.java)
-        println("Read config from $DOCKER_CONFIG_PATH")
+        config = mapper.readValue(File(CONFIG_PATH), ConfigFile::class.java)
+        println("Done reading config from $CONFIG_PATH")
     } catch (e: java.lang.Exception) {  // TODO avoid general exception check
         // Local test config
-        config = mapper.readValue(File(TEST_CONFIG_PATH), ConfigFile::class.java)
-        println("Read config file from $TEST_CONFIG_PATH")
+        println("Could not read config file from $CONFIG_PATH. \n" +
+                "Make sure the file is there and has proper format (if in Docker, mount as volume)")
+        throw e
     }
     install(DefaultHeaders)
     install(CallLogging)
