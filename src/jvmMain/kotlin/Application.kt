@@ -26,19 +26,18 @@ const val CONFIG_PATH = "./ems.config.yaml"
 
 fun Application.main() {
 
-    val mapper = ObjectMapper(YAMLFactory())
-    mapper.findAndRegisterModules()
+    val mapper = ObjectMapper(YAMLFactory()).also { it.findAndRegisterModules() }
 
     var config: ConfigFile
     try {
         config = mapper.readValue(File(CONFIG_PATH), ConfigFile::class.java)
-        println("Done reading config from $CONFIG_PATH")
-    } catch (e: java.lang.Exception) {  // TODO avoid general exception check
-        // Local test config
+    } catch (e: java.lang.Exception) {
         println("Could not read config file from $CONFIG_PATH. \n" +
                 "Make sure the file is there and has proper format (if in Docker, mount as volume)")
         throw e
     }
+    println("Done reading config from $CONFIG_PATH")
+
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
@@ -80,7 +79,7 @@ fun Application.main() {
 
     // TODO: Check if tables in Event Catalogue already exist, if not, create them in the database?
 
-    println("Working Directory = ${System.getProperty("user.dir")}")
+    // println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
 
         // Allows all resources to be statically available (including generated nica-ems.js file)

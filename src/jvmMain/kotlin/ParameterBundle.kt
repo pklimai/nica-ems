@@ -51,7 +51,7 @@ class ParameterBundle(
                 || beam_particle?.validParameter == false || target_particle?.validParameter == false ||
                 energy?.validParameter == false || limit?.validParameter == false ||
                 offset?.validParameter == false) return true
-        parametersSupplied.forEach { (name, value) ->
+        parametersSupplied.forEach { (_ /* name */, value) ->
             if (value.validParameter == false) return true
         }
         return false
