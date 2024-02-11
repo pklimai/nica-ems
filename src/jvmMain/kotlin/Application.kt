@@ -23,7 +23,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 
 const val DOCKER_CONFIG_PATH = "/root/event-config.yaml"
-const val TEST_CONFIG_PATH = "src/jvmMain/resources/event-config-example.yaml"
+const val TEST_CONFIG_PATH = "./event-config-example.yaml"
 
 fun Application.main() {
 
@@ -81,11 +81,11 @@ fun Application.main() {
 
     // TODO: Check if tables in Event Catalogue already exist, if not, create them in the database?
 
-    // println("Working Directory = ${System.getProperty("user.dir")}")
+    println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
 
-        // Files from resources/static
-        staticResources("static", "static")
+        // Allows all resources to be statically available (including generated nica-ems.js file)
+        staticResources("", "")
 
         // OpenAPI (aka Swagger) page
         openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
