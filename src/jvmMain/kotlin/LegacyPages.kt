@@ -13,7 +13,7 @@ fun Route.legacyHomePage(config: ConfigFile) = route("/legacy") {
         call.respondHtml {
             head {
                 title { +config.title }
-                styleLink("/static/style.css")
+                styleLink("style/legacy.css")
             }
             body {
                 h2 { +config.title }

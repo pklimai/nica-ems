@@ -9,15 +9,13 @@ database (containing experimental run metadata) and FreeIPA authorization is imp
 
 ## Config file
 
-The system is rather flexible and configured using YAML file. The exact set of metadata that is
-stored per experimental event is also configurable. See `resources/event-config-example.yaml` file 
-for example EMD system configuration.
+The system is rather flexible and is configurable via YAML file. The exact set of metadata that is
+stored per experimental event is also configurable. The configuration must be passed via file named
+`./ems.config.yaml`. See `./ems.config.example.yaml` file for example EMS system configuration.
 
-In the config file, you must provide credentials for EMD database and (optionally) Condition database, 
+In the config file, you must provide credentials for EMS database and (optionally) Condition database, 
 LDAP server parameters (also optional, use if you want to authenticate user queries) and specify URLs 
-and parameters stored in EMD catalogue.
-You can have more than one page corresponding to different metadata tables in the same EMD database.
-Each page has its own URL for Web and API endpoint.
+and parameters stored in EMS catalogue.
 
 Supported parameter types are currently: `int`, `float`, `string`, `bool`.
 
@@ -59,7 +57,7 @@ Message body must contain the JSON list of events using format as given below.
 
 Message body must contain the JSON list of events (only `reference:` part required).
 
-#### TODO: Count number of entries in EMD and return just this value
+#### TODO: Count number of entries in EMS and return just this value
 `GET /count[?parameter1=value1[&parameter2=value2[...]]]`
 
 #### TODO: Get event records as a ROOT file (synchronous)
@@ -116,7 +114,7 @@ curl -X POST -u USER:PASS -H "Content-Type: application/json" http://127.0.0.1/e
 '
 ```
 
-Note: `software_version` and `storage_name` must exist in the corresponding EMD database tables.
+Note: `software_version` and `storage_name` must exist in the corresponding EMS database tables.
 The `file_path` will be created in the `file_` table, if not there yet.
 
 
@@ -133,7 +131,7 @@ sh gradlew installDist
 docker build -t nica-ems:current .
 # sudo docker stop nica-ems
 # sudo docker rm nica-ems
-sudo docker run -d --rm --name nica-ems -p 80:8080 -v ~/nica-ems-config.yaml:/root/event-config.yaml nica-ems:current
+sudo docker run -d --rm --name nica-ems -p 80:8080 -v ~/ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
 ```
 
 ### Run on Alma Linux
@@ -151,7 +149,7 @@ To build inside Docker and run, use e.g. (note: Dockerfile.with-build uses 2-sta
 resulting container image size):
 ```
 sudo docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
-sudo docker run --rm -it -v ~/ems-test-config.yaml:/root/event-config.yaml -p 80:8080 nica-ems:buildindocker
+sudo docker run --rm -it -v ~/ems.config.yaml:/app/bin/ems.config.yaml -p 80:8080 nica-ems:buildindocker
 ```
 
 ### Testing / debugging
@@ -167,7 +165,7 @@ docker logs nica-ems -f
 
 To run container in debug mode, use something like
 ```
-sudo docker run -it --entrypoint=/bin/bash --name nica-ems --rm -p 80:8080 -v ~/nica-ems-config.yaml:/root/event-config.yaml nica-ems:current
+sudo docker run -it --entrypoint=/bin/bash --name nica-ems --rm -p 80:8080 -v ~/ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
 ```
 
 

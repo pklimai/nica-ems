@@ -11,39 +11,33 @@ import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.openapi.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.ldap.*
-import io.ktor.server.http.*
 import io.ktor.http.*
 import io.ktor.server.http.content.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.json.Json
 import org.postgresql.util.PSQLException
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
 
-
-// val DRIVER = "org.postgresql.Driver"
-val DOCKER_CONFIG_PATH = "/root/event-config.yaml"
-val TEST_CONFIG_PATH = "src/jvmMain/resources/event-config-example.yaml"
+const val CONFIG_PATH = "./ems.config.yaml"
 
 fun Application.main() {
 
-    val mapper = ObjectMapper(YAMLFactory())
-    mapper.findAndRegisterModules()
+    val mapper = ObjectMapper(YAMLFactory()).also { it.findAndRegisterModules() }
 
     var config: ConfigFile
     try {
-        // Config provided as Docker volume
-        config = mapper.readValue(File(DOCKER_CONFIG_PATH), ConfigFile::class.java)
-        println("Read config from $DOCKER_CONFIG_PATH")
-    } catch (e: java.lang.Exception) {  // TODO avoid general exception check
-        // Local test config
-        config = mapper.readValue(File(TEST_CONFIG_PATH), ConfigFile::class.java)
-        println("Read config file from $TEST_CONFIG_PATH")
+        config = mapper.readValue(File(CONFIG_PATH), ConfigFile::class.java)
+    } catch (e: java.lang.Exception) {
+        println("Could not read config file from $CONFIG_PATH. \n" +
+                "Make sure the file is there and has proper format (if in Docker, mount as volume)")
+        throw e
     }
+    println("Done reading config from $CONFIG_PATH")
+
     install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
@@ -87,12 +81,11 @@ fun Application.main() {
 
     // println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
-        static("static") {
-            // http://127.0.0.1:8080/static/style.css
-            files("src/jvmMain/resources/static/css")   // in dev
-            files("/app/resources/main/static/css")  // in Docker
-        }
 
+        // Allows all resources to be statically available (including generated nica-ems.js file)
+        staticResources("", "")
+
+        // OpenAPI (aka Swagger) page
         openAPI(path = "openapi", swaggerFile = "openapi/documentation.yaml")
 
         // React Web UI available on root URL
@@ -103,11 +96,7 @@ fun Application.main() {
             )
         }
 
-        static("/") {
-            resources("")
-        }
-
-        // For healthcheck
+        // For health check
         get("/health") {
             call.respond(HttpStatusCode.OK)
         }
@@ -288,7 +277,7 @@ fun Application.main() {
                         if (connEMD == null) {
                             call.respond(HttpStatusCode.Unauthorized)
                         } else {
-                            val softwareMap = getSoftwareMap(connEMD)
+                            // val softwareMap = getSoftwareMap(connEMD)  // not used for now
                             val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
 
                             val lstEvents = ArrayList<EventRepr>()
@@ -409,17 +398,16 @@ fun Application.main() {
                         }
                     }
 
+                    // Synchronous - build a file with some ROOT macro and return it
                     get("/eventFile") {
-                        // Synchronous
-                        // TODO Apply all filtering, build ROOT file, return it...
+                        // TODO Apply all filtering, build ROOT file
                         println("Serving dummy eventFile...")
-                        val f = File("src/jvmMain/resources/downloadFile.bin")
-                        call.respondFile(f)
+                        val f = Thread.currentThread().getContextClassLoader().getResource("static/downloadFile.bin")!!.file
+                        call.respondFile(File(f))
                     }
 
+                    // Asynchronous - to return reference to the file that WILL be created in some time
                     get("/eventFileRef") {
-                        // Asynchronous
-                        // Maybe rename to /eventFileSync, /eventFileAsync ?
                         TODO()
                     }
 
