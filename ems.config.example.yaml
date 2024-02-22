@@ -14,14 +14,11 @@ condition_db:
 
 database_auth: True
 
-#ldap_auth:
-#  ldap_server: 127.0.0.1
-#  ldap_port: 3890
-#  user_dn_format: "uid=%s,cn=users,cn=accounts,dc=jinr,dc=ru"
-#  ldap_username: shift
-#  ldap_password: shift
-#  writer_group_dn: "cn=bmneventwriter,cn=groups,cn=accounts,dc=jinr,dc=ru"
-#  admin_group_dn: "cn=bmneventadmin,cn=groups,cn=accounts,dc=jinr,dc=ru"
+#keycloak_auth:
+#  server_url: "https://bmn-user.jinr.ru"
+#  realm: "BMN"
+#  client_id: "emd_api"
+#  client_secret: "*****"
 
 title: BM@N Event Metadata System
 

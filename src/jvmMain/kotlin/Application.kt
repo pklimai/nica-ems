@@ -2,25 +2,36 @@ package ru.mipt.npm.nica.ems
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.unboundid.ldap.sdk.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.plugins.callloging.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.compression.*
-import io.ktor.server.plugins.openapi.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.ldap.*
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.server.http.content.*
 import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.http.content.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.compression.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.server.plugins.openapi.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.*
+import jakarta.ws.rs.NotAuthorizedException
+import kotlinx.coroutines.runBlocking
+import org.keycloak.Config
+import org.keycloak.representations.idm.authorization.AuthorizationRequest
 import org.postgresql.util.PSQLException
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
+import org.keycloak.admin.client.Keycloak
+import org.keycloak.representations.AccessTokenResponse
+
 
 const val CONFIG_PATH = "./ems.config.yaml"
 
@@ -28,15 +39,60 @@ fun Application.main() {
 
     val mapper = ObjectMapper(YAMLFactory()).also { it.findAndRegisterModules() }
 
-    var config: ConfigFile
+    val config: ConfigFile
     try {
         config = mapper.readValue(File(CONFIG_PATH), ConfigFile::class.java)
     } catch (e: java.lang.Exception) {
-        println("Could not read config file from $CONFIG_PATH. \n" +
-                "Make sure the file is there and has proper format (if in Docker, mount as volume)")
+        println(
+            "Could not read config file from $CONFIG_PATH. \n" +
+                    "Make sure the file is there and has proper format (if in Docker, mount as volume)"
+        )
         throw e
     }
     println("Done reading config from $CONFIG_PATH")
+
+/*
+    val keycloak = Keycloak.getInstance(
+        config.keycloak_auth?.server_url,
+        config.keycloak_auth?.realm,
+        "pklimai",
+        "******",
+        config.keycloak_auth?.client_id,
+        config.keycloak_auth?.client_secret,
+        null,
+        null,
+        false,
+        null,
+        "openid"
+    )
+
+    var token: AccessTokenResponse? = null
+    try {
+        token = keycloak.tokenManager().grantToken()
+        println(token.token)
+        println(token.scope)
+
+        //println(keycloak.realm(config.keycloak_auth?.realm).users().get("pklimai").groups())
+        //keycloak.tokenManager().
+    } catch (e: NotAuthorizedException) {
+        println("No auth!")
+    }
+    val url = "${config.keycloak_auth?.server_url}/realms/${config.keycloak_auth?.realm}/protocol/openid-connect/userinfo"
+    val client = HttpClient(CIO) {
+        install(Auth) {
+            bearer {
+                loadTokens {
+                    BearerTokens(token!!.token, token!!.refreshToken)
+                }
+            }
+        }
+    }
+    runBlocking {
+        val response = client.get(url)
+        println(response)
+    }
+
+*/
 
     install(DefaultHeaders)
     install(CallLogging)
@@ -45,18 +101,34 @@ fun Application.main() {
     }
     install(Compression)
 
-    if (config.ldap_auth != null) {
+    if (config.keycloak_auth != null) {
         if (config.database_auth == true) {
             error("If database_auth is set, no LDAP parameters are expected!")
         }
         install(Authentication) {
-            basic("auth-ldap") {
+            basic("auth-keycloak") {
+                skipWhen { it ->
+                    // If there is Authorization: Bearer header, we must check token via KeyCloak
+                    println(it.request.headers["Authorization"])
+                    it.request.headers["Authorization"]?.startsWith("Bearer") == true
+                }
                 validate { credentials ->
-                    ldapAuthenticate(
-                        credentials,
-                        "ldap://${config.ldap_auth!!.ldap_server}:${config.ldap_auth!!.ldap_port}",
-                        config.ldap_auth!!.user_dn_format
-                    )
+//                    this.request.headers.filter{s, _ -> s == "Authorization"}.forEach { s, ls ->
+//                        print(s)
+//                        print(" --- ")
+//                        ls.forEach() {
+//                            print(it)
+//                            print(" -- ")
+//                        }
+//                        println()
+//                    }
+                    println("Obtained credentials: ${credentials.name} ${credentials.password}")
+                    // validate must return Principal in a case of successful authentication or null if authentication fails.
+                    // so we must obtain Token via KC and also save user roles here
+
+
+                    UserIdPwPrincipal(credentials.name, credentials.password)
+
                 }
             }
         }
@@ -126,8 +198,8 @@ fun Application.main() {
         }
 
         fun Route.optionallyAuthenticate(build: Route.() -> Unit): Route {
-            if (config.ldap_auth != null) {
-                return authenticate("auth-ldap", build = build)
+            if (config.keycloak_auth != null) {
+                return authenticate("auth-keycloak", build = build)
             } else if (config.database_auth == true) {
                 return authenticate("auth-via-database", build = build)
             } else {
@@ -168,36 +240,36 @@ fun Application.main() {
             post(SOFTWARE_URL) {
                 // e.g. POST { "software_id": 100, "software_version": "22.1" }
                 // Note: software_id is assigned automatically by the database, regardless of what is passed in JSON
-                val roles = getUserRoles(config, call)
-                if (!(roles.isWriter or roles.isAdmin)) {
+//                val roles = getUserRoles(config, call)
+//                if (!(roles.isWriter or roles.isAdmin)) {
+//                    call.respond(HttpStatusCode.Unauthorized)
+//                } else {
+                val sw = call.receive<SoftwareVersion>()
+                val connEMD = newEMDConnection(config, this.context)
+                if (connEMD == null) {
                     call.respond(HttpStatusCode.Unauthorized)
                 } else {
-                    val sw = call.receive<SoftwareVersion>()
-                    val connEMD = newEMDConnection(config, this.context)
-                    if (connEMD == null) {
-                        call.respond(HttpStatusCode.Unauthorized)
-                    } else {
-                        val query = """
+                    val query = """
                         INSERT INTO software_ (software_version)
                         VALUES ('${sw.software_version}')
                     """.trimIndent()
-                        // print(query)
-                        try {
-                            connEMD.createStatement().executeUpdate(query)
-                            call.response.status(HttpStatusCode.OK)
-                            call.respond("SW record was created")
-                        } catch (ex: PSQLException) {
-                            if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
-                                call.respond(HttpStatusCode.Unauthorized)
-                            } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
-                                call.respond(HttpStatusCode.Conflict)
-                            } else {
-                                call.respond(HttpStatusCode.InternalServerError)
-                            }
-                        } finally {
-                            connEMD.close()
+                    // print(query)
+                    try {
+                        connEMD.createStatement().executeUpdate(query)
+                        call.response.status(HttpStatusCode.OK)
+                        call.respond("SW record was created")
+                    } catch (ex: PSQLException) {
+                        if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
+                            call.respond(HttpStatusCode.Unauthorized)
+                        } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
+                            call.respond(HttpStatusCode.Conflict)
+                        } else {
+                            call.respond(HttpStatusCode.InternalServerError)
                         }
+                    } finally {
+                        connEMD.close()
                     }
+                    // }
                 }
             }
 
@@ -225,36 +297,37 @@ fun Application.main() {
 
             post(STORAGE_URL) {
                 // Note: storage_id is assigned automatically by the database, regardless of what is passed in JSON
-                val roles = getUserRoles(config, call)
-                if (!(roles.isWriter or roles.isAdmin)) {
+//                val roles = getUserRoles(config, call)
+//                if (!(roles.isWriter or roles.isAdmin)) {
+//                    call.respond(HttpStatusCode.Unauthorized)
+//                } else
+//                {
+                val storage = call.receive<Storage>()
+                val connEMD = newEMDConnection(config, this.context)
+                if (connEMD == null) {
                     call.respond(HttpStatusCode.Unauthorized)
                 } else {
-                    val storage = call.receive<Storage>()
-                    val connEMD = newEMDConnection(config, this.context)
-                    if (connEMD == null) {
-                        call.respond(HttpStatusCode.Unauthorized)
-                    } else {
-                        val query = """
+                    val query = """
                         INSERT INTO storage_ (storage_name)
                         VALUES ('${storage.storage_name}')
                     """.trimIndent()
-                        // print(query)
-                        try {
-                            connEMD.createStatement().executeUpdate(query)
-                            call.response.status(HttpStatusCode.OK)
-                            call.respond("Storage record was created")
-                        } catch (ex: PSQLException) {  // e.g. this version already exists
-                            if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
-                                call.respond(HttpStatusCode.Unauthorized)
-                            } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
-                                call.respond(HttpStatusCode.Conflict)
-                            } else {
-                                call.respond(HttpStatusCode.InternalServerError)
-                            }
-                        } finally {
-                            connEMD.close()
+                    // print(query)
+                    try {
+                        connEMD.createStatement().executeUpdate(query)
+                        call.response.status(HttpStatusCode.OK)
+                        call.respond("Storage record was created")
+                    } catch (ex: PSQLException) {  // e.g. this version already exists
+                        if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
+                            call.respond(HttpStatusCode.Unauthorized)
+                        } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
+                            call.respond(HttpStatusCode.Conflict)
+                        } else {
+                            call.respond(HttpStatusCode.InternalServerError)
                         }
+                    } finally {
+                        connEMD.close()
                     }
+                    //  }
                 }
             }
         }
@@ -314,10 +387,10 @@ fun Application.main() {
 
                     post("/${EVENT_ENTITY_API_NAME}") {
 
-                        val roles = getUserRoles(config, call)
-                        if (!(roles.isWriter or roles.isAdmin)) {
-                            call.respond(HttpStatusCode.Unauthorized)
-                        }
+//                        val roles = getUserRoles(config, call)
+//                        if (!(roles.isWriter or roles.isAdmin)) {
+//                            call.respond(HttpStatusCode.Unauthorized)
+//                        }
 
                         val events = call.receive<Array<EventRepr>>()
 
@@ -389,6 +462,8 @@ fun Application.main() {
                     }
 
                     delete("/${EVENT_ENTITY_API_NAME}") {
+                        TODO("To be implemented")
+                        /*
                         val roles = getUserRoles(config, call)
                         if (!roles.isAdmin) {
                             call.respond(HttpStatusCode.Unauthorized)
@@ -396,13 +471,15 @@ fun Application.main() {
                             call.respond(HttpStatusCode.NotImplemented)
                             TODO("To be implemented")
                         }
+                        */
                     }
 
                     // Synchronous - build a file with some ROOT macro and return it
                     get("/eventFile") {
                         // TODO Apply all filtering, build ROOT file
                         println("Serving dummy eventFile...")
-                        val f = Thread.currentThread().getContextClassLoader().getResource("static/downloadFile.bin")!!.file
+                        val f =
+                            Thread.currentThread().getContextClassLoader().getResource("static/downloadFile.bin")!!.file
                         call.respondFile(File(f))
                     }
 
@@ -436,33 +513,34 @@ fun newEMDConnection(config: ConfigFile, context: ApplicationCall, forStatsGetti
     }
 }
 
+/*
 private fun getUserRoles(config: ConfigFile, call: ApplicationCall): UserRoles {
     if (config.database_auth == true) {
         // Allow all on our end -- database will permit/deny based on user
         return UserRoles(isReader = true, isWriter = true, isAdmin = true)
-    } else if (config.ldap_auth != null) {
+    } else if (config.keycloak_auth != null) {
         val username = call.principal<UserIdPrincipal>()?.name!!
         // println("AUTHENTICATED USER NAME IS: $username")
         val ldapConn = LDAPConnection()
-        ldapConn.connect(config.ldap_auth.ldap_server, config.ldap_auth.ldap_port)
+        ldapConn.connect(config.keycloak_auth.ldap_server, config.keycloak_auth.ldap_port)
         // Perform actual authentication
         ldapConn.bind(
-            config.ldap_auth.user_dn_format.replace("%s", config.ldap_auth.ldap_username),
+            config.keycloak_auth.user_dn_format.replace("%s", config.keycloak_auth.ldap_username),
             // For example, "uid=user,cn=users,cn=accounts,dc=jinr,dc=ru"
-            config.ldap_auth.ldap_password
+            config.keycloak_auth.ldap_password
         )
 
         fun belongsToGroup(group: String) = (ldapConn.search(
             SearchRequest(
                 //"uid=$username,cn=users,cn=accounts,dc=jinr,dc=ru"
-                config.ldap_auth.user_dn_format.replace("%s", username),
+                config.keycloak_auth.user_dn_format.replace("%s", username),
                 SearchScope.SUB,
                 "(&(memberOf=$group))"
             )
         ).entryCount == 1)
 
-        val isWriter = belongsToGroup(config.ldap_auth.writer_group_dn)
-        val isAdmin = belongsToGroup(config.ldap_auth.admin_group_dn)
+        val isWriter = belongsToGroup(config.keycloak_auth.writer_group_dn)
+        val isAdmin = belongsToGroup(config.keycloak_auth.admin_group_dn)
         // println("Writer: $isWriter, Admin: $isAdmin")
         ldapConn.close()
         return UserRoles(isReader = true, isWriter = isWriter, isAdmin = isAdmin)
@@ -470,6 +548,7 @@ private fun getUserRoles(config: ConfigFile, call: ApplicationCall): UserRoles {
         return UserRoles(isReader = true, isWriter = false, isAdmin = false)
     }
 }
+*/
 
 
 // See resources.application.conf for ktor configuration

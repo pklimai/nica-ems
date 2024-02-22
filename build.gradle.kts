@@ -9,6 +9,7 @@ val reactVersion = "18.2.0-pre.695"  // https://mvnrepository.com/artifact/org.j
 val muiVersion = "5.15.7-pre.695"    // https://mvnrepository.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-mui-material
 val pgsqlDriverVersion = "42.7.1"    // https://mvnrepository.com/artifact/org.postgresql/postgresql
 val jacksonYamlVersion = "2.16.1"    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
+val keycloakAuthzVersion = "23.0.6"  // https://mvnrepository.com/artifact/org.keycloak/keycloak-authz-client
 
 plugins {
     kotlin("multiplatform") version "1.9.22"
@@ -57,7 +58,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-netty:$ktorVersion")
                 implementation("io.ktor:ktor-server-html-builder:$ktorVersion")
                 implementation("io.ktor:ktor-server-auth:$ktorVersion")
-                implementation("io.ktor:ktor-server-auth-ldap:$ktorVersion")
+                // implementation("io.ktor:ktor-server-auth-ldap:$ktorVersion")
                 implementation("io.ktor:ktor-server-openapi:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
@@ -65,7 +66,11 @@ kotlin {
                 implementation("ch.qos.logback:logback-classic:$logbackVersion")
                 implementation("org.postgresql:postgresql:$pgsqlDriverVersion")
                 implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonYamlVersion")
-                implementation("com.unboundid:unboundid-ldapsdk:6.0.1")
+                // implementation("com.unboundid:unboundid-ldapsdk:6.0.1")
+                implementation("org.keycloak:keycloak-admin-client:23.0.6")
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                implementation("io.ktor:ktor-client-auth:$ktorVersion")
             }
         }
 

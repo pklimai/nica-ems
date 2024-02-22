@@ -20,7 +20,7 @@ class ConfigFile(
     // in this case ldap_auth is not used
     // If both are not set, authentication is disabled completely
     val database_auth: Boolean?,
-    val ldap_auth: LDAPAuthConfig?,
+    val keycloak_auth: KeyCloakAuthConfig?,
 
     val title: String,
     val pages: List<PageConfig>
@@ -47,14 +47,11 @@ class PageConfig(
 )
 
 @Serializable
-class LDAPAuthConfig(
-    val ldap_server: String,
-    val ldap_port: Int,
-    val user_dn_format: String,
-    val ldap_username: String,
-    val ldap_password: String,
-    val writer_group_dn: String,
-    val admin_group_dn: String
+class KeyCloakAuthConfig(
+    val server_url: String,
+    val realm: String,
+    val client_id: String,
+    val client_secret: String
 )
 
 @Serializable
@@ -74,10 +71,10 @@ fun ConfigFile.removeSensitiveData(): ConfigFile {
         event_db = DBConnectionConfig("", 0, "", "", ""),
         condition_db = if (condition_db == null) null else DBConnectionConfig("", 0, "", "", ""),
         database_auth = database_auth, /* Boolean so not sensitive */
-        ldap_auth = if (ldap_auth == null) null else LDAPAuthConfig("", 0, "", "", "", "", ""),
+        keycloak_auth = if (keycloak_auth == null) null else KeyCloakAuthConfig("",  "", "", ""),
         title = this.title,
         pages = this.pages
     )
 }
 
-fun ConfigFile.authRequired(): Boolean = (database_auth == true) || (ldap_auth != null)
+fun ConfigFile.authRequired(): Boolean = (database_auth == true) || (keycloak_auth != null)
