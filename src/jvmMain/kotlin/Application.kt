@@ -3,6 +3,7 @@ package ru.mipt.npm.nica.ems
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -17,14 +18,12 @@ import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.openapi.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.*
 import jakarta.ws.rs.NotAuthorizedException
 import kotlinx.coroutines.runBlocking
-import org.keycloak.Config
-import org.keycloak.representations.idm.authorization.AuthorizationRequest
 import org.postgresql.util.PSQLException
 import java.io.File
 import java.sql.Connection
@@ -35,8 +34,7 @@ import org.keycloak.representations.AccessTokenResponse
 
 const val CONFIG_PATH = "./ems.config.yaml"
 
-fun Application.main() {
-
+fun readConfig(): ConfigFile {
     val mapper = ObjectMapper(YAMLFactory()).also { it.findAndRegisterModules() }
 
     val config: ConfigFile
@@ -50,49 +48,70 @@ fun Application.main() {
         throw e
     }
     println("Done reading config from $CONFIG_PATH")
+    return config
+}
 
-/*
+
+fun getKCtoken(config: ConfigFile, username: String, pass: String): String? {
     val keycloak = Keycloak.getInstance(
         config.keycloak_auth?.server_url,
         config.keycloak_auth?.realm,
-        "pklimai",
-        "******",
+        username,
+        pass,
         config.keycloak_auth?.client_id,
         config.keycloak_auth?.client_secret,
         null,
         null,
         false,
         null,
-        "openid"
+        "openid"  // required for userinfo endpoint to work
     )
 
     var token: AccessTokenResponse? = null
     try {
         token = keycloak.tokenManager().grantToken()
-        println(token.token)
-        println(token.scope)
-
-        //println(keycloak.realm(config.keycloak_auth?.realm).users().get("pklimai").groups())
-        //keycloak.tokenManager().
+        // println(token.token)
     } catch (e: NotAuthorizedException) {
-        println("No auth!")
+        println("Authentication failed, no token obtained!")
+        return null
     }
-    val url = "${config.keycloak_auth?.server_url}/realms/${config.keycloak_auth?.realm}/protocol/openid-connect/userinfo"
+    return token!!.token
+}
+
+fun getKCgroups(config: ConfigFile, token: String): List<String> {
     val client = HttpClient(CIO) {
+        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+            json()
+        }
         install(Auth) {
             bearer {
                 loadTokens {
-                    BearerTokens(token!!.token, token!!.refreshToken)
+                    BearerTokens(token, "")
                 }
             }
         }
     }
+    var groupsObtained: List<String>
+    val url = "${config.keycloak_auth?.server_url}/realms/${config.keycloak_auth?.realm}/protocol/openid-connect/userinfo"
     runBlocking {
         val response = client.get(url)
-        println(response)
+        val res: UserInfo = response.body()
+        // println(res.groups)
+        groupsObtained = res.groups
     }
+    return groupsObtained
+}
 
-*/
+fun getKCPrincipalOrNull(config: ConfigFile, username: String, pass: String): Principal? {
+    val token = getKCtoken(config, username, pass) ?: return null
+    return UserIdPwGroupsPrincipal(username, pass, getKCgroups(config, token))
+}
+
+fun Application.main() {
+
+    val config = readConfig()
+
+    // println(getKCPrincipalOrNull(config, "pklimai", localpass))
 
     install(DefaultHeaders)
     install(CallLogging)
@@ -106,29 +125,25 @@ fun Application.main() {
             error("If database_auth is set, no LDAP parameters are expected!")
         }
         install(Authentication) {
-            basic("auth-keycloak") {
-                skipWhen { it ->
-                    // If there is Authorization: Bearer header, we must check token via KeyCloak
-                    println(it.request.headers["Authorization"])
-                    it.request.headers["Authorization"]?.startsWith("Bearer") == true
-                }
+            basic("auth-keycloak-userpass") {
+//                skipWhen { it ->
+//                    // If there is Authorization: Bearer header, we must check token via KeyCloak
+//                    println(it.request.headers["Authorization"])
+//                    it.request.headers["Authorization"]?.startsWith("Bearer") == true
+//                }
                 validate { credentials ->
-//                    this.request.headers.filter{s, _ -> s == "Authorization"}.forEach { s, ls ->
-//                        print(s)
-//                        print(" --- ")
-//                        ls.forEach() {
-//                            print(it)
-//                            print(" -- ")
-//                        }
-//                        println()
-//                    }
-                    println("Obtained credentials: ${credentials.name} ${credentials.password}")
+                    println("auth-keycloak-userpass with credentials: ${credentials.name} ${credentials.password}")
+
                     // validate must return Principal in a case of successful authentication or null if authentication fails.
                     // so we must obtain Token via KC and also save user roles here
+                    getKCPrincipalOrNull(config, credentials.name, credentials.password).also { println(it) }
 
-
-                    UserIdPwPrincipal(credentials.name, credentials.password)
-
+                }
+            }
+            bearer("auth-keycloak-bearer") {
+                authenticate { bearerTokenCredential: BearerTokenCredential ->
+                    println("auth-keycloak-bearer called with token = ${bearerTokenCredential.token}")
+                    null
                 }
             }
         }
@@ -199,7 +214,7 @@ fun Application.main() {
 
         fun Route.optionallyAuthenticate(build: Route.() -> Unit): Route {
             if (config.keycloak_auth != null) {
-                return authenticate("auth-keycloak", build = build)
+                return authenticate("auth-keycloak-userpass", "auth-keycloak-bearer", build = build)
             } else if (config.database_auth == true) {
                 return authenticate("auth-via-database", build = build)
             } else {
