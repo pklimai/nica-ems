@@ -51,7 +51,9 @@ class KeyCloakAuthConfig(
     val server_url: String,
     val realm: String,
     val client_id: String,
-    val client_secret: String
+    val client_secret: String,
+    val writer_group_name: String,
+    val admin_group_name: String
 )
 
 @Serializable
@@ -71,7 +73,7 @@ fun ConfigFile.removeSensitiveData(): ConfigFile {
         event_db = DBConnectionConfig("", 0, "", "", ""),
         condition_db = if (condition_db == null) null else DBConnectionConfig("", 0, "", "", ""),
         database_auth = database_auth, /* Boolean so not sensitive */
-        keycloak_auth = if (keycloak_auth == null) null else KeyCloakAuthConfig("",  "", "", ""),
+        keycloak_auth = if (keycloak_auth == null) null else KeyCloakAuthConfig("",  "", "", "", "", ""),
         title = this.title,
         pages = this.pages
     )

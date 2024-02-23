@@ -3,7 +3,7 @@ package ru.mipt.npm.nica.ems
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserInfo(
+data class KCUserInfo(
     val sub: String,
     val email_verified: Boolean,
     val name: String,

@@ -19,6 +19,8 @@ database_auth: True
 #  realm: "BMN"
 #  client_id: "emd_api"
 #  client_secret: "*****"
+#  writer_group_name: "bmneventwriter"
+#  admin_group_name: "bmneventadmin"
 
 title: BM@N Event Metadata System
 
