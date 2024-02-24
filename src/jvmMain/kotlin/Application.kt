@@ -1,11 +1,5 @@
 package ru.mipt.npm.nica.ems
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
@@ -16,104 +10,13 @@ import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.openapi.*
-import io.ktor.client.plugins.auth.*
-import io.ktor.client.plugins.auth.providers.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import jakarta.ws.rs.NotAuthorizedException
 import org.postgresql.util.PSQLException
 import java.io.File
-import java.sql.Connection
 import java.sql.DriverManager
-import org.keycloak.admin.client.Keycloak
-import org.keycloak.representations.AccessTokenResponse
 
-
-const val CONFIG_PATH = "./ems.config.yaml"
-
-fun readConfig(): ConfigFile {
-    val mapper = ObjectMapper(YAMLFactory()).also { it.findAndRegisterModules() }
-
-    val config: ConfigFile
-    try {
-        config = mapper.readValue(File(CONFIG_PATH), ConfigFile::class.java)
-    } catch (e: java.lang.Exception) {
-        println(
-            "Could not read config file from $CONFIG_PATH. \n" +
-                    "Make sure the file is there and has proper format (if in Docker, mount as volume)"
-        )
-        throw e
-    }
-    println("Done reading config from $CONFIG_PATH")
-    return config
-}
-
-
-fun getKCtoken(config: ConfigFile, username: String, pass: String): String? {
-    val keycloak = Keycloak.getInstance(
-        config.keycloak_auth?.server_url,
-        config.keycloak_auth?.realm,
-        username,
-        pass,
-        config.keycloak_auth?.client_id,
-        config.keycloak_auth?.client_secret,
-        null,
-        null,
-        false,
-        null,
-        "openid"  // required for userinfo endpoint to work
-    )
-
-    var token: AccessTokenResponse? = null
-    try {
-        token = keycloak.tokenManager().grantToken()
-        // println(token.token)
-    } catch (e: NotAuthorizedException) {
-        println("Authentication failed, no token obtained!")
-        return null
-    }
-    return token!!.token.also { println(it) }
-}
-
-suspend fun getKCgroups(config: ConfigFile, token: String): List<String>? {
-    val client = HttpClient(CIO) {
-        install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-            json()
-        }
-        install(Auth) {
-            bearer {
-                loadTokens {
-                    BearerTokens(token, "")
-                }
-            }
-        }
-    }
-    var groupsObtained: List<String>?
-    val url =
-        "${config.keycloak_auth?.server_url}/realms/${config.keycloak_auth?.realm}/protocol/openid-connect/userinfo"
-    //runBlocking {
-    val response = client.get(url)
-    val res: KCUserInfo? = response.body()
-    groupsObtained = res?.groups
-    //}
-    return groupsObtained
-}
-
-suspend fun getKCPrincipalOrNull(config: ConfigFile, username: String, pass: String): Principal? {
-    val token = getKCtoken(config, username, pass) ?: return null
-    val groups = getKCgroups(config, token) ?: return null  // or listOf() ?
-    return UserIdPwGroupsPrincipal(username, pass, groups, rolesFromGroups(config, groups))
-}
-
-fun rolesFromGroups(config: ConfigFile, groups: List<String>): UserRoles {
-    return UserRoles(
-        isReader = true,      // any authenticated user
-        isWriter = groups.contains(config.keycloak_auth?.writer_group_name), // e.g. "bmneventwriter", can add records
-        isAdmin = groups.contains(config.keycloak_auth?.admin_group_name)    // e.g. "bmneventadmin", can delete records
-    )
-}
 
 fun Application.main() {
 
@@ -505,25 +408,6 @@ fun Application.main() {
                 }
             }
         }
-    }
-}
-
-fun newEMDConnection(config: ConfigFile, context: ApplicationCall, forStatsGetting: Boolean = false): Connection? {
-    val urlEventDB =
-        "jdbc:postgresql://${config.event_db.host}:${config.event_db.port}/${config.event_db.db_name}"
-    // val connEMD = DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
-    if (config.database_auth == true && !forStatsGetting) {
-        val user = context.principal<UserIdPwPrincipal>()!!.name
-        val pass = context.principal<UserIdPwPrincipal>()!!.pw
-        try {
-            val connection = DriverManager.getConnection(urlEventDB, user, pass)
-            return connection
-        } catch (_: PSQLException) {
-            return null
-        }
-    } else {
-        // KeyCloak or no auth at all, or we are collecting stats for homepage
-        return DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
     }
 }
 

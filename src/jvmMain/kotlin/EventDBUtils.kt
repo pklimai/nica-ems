@@ -1,9 +1,32 @@
 package ru.mipt.npm.nica.ems
 
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import kotlinx.html.BODY
 import kotlinx.html.p
+import org.postgresql.util.PSQLException
 import java.sql.Connection
+import java.sql.DriverManager
 import java.sql.ResultSet
+
+fun newEMDConnection(config: ConfigFile, context: ApplicationCall, forStatsGetting: Boolean = false): Connection? {
+    val urlEventDB =
+        "jdbc:postgresql://${config.event_db.host}:${config.event_db.port}/${config.event_db.db_name}"
+    // val connEMD = DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
+    if (config.database_auth == true && !forStatsGetting) {
+        val user = context.principal<UserIdPwPrincipal>()!!.name
+        val pass = context.principal<UserIdPwPrincipal>()!!.pw
+        try {
+            val connection = DriverManager.getConnection(urlEventDB, user, pass)
+            return connection
+        } catch (_: PSQLException) {
+            return null
+        }
+    } else {
+        // KeyCloak or no auth at all, or we are collecting stats for homepage
+        return DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
+    }
+}
 
 class SoftwareMap(val id_to_str: Map<Short, String>, val str_to_id: Map<String, Short>)
 

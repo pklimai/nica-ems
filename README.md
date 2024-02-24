@@ -14,7 +14,7 @@ stored per experimental event is also configurable. The configuration must be pa
 `./ems.config.yaml`. See `./ems.config.example.yaml` file for example EMS system configuration.
 
 In the config file, you must provide credentials for EMS database and (optionally) Condition database, 
-LDAP server parameters (also optional, use if you want to authenticate user queries) and specify URLs 
+KeyCloak server parameters (also optional, use if you want to authenticate user queries) and specify URLs 
 and parameters stored in EMS catalogue.
 
 Supported parameter types are currently: `int`, `float`, `string`, `bool`.

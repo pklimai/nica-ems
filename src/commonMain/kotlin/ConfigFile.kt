@@ -17,7 +17,7 @@ class ConfigFile(
     val condition_db: DBConnectionConfig?,
 
     // If database_auth is set, user:password from user request are used for database connection
-    // in this case ldap_auth is not used
+    // in this case keycloak_auth is not used
     // If both are not set, authentication is disabled completely
     val database_auth: Boolean?,
     val keycloak_auth: KeyCloakAuthConfig?,
