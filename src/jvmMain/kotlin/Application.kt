@@ -1,42 +1,26 @@
 package ru.mipt.npm.nica.ems
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.unboundid.ldap.sdk.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.plugins.callloging.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.compression.*
-import io.ktor.server.plugins.openapi.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.ldap.*
 import io.ktor.http.*
-import io.ktor.server.http.content.*
 import io.ktor.serialization.jackson.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.http.content.*
+import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.compression.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.server.plugins.openapi.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.postgresql.util.PSQLException
 import java.io.File
-import java.sql.Connection
 import java.sql.DriverManager
 
-const val CONFIG_PATH = "./ems.config.yaml"
 
 fun Application.main() {
 
-    val mapper = ObjectMapper(YAMLFactory()).also { it.findAndRegisterModules() }
-
-    var config: ConfigFile
-    try {
-        config = mapper.readValue(File(CONFIG_PATH), ConfigFile::class.java)
-    } catch (e: java.lang.Exception) {
-        println("Could not read config file from $CONFIG_PATH. \n" +
-                "Make sure the file is there and has proper format (if in Docker, mount as volume)")
-        throw e
-    }
-    println("Done reading config from $CONFIG_PATH")
+    val config = readConfig()
 
     install(DefaultHeaders)
     install(CallLogging)
@@ -45,18 +29,25 @@ fun Application.main() {
     }
     install(Compression)
 
-    if (config.ldap_auth != null) {
+    if (config.keycloak_auth != null) {
         if (config.database_auth == true) {
-            error("If database_auth is set, no LDAP parameters are expected!")
+            error("If database_auth is set, no KeyCloak parameters are expected!")
         }
         install(Authentication) {
-            basic("auth-ldap") {
+            basic("auth-keycloak-userpass") {
+                // Obtain Token via KeyCloak
                 validate { credentials ->
-                    ldapAuthenticate(
-                        credentials,
-                        "ldap://${config.ldap_auth!!.ldap_server}:${config.ldap_auth!!.ldap_port}",
-                        config.ldap_auth!!.user_dn_format
-                    )
+                    println("auth-keycloak-userpass with credentials: ${credentials.name} ${credentials.password}")
+                    // Note: validate must return Principal in case of successful authentication or null otherwise
+                    getKCPrincipalOrNull(config, credentials.name, credentials.password).also { println(it) }
+
+                }
+            }
+            bearer("auth-keycloak-bearer") {
+                authenticate { bearerTokenCredential: BearerTokenCredential ->
+                    println("auth-keycloak-bearer called with token = ${bearerTokenCredential.token}")
+                    val groups = getKCgroups(config, bearerTokenCredential.token) ?: return@authenticate null
+                    TokenGroupsPrincipal(bearerTokenCredential.token, groups, rolesFromGroups(config, groups))
                 }
             }
         }
@@ -64,7 +55,8 @@ fun Application.main() {
         install(Authentication) {
             basic("auth-via-database") {
                 validate { credentials ->
-                    UserIdPwPrincipal(credentials.name, credentials.password)
+                    // all roles allowed here, enforcement is on the database side
+                    UserIdPwPrincipal(credentials.name, credentials.password, UserRoles(true, true, true))
                 }
             }
         }
@@ -126,8 +118,8 @@ fun Application.main() {
         }
 
         fun Route.optionallyAuthenticate(build: Route.() -> Unit): Route {
-            if (config.ldap_auth != null) {
-                return authenticate("auth-ldap", build = build)
+            if (config.keycloak_auth != null) {
+                return authenticate("auth-keycloak-userpass", "auth-keycloak-bearer", build = build)
             } else if (config.database_auth == true) {
                 return authenticate("auth-via-database", build = build)
             } else {
@@ -168,7 +160,7 @@ fun Application.main() {
             post(SOFTWARE_URL) {
                 // e.g. POST { "software_id": 100, "software_version": "22.1" }
                 // Note: software_id is assigned automatically by the database, regardless of what is passed in JSON
-                val roles = getUserRoles(config, call)
+                val roles = call.principal<WithRoles>()?.roles!!
                 if (!(roles.isWriter or roles.isAdmin)) {
                     call.respond(HttpStatusCode.Unauthorized)
                 } else {
@@ -225,7 +217,7 @@ fun Application.main() {
 
             post(STORAGE_URL) {
                 // Note: storage_id is assigned automatically by the database, regardless of what is passed in JSON
-                val roles = getUserRoles(config, call)
+                val roles = call.principal<WithRoles>()?.roles!!
                 if (!(roles.isWriter or roles.isAdmin)) {
                     call.respond(HttpStatusCode.Unauthorized)
                 } else {
@@ -268,7 +260,7 @@ fun Application.main() {
                 route(page.api_url) {
 
                     get("/${EVENT_ENTITY_API_NAME}") {
-
+                        // no role checking here - any user allowed
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
                         if (parameterBundle.hasInvalidParameters()) {
                             call.respond(HttpStatusCode.BadRequest)
@@ -314,7 +306,7 @@ fun Application.main() {
 
                     post("/${EVENT_ENTITY_API_NAME}") {
 
-                        val roles = getUserRoles(config, call)
+                        val roles = call.principal<WithRoles>()?.roles!!
                         if (!(roles.isWriter or roles.isAdmin)) {
                             call.respond(HttpStatusCode.Unauthorized)
                         }
@@ -389,20 +381,22 @@ fun Application.main() {
                     }
 
                     delete("/${EVENT_ENTITY_API_NAME}") {
-                        val roles = getUserRoles(config, call)
+                        val roles = call.principal<WithRoles>()?.roles!!
                         if (!roles.isAdmin) {
                             call.respond(HttpStatusCode.Unauthorized)
                         } else {
                             call.respond(HttpStatusCode.NotImplemented)
                             TODO("To be implemented")
                         }
+
                     }
 
                     // Synchronous - build a file with some ROOT macro and return it
                     get("/eventFile") {
                         // TODO Apply all filtering, build ROOT file
                         println("Serving dummy eventFile...")
-                        val f = Thread.currentThread().getContextClassLoader().getResource("static/downloadFile.bin")!!.file
+                        val f =
+                            Thread.currentThread().getContextClassLoader().getResource("static/downloadFile.bin")!!.file
                         call.respondFile(File(f))
                     }
 
@@ -417,60 +411,5 @@ fun Application.main() {
     }
 }
 
-fun newEMDConnection(config: ConfigFile, context: ApplicationCall, forStatsGetting: Boolean = false): Connection? {
-    val urlEventDB =
-        "jdbc:postgresql://${config.event_db.host}:${config.event_db.port}/${config.event_db.db_name}"
-    // val connEMD = DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
-    if (config.database_auth == true && !forStatsGetting) {
-        val user = context.principal<UserIdPwPrincipal>()!!.name
-        val pass = context.principal<UserIdPwPrincipal>()!!.pw
-        try {
-            val connection = DriverManager.getConnection(urlEventDB, user, pass)
-            return connection
-        } catch (_: PSQLException) {
-            return null
-        }
-    } else {
-        // LDAP or no auth at all, or we are collecting stats for homepage
-        return DriverManager.getConnection(urlEventDB, config.event_db.user, config.event_db.password)
-    }
-}
-
-private fun getUserRoles(config: ConfigFile, call: ApplicationCall): UserRoles {
-    if (config.database_auth == true) {
-        // Allow all on our end -- database will permit/deny based on user
-        return UserRoles(isReader = true, isWriter = true, isAdmin = true)
-    } else if (config.ldap_auth != null) {
-        val username = call.principal<UserIdPrincipal>()?.name!!
-        // println("AUTHENTICATED USER NAME IS: $username")
-        val ldapConn = LDAPConnection()
-        ldapConn.connect(config.ldap_auth.ldap_server, config.ldap_auth.ldap_port)
-        // Perform actual authentication
-        ldapConn.bind(
-            config.ldap_auth.user_dn_format.replace("%s", config.ldap_auth.ldap_username),
-            // For example, "uid=user,cn=users,cn=accounts,dc=jinr,dc=ru"
-            config.ldap_auth.ldap_password
-        )
-
-        fun belongsToGroup(group: String) = (ldapConn.search(
-            SearchRequest(
-                //"uid=$username,cn=users,cn=accounts,dc=jinr,dc=ru"
-                config.ldap_auth.user_dn_format.replace("%s", username),
-                SearchScope.SUB,
-                "(&(memberOf=$group))"
-            )
-        ).entryCount == 1)
-
-        val isWriter = belongsToGroup(config.ldap_auth.writer_group_dn)
-        val isAdmin = belongsToGroup(config.ldap_auth.admin_group_dn)
-        // println("Writer: $isWriter, Admin: $isAdmin")
-        ldapConn.close()
-        return UserRoles(isReader = true, isWriter = isWriter, isAdmin = isAdmin)
-    } else {
-        return UserRoles(isReader = true, isWriter = false, isAdmin = false)
-    }
-}
-
-
-// See resources.application.conf for ktor configuration
+// See resources/application.conf for ktor configuration
 fun main(args: Array<String>) = io.ktor.server.netty.EngineMain.main(args)
