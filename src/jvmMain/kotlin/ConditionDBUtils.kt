@@ -26,6 +26,7 @@ fun getRunsBy(
         filteringConditions.add(it.generateSQLWhere())
     }
     sql += " WHERE " + filteringConditions.joinToString(" AND ")
+    println("Condition db request: $sql")
 
     val res = conn.createStatement().executeQuery(sql)
     return ArrayList<Pair<Short, Int>>().apply {

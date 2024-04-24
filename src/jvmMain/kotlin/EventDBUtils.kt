@@ -65,7 +65,7 @@ fun queryEMD(
     connEMD: Connection,
     body: BODY?,
     defaultLimit: Int? = null
-): ResultSet {
+): ResultSet? {
     with(parameterBundle) {
         val et = page.db_table_name
         // TODO: Check how joins affect the performance. Consider doing DIY joins?
@@ -91,11 +91,14 @@ fun queryEMD(
                         +"""WARNING: Empty set of (period_number, run_number) returned in
                                             pre-selection, not using it"""
                     }
+                    println("WARNING: Empty set of (period_number, run_number) returned in pre-selection, not using it")
+                    return null
                 } else {
                     val periodsRunsJoined = periodsRuns
                         .joinToString(", ", prefix = "( ", postfix = " )")
                         { "(${it.first}, ${it.second})" }
                     body?.p { +"Preselection (period_number, run_number) returned: $periodsRunsJoined" }
+                    println("Preselection (period_number, run_number) returned: $periodsRunsJoined")
                     filterCriteria.add(" (period_number, run_number) IN $periodsRunsJoined")
                 }
             }

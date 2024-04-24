@@ -118,7 +118,12 @@ class FloatParameter(config: ParameterConfig, stringValue: String): Parameter(co
 
 class StringParameter(config: ParameterConfig, stringValue: String) : Parameter(config, stringValue) {
     override fun generateSQLWhere(): String {
-        return " ${config.name} = '$stringValue'"
+        return if (stringValue.startsWith("~")) {
+            "${config.name} LIKE '${stringValue.substring(1)}'"
+        }
+        else {
+            "${config.name} = '$stringValue'"
+        }
     }
 }
 

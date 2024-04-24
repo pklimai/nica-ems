@@ -154,7 +154,7 @@ fun Route.legacyPage(page: PageConfig, config: ConfigFile, connCondition: java.s
                                     th { +it.name }
                                 }
                             }
-                            while (res.next()) {
+                            while (res?.next() == true) {
                                 count++
                                 tr {
                                     td { +res.getString("storage_name") }

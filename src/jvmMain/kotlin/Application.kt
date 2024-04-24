@@ -273,7 +273,7 @@ fun Application.main() {
                             val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
 
                             val lstEvents = ArrayList<EventRepr>()
-                            while (res.next()) {
+                            while (res?.next() == true) {
                                 val paramMap = HashMap<String, Any>()
 
                                 page.parameters.forEach {
