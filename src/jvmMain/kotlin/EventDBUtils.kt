@@ -79,7 +79,7 @@ fun queryEMD(
         val filterCriteria = ArrayList<String>()
         period_number?.let { filterCriteria.add(it.generateSQLWhere()) }
         run_number?.let { filterCriteria.add(it.generateSQLWhere()) }
-        software_version?.let { filterCriteria.add("software_version = '$software_version'") }
+        software_version?.let { filterCriteria.add(it.generateSQLWhere()) }
         parametersSupplied.forEach { filterCriteria.add(it.value.generateSQLWhere()) }
 
         connCondition?.let {

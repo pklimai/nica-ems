@@ -5,7 +5,7 @@ import io.ktor.server.application.*
 class ParameterBundle(
     val period_number: Parameter?,
     val run_number: Parameter?,
-    val software_version: String?,
+    val software_version: Parameter?,
     val beam_particle: Parameter?,
     val target_particle: Parameter?,
     val energy: Parameter?,
@@ -29,9 +29,8 @@ class ParameterBundle(
             return ParameterBundle(
                 period_number = Parameter.fromParameterConfig(periodConfig, call.parameters[periodConfig.name]),
                 run_number = Parameter.fromParameterConfig(runConfig, call.parameters[runConfig.name]),
-                software_version =
-                    if (call.parameters["software_version"].isNullOrEmpty()) null
-                    else call.parameters["software_version"],
+                software_version = Parameter.fromParameterConfig(softwareConfig, call.parameters[softwareConfig.name]),
+
                 // Parameters for pre-selection
                 beam_particle =
                     Parameter.fromParameterConfig(beamParticleConfig, call.parameters[beamParticleConfig.name]),

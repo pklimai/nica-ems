@@ -58,27 +58,28 @@ fun BODY.inputParametersForm(
             parameterInput(periodConfig, period_number)
             parameterInput(runConfig, run_number)
 
-            label { +"Software Version" }
-            select {
-                id = "software_version"
-                name = "software_version"
-                option {
-                    value = ""  // sent as a value in URL
-                    if (software_version.isNullOrEmpty()) {
-                        selected = true
-                    }
-                    +"No selection"   // Displayed
-                }
-                softwareMap.str_to_id.keys.forEach {
-                    option {
-                        value = it
-                        if (it == software_version) {
-                            selected = true
-                        }
-                        +it   // NB: Order matters!
-                    }
-                }
-            }
+            parameterInput(softwareConfig, software_version)
+//            label { +"Software Version" }
+//            select {
+//                id = "software_version"
+//                name = "software_version"
+//                option {
+//                    value = ""  // sent as a value in URL
+//                    if (software_version.isNullOrEmpty()) {
+//                        selected = true
+//                    }
+//                    +"No selection"   // Displayed
+//                }
+//                softwareMap.str_to_id.keys.forEach {
+//                    option {
+//                        value = it
+//                        if (it == software_version) {
+//                            selected = true
+//                        }
+//                        +it   // NB: Order matters!
+//                    }
+//                }
+//            }
 
             hr {}
             connCondition?.let {
