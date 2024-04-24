@@ -5,7 +5,7 @@
 
 This software is part of NICA Event Metadata System, providing REST API and Web UI for the experimental 
 event catalog. PostgreSQL database is currently used for event metadata storage. Integration with Condition
-database (containing experimental run metadata) and FreeIPA authorization is implemented.
+database (containing experimental run metadata) and KeyCloak authorization is implemented.
 
 ## Config file
 
@@ -19,9 +19,9 @@ and parameters stored in EMS catalogue.
 
 Supported parameter types are currently: `int`, `float`, `string`, `bool`.
 
-Ranges for `int` and `float` types are supported (both in Web interface and API) using `:` separator 
-(for example `track-number=10:15`). Such range is inclusive (that is, start and end of an interval are included). 
-Intervals unbound from one side are also supported (for example, `track-number=10:` or `track-number=:15`).
+Ranges for `int` and `float` types are supported (both in Web interface and API) using `|` separator 
+(for example `track-number=10|15`). Such range is inclusive (that is, start and end of an interval are included).
+Intervals unbound from one side are also supported (for example, `track-number=10|` or `track-number=|15`).
 
 ## API
 
@@ -46,6 +46,10 @@ Here and below, for parameter values we have
   - `offset` (int)
 
 * Any custom parameters specified in YAML file 
+
+Example:
+`http://127.0.0.1:8080/event_api/v1/event?limit=5&software_version=~19._&beam_particle=~A_&track_number=11|`
+
 
 #### Create event records in the metadata catalog:
 `POST /event_api/v1/event`
