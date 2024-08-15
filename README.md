@@ -31,7 +31,7 @@ sudo systemctl status docker
 git clone https://git.jinr.ru/nica_db/emd.git
 cd emd/
 sudo docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
-sudo docker run --rm -it -v ~/ems.config.yaml:/app/bin/ems.config.yaml -p 80:8080 nica-ems:buildindocker
+sudo docker run --rm -it -v ./ems.config.yaml:/app/bin/ems.config.yaml -p 80:8080 nica-ems:buildindocker
 ```
 
 - Local installation (for development purpose):
@@ -53,7 +53,7 @@ git clone https://git.jinr.ru/nica_db/emd.git
 cd emd/
 sh gradlew installDist
 docker build -t nica-ems:current .
-sudo docker run -d --rm --name nica-ems -p 80:8080 -v ~/ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
+sudo docker run -d --rm --name nica-ems -p 80:8080 -v ./ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
 ```
 
 ## Using deployed REST API service
