@@ -3,27 +3,60 @@
 
 ## About
 
-This software is part of NICA Event Metadata System, providing REST API and Web UI for the experimental 
-event catalog. PostgreSQL database is currently used for event metadata storage. Integration with Condition
-database (containing experimental run metadata) and KeyCloak authorization is implemented.
+This software is part of the NICA Event Metadata System, providing REST API and Web User Interface (UI) for the 
+Event Catalogue of an experiment on particle collisions. PostgreSQL database is currently used for event metadata storage. Integration with the [Condition Database](https://git.jinr.ru/nica_db/unidb_platform) (containing run metadata of an experiment) and KeyCloak authorization is implemented.
 
-## Config file
+## Deployment
 
-The system is rather flexible and is configurable via YAML file. The exact set of metadata that is
-stored per experimental event is also configurable. The configuration must be passed via file named
-`./ems.config.yaml`. See `./ems.config.example.yaml` file for example EMS system configuration.
+### Setting up the configuration file
 
-In the config file, you must provide credentials for EMS database and (optionally) Condition database, 
-KeyCloak server parameters (also optional, use if you want to authenticate user queries) and specify URLs 
-and parameters stored in EMS catalogue.
+The system is configurable via YAML file for a particular experiment on particle collisions, including a set of specific metadata that are stored per experiment event. The configuration is defined in the file named `ems.config.yaml`. An example of the EMS system configuration for the BM@N experiment can be seen in the `ems.bmn-config.yaml` file.
 
-Supported parameter types are currently: `int`, `float`, `string`, `bool`.
+In the configuration file, you must provide credentials for the Event Database and (optionally) Condition database, KeyCloak server parameters (also optional) and specify URLs and parameters stored in the EMS Catalogue.
 
-Ranges for `int` and `float` types are supported (both in Web interface and API) using `|` separator 
-(for example `track-number=10|15`). Such range is inclusive (that is, start and end of an interval are included).
-Intervals unbound from one side are also supported (for example, `track-number=10|` or `track-number=|15`).
+Supported parameter types are currently: `int`, `float`, `string`, `bool`. Ranges for `int` and `float` types are supported (both in Web interface and API) using `|` separator 
+(for instance, `track-number=10|15`). Such range is inclusive (that is, start and end of an interval are included). Intervals unbound from one side are also supported (for example, `track-number=10|` or `track-number=|15`).
 
-## API
+### Run installation of the system on a RedHat-based Operating System (AlmaLinux, CentOS, RedHat)
+
+There are three possible ways to install the EMS API and Web UI.
+
+- Installation and run inside Docker-container (recommended):
+```
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install -y docker-ce docker-ce-cli containerd.io git
+sudo systemctl enable --now docker
+sudo systemctl status docker
+
+git clone https://git.jinr.ru/nica_db/emd.git
+cd emd/
+sudo docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
+sudo docker run --rm -it -v ~/ems.config.yaml:/app/bin/ems.config.yaml -p 80:8080 nica-ems:buildindocker
+```
+
+- Local installation (for development purpose):
+```
+sudo yum -y install java-17 git gcc-c++
+git clone https://git.jinr.ru/nica_db/emd.git
+cd emd/
+sh gradlew run
+```
+
+- Local installation but run inside the Docker-container (for development purpose):
+```
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install -y docker-ce docker-ce-cli containerd.io java-17 git gcc-c++
+sudo systemctl enable --now docker
+sudo systemctl status docker
+
+git clone https://git.jinr.ru/nica_db/emd.git
+cd emd/
+sh gradlew installDist
+docker build -t nica-ems:current .
+sudo docker run -d --rm --name nica-ems -p 80:8080 -v ~/ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
+```
+
+## Using deployed REST API service
 
 ### Methods supported
 
@@ -120,56 +153,3 @@ curl -X POST -u USER:PASS -H "Content-Type: application/json" http://127.0.0.1/e
 
 Note: `software_version` and `storage_name` must exist in the corresponding EMS database tables.
 The `file_path` will be created in the `file_` table, if not there yet.
-
-
-## Deploying and Testing
-
-### Run in Docker on CentOS / Alma Linux example:
-
-```
-#sudo dnf install java-11-openjdk-devel
-#export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.12.0.7-0.el8_4.x86_64
-sudo yum install java-17
-cd ~/nica-ems/
-sh gradlew installDist
-docker build -t nica-ems:current .
-# sudo docker stop nica-ems
-# sudo docker rm nica-ems
-sudo docker run -d --rm --name nica-ems -p 80:8080 -v ~/ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
-```
-
-### Run on Alma Linux
-
-```
-sudo yum install java-17
-git clone https://github.com/pklimai/nica-ems
-cd nica-ems/
-sh gradlew run
-```
-
-### Dockerfile with build
-
-To build inside Docker and run, use e.g. (note: Dockerfile.with-build uses 2-stage build to optimize 
-resulting container image size):
-```
-sudo docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
-sudo docker run --rm -it -v ~/ems.config.yaml:/app/bin/ems.config.yaml -p 80:8080 nica-ems:buildindocker
-```
-
-### Testing / debugging
-
-Use `testing/docker-compose.yaml` for test databases. 
-
-To test FreeIPA (LDAP), you can configure SSH tunneling such as `127.0.0.1:3890 -> bmn-ipa.jinr.ru:389`
-
-To view application logs:
-```
-docker logs nica-ems -f
-```
-
-To run container in debug mode, use something like
-```
-sudo docker run -it --entrypoint=/bin/bash --name nica-ems --rm -p 80:8080 -v ~/ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
-```
-
-
