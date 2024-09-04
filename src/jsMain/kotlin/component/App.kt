@@ -54,7 +54,6 @@ val app = fc<Props> {
                             }
                             + (config?.title ?: "Event Metadata System")
                         }
-                        dangerousSVG(SVGHeaderBubbles)
                     }
                 }
                 span("example-spacer") {}

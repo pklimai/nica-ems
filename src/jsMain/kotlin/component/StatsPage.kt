@@ -55,14 +55,11 @@ val statsPage = fc<StatsPageProps> { props ->
                 div("home__page__stats__block__column") {
                     div("home__page__stats__block__column__stats") {
                         div {
-                            +(stats?.totalRecords?.toString() ?: "(no stats)")
+                            +"Total Events —"
                         }
                         div {
-                            +"Total"
+                            +(stats?.totalRecords?.toString() ?: "0")
                         }
-                    }
-                    div("event_metadata") {
-                        +"event metadata"
                     }
                 }
             }
@@ -77,7 +74,7 @@ val statsPage = fc<StatsPageProps> { props ->
                         +"Period Number —"
                     }
                     div("per_number") {
-                        + (currentPeriod ?: "(no stats)")
+                        + (currentPeriod ?: "0")
                     }
                 }
             }
@@ -129,7 +126,7 @@ val statsPage = fc<StatsPageProps> { props ->
                         +"Software Version — "
                     }
                     div("per_number") {
-                        + (currentSW ?: "(no stats)")
+                        + (currentSW ?: "0")
                     }
                 }
             }
