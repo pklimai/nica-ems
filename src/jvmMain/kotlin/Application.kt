@@ -40,7 +40,6 @@ fun Application.main() {
                     println("auth-keycloak-userpass with credentials: ${credentials.name} ${credentials.password}")
                     // Note: validate must return Principal in case of successful authentication or null otherwise
                     getKCPrincipalOrNull(config, credentials.name, credentials.password).also { println(it) }
-
                 }
             }
             bearer("auth-keycloak-bearer") {
@@ -163,6 +162,7 @@ fun Application.main() {
                 val roles = call.principal<WithRoles>()?.roles!!
                 if (!(roles.isWriter or roles.isAdmin)) {
                     call.respond(HttpStatusCode.Unauthorized)
+                    return@post  // not really needed here but important in other places
                 } else {
                     val sw = call.receive<SoftwareVersion>()
                     val connEMD = newEMDConnection(config, this.context)
@@ -170,9 +170,9 @@ fun Application.main() {
                         call.respond(HttpStatusCode.Unauthorized)
                     } else {
                         val query = """
-                        INSERT INTO software_ (software_version)
-                        VALUES ('${sw.software_version}')
-                    """.trimIndent()
+                            INSERT INTO software_ (software_version)
+                            VALUES ('${sw.software_version}')
+                        """.trimIndent()
                         // print(query)
                         try {
                             connEMD.createStatement().executeUpdate(query)
@@ -227,9 +227,9 @@ fun Application.main() {
                         call.respond(HttpStatusCode.Unauthorized)
                     } else {
                         val query = """
-                        INSERT INTO storage_ (storage_name)
-                        VALUES ('${storage.storage_name}')
-                    """.trimIndent()
+                            INSERT INTO storage_ (storage_name)
+                            VALUES ('${storage.storage_name}')
+                        """.trimIndent()
                         // print(query)
                         try {
                             connEMD.createStatement().executeUpdate(query)
@@ -264,6 +264,7 @@ fun Application.main() {
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
                         if (parameterBundle.hasInvalidParameters()) {
                             call.respond(HttpStatusCode.BadRequest)
+                            return@get
                         }
                         val connEMD = newEMDConnection(config, this.context)
                         if (connEMD == null) {
@@ -309,6 +310,7 @@ fun Application.main() {
                         val roles = call.principal<WithRoles>()?.roles!!
                         if (!(roles.isWriter or roles.isAdmin)) {
                             call.respond(HttpStatusCode.Unauthorized)
+                            return@post
                         }
 
                         val events = call.receive<Array<EventRepr>>()
@@ -316,6 +318,7 @@ fun Application.main() {
                         val connEMD = newEMDConnection(config, this.context)
                         if (connEMD == null) {
                             call.respond(HttpStatusCode.Unauthorized)
+                            return@post
                         } else {
                             val softwareMap = getSoftwareMap(connEMD)
                             val storageMap = getStorageMap(connEMD)
@@ -330,8 +333,8 @@ fun Application.main() {
                                 val file_guid: Int
                                 val res = connEMD.createStatement().executeQuery(
                                     """SELECT file_guid FROM file_ WHERE 
-                             storage_id = $storage_id AND file_path = '$file_path'
-                            """.trimMargin()
+                                         storage_id = $storage_id AND file_path = '$file_path'
+                                    """.trimMargin()
                                 )
                                 if (res.next()) {
                                     file_guid = res.getInt("file_guid")
@@ -339,16 +342,16 @@ fun Application.main() {
                                 } else {
                                     // create file
                                     val fileQuery = """
-                                INSERT INTO file_ (storage_id, file_path)
-                                VALUES ($storage_id, '$file_path')
-                            """.trimIndent()
+                                        INSERT INTO file_ (storage_id, file_path)
+                                        VALUES ($storage_id, '$file_path')
+                                    """.trimIndent()
                                     print(fileQuery)
                                     connEMD.createStatement().executeUpdate(fileQuery)
                                     // TODO remove duplicate code here...
                                     val res2 = connEMD.createStatement().executeQuery(
                                         """SELECT file_guid FROM file_ WHERE 
-                             storage_id = $storage_id AND file_path = '$file_path'
-                            """.trimMargin()
+                                            storage_id = $storage_id AND file_path = '$file_path'
+                                        """.trimMargin()
                                     )
                                     if (res2.next()) {
                                         file_guid = res2.getInt("file_guid")
@@ -365,13 +368,13 @@ fun Application.main() {
                                         }
                                     }
                                 val query = """
-                                INSERT INTO ${page.db_table_name} 
-                                (file_guid, event_number, software_id, period_number, run_number,
-                                 ${page.parameters.joinToString(", ") { it.name }})
-                                VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
-                                   ${event.run_number}, $parameterValuesStr)
-                                """.trimIndent()
-                                print(query)
+                                        INSERT INTO ${page.db_table_name} 
+                                            (file_guid, event_number, software_id, period_number, run_number,
+                                            ${page.parameters.joinToString(", ") { it.name }})
+                                        VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
+                                            ${event.run_number}, $parameterValuesStr)
+                                    """.trimIndent()
+                                // print(query)
                                 connEMD.createStatement().executeUpdate(query)
                             }
                             connEMD.close()
@@ -384,11 +387,11 @@ fun Application.main() {
                         val roles = call.principal<WithRoles>()?.roles!!
                         if (!roles.isAdmin) {
                             call.respond(HttpStatusCode.Unauthorized)
+                            return@delete
                         } else {
                             call.respond(HttpStatusCode.NotImplemented)
                             TODO("To be implemented")
                         }
-
                     }
 
                     // Synchronous - build a file with some ROOT macro and return it

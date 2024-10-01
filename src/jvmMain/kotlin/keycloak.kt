@@ -19,7 +19,7 @@ data class KCUserInfo(
     val sub: String,
     val email_verified: Boolean,
     val name: String,
-    val groups: List<String>,
+    val groups: List<String>? = listOf(),   // in case `groups` is not present in JSON, pass empty list
     val preferred_username: String,
     val given_name: String,
     val family_name: String,
@@ -52,7 +52,7 @@ fun getKCtoken(config: ConfigFile, username: String, pass: String): String? {
     return token!!.token.also { println(it) }
 }
 
-suspend fun getKCgroups(config: ConfigFile, token: String): List<String>? {
+suspend fun getKCgroups(config: ConfigFile, token: String): List<String> {
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             json()
@@ -73,12 +73,12 @@ suspend fun getKCgroups(config: ConfigFile, token: String): List<String>? {
     val res: KCUserInfo? = response.body()
     groupsObtained = res?.groups
     //}
-    return groupsObtained
+    return groupsObtained ?: listOf()
 }
 
 suspend fun getKCPrincipalOrNull(config: ConfigFile, username: String, pass: String): Principal? {
     val token = getKCtoken(config, username, pass) ?: return null
-    val groups = getKCgroups(config, token) ?: return null  // or listOf() ?
+    val groups = getKCgroups(config, token)
     return UserIdPwGroupsPrincipal(username, pass, groups, rolesFromGroups(config, groups))
 }
 
