@@ -1,10 +1,11 @@
-version: '3'
 services:
-    emd:
-        build: .
-        container_name: nica-ems
-        restart: always
-        ports:
-          - 80:8080
-        volumes:
-          - ./ems.config.example.yaml:/app/bin/ems.config.yaml
+  emd:
+    build:
+      context: .
+      dockerfile: Dockerfile.with-build
+    container_name: nica-ems
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    volumes:
+      - ./ems.bmn-config.yaml:/app/bin/ems.config.yaml

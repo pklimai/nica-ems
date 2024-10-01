@@ -1,0 +1,42 @@
+event_db:
+  host: nc24.jinr.ru
+  port: 5432
+  db_name: event_db
+  user: writer           # CHANGE EVENT DATABASE USER
+  password: writer_pass  # CHANGE EVENT DATABASE PASSWORD
+
+condition_db:
+  host: bmn-unidb.jinr.ru
+  port: 5432
+  db_name: uni_db
+  user: db_reader
+  password: reader_pass
+
+database_auth: False
+keycloak_auth:
+  server_url: "https://bmn-user.jinr.ru"
+  realm: "BMN"
+  client_id: "emd_api"
+  client_secret: "*****"
+  writer_group_name: "bmneventwriter"
+  admin_group_name: "bmneventadmin"
+
+title: BM@N Event Metadata System
+
+# only one page per EMS instance is supported now
+pages:
+  - name: BM@N Events
+    api_url: /event_api/v1
+    db_table_name: event
+    default_limit_web: 100
+    parameters:
+      - name: track_number
+        type: int
+        intervals: true
+        web_name: Total track number
+#      - name: trigger_str
+#        type: string
+#        web_name: Triggers (string)
+#      - name: primary_vertex
+#        type: bool
+#        web_name: Primary vertex
