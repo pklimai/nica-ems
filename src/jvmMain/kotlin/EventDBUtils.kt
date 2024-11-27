@@ -119,6 +119,13 @@ fun queryEMD(
 
         println(query)
 
-        return connEMD.createStatement().executeQuery(query)
+        try {
+            val res = connEMD.createStatement().executeQuery(query)
+            return res
+        } catch (err: PSQLException) {
+            println("Error querying the database: ${err}")
+            return null
+        }
+
     }
 }
