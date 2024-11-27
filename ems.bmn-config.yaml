@@ -17,7 +17,7 @@ keycloak_auth:
   server_url: "https://bmn-user.jinr.ru"
   realm: "BMN"
   client_id: "emd_api"
-  client_secret: "*****"
+  client_secret: "*****" # ADD CLIENT SECRET FOR KEYCLOAK 
   writer_group_name: "bmneventwriter"
   admin_group_name: "bmneventadmin"
 
