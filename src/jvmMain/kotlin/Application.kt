@@ -17,10 +17,9 @@ import org.postgresql.util.PSQLException
 import java.io.File
 import java.sql.DriverManager
 
+lateinit var config: ConfigFile
 
 fun Application.main() {
-
-    val config = readConfig()
 
     install(DefaultHeaders)
     install(CallLogging)
@@ -415,4 +414,7 @@ fun Application.main() {
 }
 
 // See resources/application.conf for ktor configuration
-fun main(args: Array<String>) = io.ktor.server.netty.EngineMain.main(args)
+fun main(args: Array<String>) {
+    config = readConfig() ?: return
+    io.ktor.server.netty.EngineMain.main(args)
+}

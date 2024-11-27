@@ -6,7 +6,7 @@ import java.io.File
 
 const val CONFIG_PATH = "./ems.config.yaml"
 
-fun readConfig(): ConfigFile {
+fun readConfig(): ConfigFile? {
     val mapper = ObjectMapper(YAMLFactory()).also { it.findAndRegisterModules() }
 
     val config: ConfigFile
@@ -17,7 +17,7 @@ fun readConfig(): ConfigFile {
             "Could not read config file from $CONFIG_PATH. \n" +
                     "Make sure the file is there and has proper format (if in Docker, mount as volume)"
         )
-        throw e
+        return null
     }
     println("Done reading config from $CONFIG_PATH")
     return config
