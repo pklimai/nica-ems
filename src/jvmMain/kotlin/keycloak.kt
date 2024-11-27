@@ -49,7 +49,7 @@ fun getKCtoken(config: ConfigFile, username: String, pass: String): String? {
         println("Authentication failed, no token obtained!")
         return null
     }
-    return token!!.token.also { println(it) }
+    return token!!.token .also{ println("getKCtoken: token was obtained") }  //.also { println(it) }
 }
 
 suspend fun getKCgroups(config: ConfigFile, token: String): List<String> {

@@ -37,9 +37,9 @@ fun Application.main() {
             basic("auth-keycloak-userpass") {
                 // Obtain Token via KeyCloak
                 validate { credentials ->
-                    println("auth-keycloak-userpass with credentials: ${credentials.name} ${credentials.password}")
+                    println("auth-keycloak-userpass called for username ${credentials.name}")
                     // Note: validate must return Principal in case of successful authentication or null otherwise
-                    getKCPrincipalOrNull(config, credentials.name, credentials.password).also { println(it) }
+                    getKCPrincipalOrNull(config, credentials.name, credentials.password) //.also { println(it) }
                 }
             }
             bearer("auth-keycloak-bearer") {
