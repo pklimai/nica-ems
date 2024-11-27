@@ -101,17 +101,22 @@ fun Application.main() {
             if (connEMD == null) {
                 call.respond(HttpStatusCode.NotFound)
             } else {
-                connEMD.createStatement().executeQuery("SELECT json_stats FROM statistics ORDER BY id DESC LIMIT 1")
-                    .let { resultSet ->
-                        if (resultSet.next()) {
-                            val r = resultSet.getString("json_stats")
-                            connEMD.close()
-                            call.response.header("Content-Type", "application/json")
-                            call.respondText(r)
-                        } else {
-                            call.respond(HttpStatusCode.NotFound)
+                try {
+                    connEMD.createStatement()
+                        .executeQuery("SELECT json_stats FROM statistics1111 ORDER BY id DESC LIMIT 1")
+                        .let { resultSet ->
+                            if (resultSet.next()) {
+                                val r = resultSet.getString("json_stats")
+                                connEMD.close()
+                                call.response.header("Content-Type", "application/json")
+                                call.respondText(r)
+                            } else {
+                                call.respond(HttpStatusCode.NotFound)
+                            }
                         }
-                    }
+                } catch (err: PSQLException) {
+                    println("Database error: $err")
+                }
             }
         }
 
