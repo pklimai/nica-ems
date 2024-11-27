@@ -1,51 +1,52 @@
 
-# NICA Event Metadata System (EMS) API and Web UI
+# API and Web UI of the Event Metadata System 
 
 ## About
 
-This software is part of the NICA Event Metadata System, providing REST API and Web User Interface (UI) for the 
-Event Catalogue of an experiment on particle collisions. PostgreSQL database is currently used for event metadata storage. Integration with the [Condition Database](https://git.jinr.ru/nica_db/unidb_platform) (containing run metadata of an experiment) and KeyCloak authorization is implemented.
+This software is part of the Event Metadata System (EMS), providing REST API and Web User Interface (UI) for the 
+Event Catalogue of an experiment on particle collisions. The PostgreSQL database is currently used as the event metadata storage. EMS supports integration with the [Unified Condition Database (UniConDa)](https://git.jinr.ru/nica_db/unidb_platform) containing run metadata of an experiment for fast pre-selection and KeyCloak identity provider ensuring cental authentification and authorization for users.
 
 ## Deployment
 
 ### Setting up the configuration file
 
-The system is configurable via YAML file for a particular experiment on particle collisions, including a set of specific metadata that are stored per experiment event. The configuration is defined in the file named `ems.config.yaml`. An example of the EMS system configuration for the BM@N experiment can be seen in the `ems.bmn-config.yaml` file.
+The system is configurable via YAML file for a particular experiment on particle collisions, including a set of specific event metadata. The configuration should be prepared in a file named `ems.config.yaml`. An example of the EMS configuration for the BM@N experiment can be seen in the `ems.bmn-config.yaml` file.
 
-In the configuration file, you must provide credentials for the Event Database and (optionally) Condition database, KeyCloak server parameters (also optional) and specify URLs and parameters stored in the EMS Catalogue.
+In the configuration file, you must provide credentials for the event database (Event Catalogue) and optionally for the Unified Condition database (if it is employed), optionally set KeyCloak server parameters, and specify URLs and event parameters (metadata) stored in the Event Catalogue.
 
-Supported parameter types are currently: `int`, `float`, `string`, `bool`. Ranges for `int` and `float` types are supported (both in Web interface and API) using `|` separator 
-(for instance, `track-number=10|15`). Such range is inclusive (that is, start and end of an interval are included). Intervals unbound from one side are also supported (for example, `track-number=10|` or `track-number=|15`).
+Supported event parameter types are currently: `int`, `float`, `string`, `bool`. Acceptable ranges for `int` and `float` values can be defined using `|` separator for both Web interface and API (for instance, `track-number=10|15`). The ranges are inclusive, that is start and end of the intervals are included. The intervals unbound from one side are also supported, for example, `track-number=10|` or `track-number=|15`.
 
-### Run installation of the system on a RedHat-based Operating System (AlmaLinux, CentOS, RedHat)
+### Run installation of the EMS interfaces on a RedHat-based Operating System (AlmaLinux, CentOS, RedHat)
 
 There are three possible ways to install the EMS API and Web UI.
 
 - Installation and run inside Docker-container (recommended):
 ```
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo yum install -y docker-ce docker-ce-cli containerd.io git
+sudo yum install -y docker-ce docker-ce-cli containerd.io git nano
 sudo systemctl enable --now docker
 sudo systemctl status docker
 
 git clone https://git.jinr.ru/nica_db/emd.git
 cd emd/
 sudo docker build -f Dockerfile.with-build -t nica-ems:buildindocker .
+nano ems.config.yaml   # set up or check your configuration file
 sudo docker run --rm -it -v ./ems.config.yaml:/app/bin/ems.config.yaml -p 80:8080 nica-ems:buildindocker
 ```
 
 - Local installation (for development purpose):
 ```
-sudo yum -y install java-17 git gcc-c++
+sudo yum -y install java-17 git gcc-c++ nano
 git clone https://git.jinr.ru/nica_db/emd.git
 cd emd/
+nano ems.config.yaml   # set up or check your configuration file
 sh gradlew run
 ```
 
 - Local installation but run inside the Docker-container (for development purpose):
 ```
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo yum install -y docker-ce docker-ce-cli containerd.io java-17 git gcc-c++
+sudo yum install -y docker-ce docker-ce-cli containerd.io java-17 git gcc-c++ nano
 sudo systemctl enable --now docker
 sudo systemctl status docker
 
@@ -53,10 +54,11 @@ git clone https://git.jinr.ru/nica_db/emd.git
 cd emd/
 sh gradlew installDist
 docker build -t nica-ems:current .
+nano ems.config.yaml   # set up or check your configuration file
 sudo docker run -d --rm --name nica-ems -p 80:8080 -v ./ems.config.yaml:/app/bin/ems.config.yaml nica-ems:current
 ```
 
-## Using deployed REST API service
+## Using the deployed REST API service
 
 ### Methods supported
 
