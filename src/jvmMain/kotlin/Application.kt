@@ -103,7 +103,7 @@ fun Application.main() {
             } else {
                 try {
                     connEMD.createStatement()
-                        .executeQuery("SELECT json_stats FROM statistics1111 ORDER BY id DESC LIMIT 1")
+                        .executeQuery("SELECT json_stats FROM statistics ORDER BY id DESC LIMIT 1")
                         .let { resultSet ->
                             if (resultSet.next()) {
                                 val r = resultSet.getString("json_stats")
