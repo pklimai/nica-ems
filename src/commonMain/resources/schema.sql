@@ -6,6 +6,8 @@
 -- drop table software_;
 -- drop table file_;
 -- drop table storage_;
+-- drop table statistics;
+-- drop sequence statistics_id_seq;
 
 
 create table software_
@@ -41,6 +43,19 @@ create table event
 --    trigger_str varchar (30) not null,
 --    primary_vertex bool not null
 );
+
+CREATE TABLE statistics (
+    json_stats character varying NOT NULL,
+    id integer NOT NULL,
+    time_written time without time zone
+);
+
+CREATE SEQUENCE statistics_id_seq AS integer START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+
+ALTER TABLE ONLY statistics ALTER COLUMN id SET DEFAULT nextval('statistics_id_seq'::regclass);
+
+ALTER TABLE ONLY statistics ADD CONSTRAINT statistics_pkey PRIMARY KEY (id);
+
 
 -- create table bmn_event
 -- (
