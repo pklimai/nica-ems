@@ -45,16 +45,10 @@ create table event
 );
 
 CREATE TABLE statistics (
+    id serial primary key,
     json_stats character varying NOT NULL,
-    id integer NOT NULL,
     time_written time without time zone
 );
-
-CREATE SEQUENCE statistics_id_seq AS integer START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
-
-ALTER TABLE ONLY statistics ALTER COLUMN id SET DEFAULT nextval('statistics_id_seq'::regclass);
-
-ALTER TABLE ONLY statistics ADD CONSTRAINT statistics_pkey PRIMARY KEY (id);
 
 
 -- create table bmn_event
