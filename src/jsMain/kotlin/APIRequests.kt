@@ -18,6 +18,12 @@ import ru.mipt.npm.nica.ems.utility.EMSUnauthException
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
 
+class APIResult<C> (
+    var result: C? = null,
+    var status: HttpStatusCode? = null,
+    var message: String? = null
+)
+
 suspend fun getConfig(): ConfigFile {
     val jsonClient = HttpClient {
         install(ContentNegotiation) {
@@ -128,15 +134,24 @@ suspend fun postStorage(storage: String, config: ConfigFile?, username: String, 
     }
 }
 
-suspend fun getStats(): EMSStatistics {
+
+suspend fun getStats(): APIResult<EMSStatistics> {
     val jsonClient = HttpClient {
         install(ContentNegotiation) {
             json()
         }
     }
-    val res = jsonClient.get(endpoint + STATISTICS_URL).body<EMSStatistics>()
+    val response = jsonClient.get(endpoint + STATISTICS_URL)
     jsonClient.close()
-    return res
+    println("Println: getStats status: ${response.status}")
+    if (response.status == HttpStatusCode.OK) {
+        val res = response.body<EMSStatistics>()
+        return APIResult<EMSStatistics>(res)
+    } else {
+        return APIResult(null, response.status, response.body())
+    }
+
+
 /*
     return EMSStatistics(
         totalRecords = 50000,

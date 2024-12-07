@@ -18,11 +18,18 @@ val statsPage = fc<StatsPageProps> { props ->
     val (stats, setStats) = useState<EMSStatistics>()
     val (currentPeriod, setCurrentPeriod) = useState<String>()   // TODO why String?
     val (currentSW, setCurrentSW) = useState<String>()
+    val (errorStr, setErrorStr) = useState<String>("")
+    val (errorVisible, setErrorVisible) = useState<Boolean>(false)
 
     useEffectOnce {
         scope.launch {
             val newStats = getStats()
-            setStats(newStats)
+            if (newStats.result != null) {
+                setStats(newStats.result)
+            } else {
+                setErrorStr("Server error ${newStats.status} \n ${newStats.message}")
+                setErrorVisible(true)
+            }
         }
     }
 
@@ -41,6 +48,18 @@ val statsPage = fc<StatsPageProps> { props ->
     }
 
     div("home__page") {
+        if (errorVisible) {
+            div("error") {
+                div("error__login") {
+                    +"Statistics obtaining failed"
+                }
+                errorStr.split("\n").forEach {
+                    div("error__text") {
+                        + it
+                    }
+                }
+            }
+        }
         div("home__page__stats") {
             div("home__page__dashboard") {
                 div("home__page__dashboard__head") {
@@ -74,7 +93,7 @@ val statsPage = fc<StatsPageProps> { props ->
                         +"Period Number —"
                     }
                     div("per_number") {
-                        + (currentPeriod ?: "0")
+                        +(currentPeriod ?: "0")
                     }
                 }
             }
@@ -98,12 +117,12 @@ val statsPage = fc<StatsPageProps> { props ->
                                     setPeriodOpened(false)
                                     // change software to last in list
                                     val newSW =
-                                        stats?.periodStats?.filter{it.periodNumber.toString() == newPeriod}?.firstOrNull()?.softwareStats?.last()?.swVer.toString()
+                                        stats?.periodStats?.filter { it.periodNumber.toString() == newPeriod }
+                                            ?.firstOrNull()?.softwareStats?.last()?.swVer.toString()
                                     setCurrentSW(newSW)
                                 }
                             }
-                            stats?.periodStats?.map{it.periodNumber}?.sortedByDescending{ it }?.
-                            forEach { perNum ->
+                            stats?.periodStats?.map { it.periodNumber }?.sortedByDescending { it }?.forEach { perNum ->
                                 MenuItem {
                                     attrs {
                                         value = perNum.toString()
@@ -126,7 +145,7 @@ val statsPage = fc<StatsPageProps> { props ->
                         +"Software Version — "
                     }
                     div("per_number") {
-                        + (currentSW ?: "0")
+                        +(currentSW ?: "0")
                     }
                 }
             }
@@ -152,13 +171,13 @@ val statsPage = fc<StatsPageProps> { props ->
                             stats?.periodStats
                                 ?.filter { it.periodNumber.toString() == currentPeriod }
                                 ?.first()?.softwareStats?.map { it.swVer }?.forEach { sw ->
-                                MenuItem {
-                                    attrs {
-                                        value = sw
+                                    MenuItem {
+                                        attrs {
+                                            value = sw
+                                        }
+                                        +sw
                                     }
-                                    +sw
                                 }
-                            }
                         }
                     }
                 }

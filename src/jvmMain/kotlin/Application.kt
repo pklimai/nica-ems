@@ -116,6 +116,7 @@ fun Application.main() {
                         }
                 } catch (err: PSQLException) {
                     println("Database error: $err")
+                    call.respond(HttpStatusCode.NotFound, "Database error: $err")
                 }
             }
         }
