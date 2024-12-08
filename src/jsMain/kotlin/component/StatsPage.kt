@@ -51,7 +51,7 @@ val statsPage = fc<StatsPageProps> { props ->
         if (errorVisible) {
             div("error") {
                 div("error__login") {
-                    +"Statistics obtaining failed"
+                    +"Could not obtain statistics"
                 }
                 errorStr.split("\n").forEach {
                     div("error__text") {

@@ -97,27 +97,23 @@ fun Application.main() {
         }
 
         get(STATISTICS_URL) {
-            val connEMD = newEMDConnection(config, this@get.context, forStatsGetting = true)
-            if (connEMD == null) {
-                call.respond(HttpStatusCode.NotFound)
-            } else {
-                try {
-                    connEMD.createStatement()
-                        .executeQuery("SELECT json_stats FROM statistics ORDER BY id DESC LIMIT 1")
-                        .let { resultSet ->
-                            if (resultSet.next()) {
-                                val r = resultSet.getString("json_stats")
-                                connEMD.close()
-                                call.response.header("Content-Type", "application/json")
-                                call.respondText(r)
-                            } else {
-                                call.respond(HttpStatusCode.NotFound)
-                            }
+            try {
+                val connEMD = newEMDConnection(config, this@get.context, forStatsGetting = true)!!
+                connEMD.createStatement()
+                    .executeQuery("SELECT json_stats FROM statistics ORDER BY id DESC LIMIT 1")
+                    .let { resultSet ->
+                        if (resultSet.next()) {
+                            val r = resultSet.getString("json_stats")
+                            connEMD.close()
+                            call.response.header("Content-Type", "application/json")
+                            call.respondText(r)
+                        } else {
+                            call.respond(HttpStatusCode.NotFound, "No data in EMS statistics table")
                         }
-                } catch (err: PSQLException) {
-                    println("Database error: $err")
-                    call.respond(HttpStatusCode.NotFound, "Database error: $err")
-                }
+                    }
+            } catch (err: Exception) {
+                println("EMS database error: $err")
+                call.respond(HttpStatusCode.NotFound, "EMS database error: $err")
             }
         }
 
