@@ -15,6 +15,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.postgresql.util.PSQLException
 import java.io.File
+import java.sql.Connection
 import java.sql.DriverManager
 
 lateinit var config: ConfigFile
@@ -67,8 +68,6 @@ fun Application.main() {
         DriverManager.getConnection(urlConditionDB, config.condition_db!!.user, config.condition_db!!.password)
     }
 
-    // TODO: Check if tables in Event Catalogue already exist, if not, create them in the database?
-
     // println("Working Directory = ${System.getProperty("user.dir")}")
     routing {
 
@@ -97,14 +96,14 @@ fun Application.main() {
         }
 
         get(STATISTICS_URL) {
+            var connEMD: Connection? = null
             try {
-                val connEMD = newEMDConnection(config, this@get.context, forStatsGetting = true)!!
+                connEMD = newEMDConnection(config, this@get.context, forStatsGetting = true)!!
                 connEMD.createStatement()
                     .executeQuery("SELECT json_stats FROM statistics ORDER BY id DESC LIMIT 1")
                     .let { resultSet ->
                         if (resultSet.next()) {
                             val r = resultSet.getString("json_stats")
-                            connEMD.close()
                             call.response.header("Content-Type", "application/json")
                             call.respondText(r)
                         } else {
@@ -114,6 +113,8 @@ fun Application.main() {
             } catch (err: Exception) {
                 println("EMS database error: $err")
                 call.respond(HttpStatusCode.NotFound, "EMS database error: $err")
+            } finally {
+                connEMD?.close()
             }
         }
 
@@ -136,12 +137,11 @@ fun Application.main() {
         optionallyAuthenticate {
 
             get(SOFTWARE_URL) {
-                val connEMD = newEMDConnection(config, this@get.context)
-                if (connEMD == null) {
-                    call.respond(HttpStatusCode.NotFound)
-                } else {
+                var connEMD: Connection? = null
+                try {
+                    connEMD = newEMDConnection(config, this@get.context)!!
                     val swList = mutableListOf<SoftwareVersion>().apply {
-                        connEMD.createStatement().executeQuery("SELECT * FROM software_").let { resultSet ->
+                        connEMD!!.createStatement().executeQuery("SELECT * FROM software_").let { resultSet ->
                             while (resultSet.next()) {
                                 this@apply.add(
                                     SoftwareVersion(
@@ -152,8 +152,11 @@ fun Application.main() {
                             }
                         }
                     }
-                    connEMD.close()
                     call.respond(swList)
+                } catch (err: Exception) {
+                    call.respond(HttpStatusCode.NotFound, "Error obtaining software table data: $err")
+                } finally {
+                    connEMD?.close()
                 }
             }
 
@@ -161,6 +164,7 @@ fun Application.main() {
                 // e.g. POST { "software_id": 100, "software_version": "22.1" }
                 // Note: software_id is assigned automatically by the database, regardless of what is passed in JSON
                 val roles = call.principal<WithRoles>()?.roles!!
+                // println("Roles in post(SOFTWARE_URL): $roles")
                 if (!(roles.isWriter or roles.isAdmin)) {
                     call.respond(HttpStatusCode.Unauthorized)
                     return@post  // not really needed here but important in other places
@@ -195,12 +199,11 @@ fun Application.main() {
             }
 
             get(STORAGE_URL) {
-                val connEMD = newEMDConnection(config, this@get.context)
-                if (connEMD == null) {
-                    call.respond(HttpStatusCode.NotFound)
-                } else {
+                var connEMD: Connection? = null
+                try {
+                    connEMD = newEMDConnection(config, this@get.context)!!
                     val storageList = mutableListOf<Storage>().apply {
-                        connEMD.createStatement().executeQuery("SELECT * FROM storage_").let { resultSet ->
+                        connEMD!!.createStatement().executeQuery("SELECT * FROM storage_").let { resultSet ->
                             while (resultSet.next()) {
                                 this@apply.add(
                                     Storage(
@@ -211,8 +214,11 @@ fun Application.main() {
                             }
                         }
                     }
-                    connEMD.close()
                     call.respond(storageList)
+                } catch (err: Exception) {
+                    call.respond(HttpStatusCode.NotFound, "Error obtaining storage table data: $err")
+                } finally {
+                    connEMD?.close()
                 }
             }
 

@@ -82,24 +82,30 @@ fun jsonClientWithOptionalAuth(config: ConfigFile?, username: String, password: 
         }
     }
 
-suspend fun getSoftwareVersions(config: ConfigFile?, username: String, password: String): Array<SoftwareVersion> {
+suspend fun getSoftwareVersions(config: ConfigFile?, username: String, password: String): APIResult<Array<SoftwareVersion>> {
     val jsonClient = jsonClientWithOptionalAuth(config, username, password)
-    val httpResponse = jsonClient.get(endpoint + SOFTWARE_URL)
+    val response = jsonClient.get(endpoint + SOFTWARE_URL)
     jsonClient.close()
-    if (httpResponse.status in listOf(HttpStatusCode.Unauthorized, HttpStatusCode.NotFound)) {
-        throw EMSUnauthException()
+    println("getSoftwareVersions:\n ${response.status}\n ${response.body<Any>()}")
+    if (response.status == HttpStatusCode.OK) {
+        val res = response.body<Array<SoftwareVersion>>()
+        return APIResult(res, response.status)
+    } else {
+        return APIResult(null, response.status, response.body())
     }
-    return httpResponse.body<Array<SoftwareVersion>>()
 }
 
-suspend fun getStorages(config: ConfigFile?, username: String, password: String): Array<Storage> {
+suspend fun getStorages(config: ConfigFile?, username: String, password: String): APIResult<Array<Storage>> {
     val jsonClient = jsonClientWithOptionalAuth(config, username, password)
-    val httpResponse = jsonClient.get(endpoint + STORAGE_URL)
+    val response = jsonClient.get(endpoint + STORAGE_URL)
     jsonClient.close()
-    if (httpResponse.status in listOf(HttpStatusCode.Unauthorized, HttpStatusCode.NotFound)) {
-        throw EMSUnauthException()
+    println("getStorages:\n ${response.status}\n ${response.body<Any>()}")
+    if (response.status == HttpStatusCode.OK) {
+        val res = response.body<Array<Storage>>()
+        return APIResult(res, response.status)
+    } else {
+        return APIResult(null, response.status, response.body())
     }
-    return httpResponse.body<Array<Storage>>()
 }
 
 suspend fun postSoftwareVersion(swVer: String, config: ConfigFile?, username: String, password: String): Unit {
@@ -146,13 +152,13 @@ suspend fun getStats(): APIResult<EMSStatistics> {
     println("Println: getStats status: ${response.status}")
     if (response.status == HttpStatusCode.OK) {
         val res = response.body<EMSStatistics>()
-        return APIResult<EMSStatistics>(res)
+        return APIResult<EMSStatistics>(res, response.status)
     } else {
         return APIResult(null, response.status, response.body())
     }
+}
 
-
-/*
+/*  // Example/dummy EMSStatistics:
     return EMSStatistics(
         totalRecords = 50000,
         periodStats = listOf(
@@ -210,4 +216,3 @@ suspend fun getStats(): APIResult<EMSStatistics> {
     )
 */
 
-}

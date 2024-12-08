@@ -1,5 +1,6 @@
 package ru.mipt.npm.nica.ems
 
+import io.ktor.http.*
 import kotlinx.coroutines.launch
 import kotlinx.html.InputType
 import kotlinx.html.js.onClickFunction
@@ -37,7 +38,8 @@ val login = fc<LoginPageProps> { props ->
                     +"Please enter a correct username and password."
                 }
             }
-        } else if(failedAuthVisible){
+        }
+        if(failedAuthVisible){
             div("error"){
                 div("error__login"){
                     + "Login failed!"
@@ -110,14 +112,14 @@ val login = fc<LoginPageProps> { props ->
                                     // console.log("Sign-In pressed with username=$username, password=$password!")
                                     // Performing actual authentication check here using our API
                                     scope.launch {
-                                        try {
-                                            // Here, any other request could be used as well
-                                            getSoftwareVersions(props.config, username ?: "", password ?: "")
+                                        // Here, we just check that even if there is error it is not authentication error
+                                        if (getSoftwareVersions(props.config, username ?: "", password ?: "").status
+                                            != HttpStatusCode.Unauthorized) {
                                             // If no exception, set values (this will also close auth window)
                                             props.setValues(username ?: "", password ?: "")
-                                        } catch (e: EMSUnauthException) {
-                                            setFailedAuthVisible(true)
+                                        } else {
                                             console.log("Auth check failed!")
+                                            setFailedAuthVisible(true)
                                         }
                                     }
                                 }

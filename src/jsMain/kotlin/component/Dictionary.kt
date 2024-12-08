@@ -32,15 +32,27 @@ val dictionary = fc<DictionaryPageProps> { props ->
 
     useEffectOnce {
         scope.launch {
-            props.setSWdata(getSoftwareVersions(props.config, props.username, props.password))
-            props.setStoragedata(getStorages(props.config, props.username, props.password))
+            val swVer = getSoftwareVersions(props.config, props.username, props.password)
+            if (swVer.result != null) {
+                props.setSWdata(swVer.result)
+            } else {
+                setErrorMessage("Error obtaining software information\n ${swVer.status}\n ${swVer.message}")
+            }
+            val storages = getStorages(props.config, props.username, props.password)
+            if (storages.result != null) {
+                props.setStoragedata(storages.result)
+            } else {
+                setErrorMessage("Error obtaining storage information\n ${storages.status}\n ${storages.message}")
+            }
         }
     }
 
     div("dictionary") {
         errorMessage?.let {
-            p("dictionary__p__error") {
-                +errorMessage
+            it.split("\n").forEach {
+                p("dictionary__p__error") {
+                    +it
+                }
             }
         }
         div("dictionary__top") {
@@ -69,7 +81,7 @@ val dictionary = fc<DictionaryPageProps> { props ->
                                 if (!storage.isNullOrEmpty()) {
                                     try {
                                         postStorage(storage, props.config, props.username, props.password)
-                                        props.setStoragedata(getStorages(props.config, props.username, props.password))
+                                        props.setStoragedata(getStorages(props.config, props.username, props.password).result)
                                     } catch (_: EMSUnauthException) {
                                         setErrorMessage("Error - unauthorized")
                                     } catch (_: EMSConflictException) {
@@ -116,7 +128,7 @@ val dictionary = fc<DictionaryPageProps> { props ->
                                                 props.config,
                                                 props.username,
                                                 props.password
-                                            )
+                                            ).result
                                         )
                                     } catch (_: EMSUnauthException) {
                                         setErrorMessage("Error - unauthorized")
