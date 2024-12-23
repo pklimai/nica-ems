@@ -315,6 +315,7 @@ fun Application.main() {
                     post("/${EVENT_ENTITY_API_NAME}") {
 
                         val roles = call.principal<WithRoles>()?.roles!!
+                        // println("Roles in EVENT_ENTITY_API_NAME: $roles")
                         if (!(roles.isWriter or roles.isAdmin)) {
                             call.respond(HttpStatusCode.Unauthorized)
                             return@post

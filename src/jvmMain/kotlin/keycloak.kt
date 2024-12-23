@@ -1,5 +1,6 @@
 package ru.mipt.npm.nica.ems
 
+import JwtParser
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -13,6 +14,7 @@ import jakarta.ws.rs.NotAuthorizedException
 import org.keycloak.admin.client.Keycloak
 import org.keycloak.representations.AccessTokenResponse
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.jsonArray
 
 @Serializable
 data class KCUserInfo(
@@ -53,27 +55,16 @@ fun getKCtoken(config: ConfigFile, username: String, pass: String): String? {
 }
 
 suspend fun getKCgroups(config: ConfigFile, token: String): List<String> {
-    val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json()
-        }
-        install(Auth) {
-            bearer {
-                loadTokens {
-                    BearerTokens(token, "")
-                }
-            }
-        }
+    val parser = JwtParser()
+    val jsonToken = parser.parseToJsonObject(token)
+    // println(jsonToken?.get("groups"))
+    val res = mutableListOf<String>()
+    jsonToken?.get("groups")?.jsonArray?.forEach {
+        // println(it)
+        res.add((it.toString().replace("/", "").replace("\"", "")))
     }
-    var groupsObtained: List<String>?
-    val url =
-        "${config.keycloak_auth?.server_url}/realms/${config.keycloak_auth?.realm}/protocol/openid-connect/userinfo"
-    //runBlocking {
-    val response = client.get(url)
-    val res: KCUserInfo? = response.body()
-    groupsObtained = res?.groups
-    //}
-    return groupsObtained ?: listOf()
+    // println(res)
+    return res
 }
 
 suspend fun getKCPrincipalOrNull(config: ConfigFile, username: String, pass: String): Principal? {
@@ -83,9 +74,11 @@ suspend fun getKCPrincipalOrNull(config: ConfigFile, username: String, pass: Str
 }
 
 fun rolesFromGroups(config: ConfigFile, groups: List<String>): UserRoles {
-    return UserRoles(
+    val res = UserRoles(
         isReader = true,      // any authenticated user
         isWriter = groups.contains(config.keycloak_auth?.writer_group_name), // e.g. "bmneventwriter", can add records
         isAdmin = groups.contains(config.keycloak_auth?.admin_group_name)    // e.g. "bmneventadmin", can delete records
     )
+    // println("res = $res")
+    return res
 }
