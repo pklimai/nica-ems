@@ -59,6 +59,8 @@ suspend fun getEMD(api_url: String, config: ConfigFile?, username: String, passw
     } else if (httpResp.status == HttpStatusCode.BadRequest) {
         console.log("Got BadRequest response code!")
         throw EMSBadRequestException()
+    } else if (httpResp.status != HttpStatusCode.OK) {
+        throw EMSBadRequestException()
     }
     val res = httpResp.bodyAsText()
     console.log(res)

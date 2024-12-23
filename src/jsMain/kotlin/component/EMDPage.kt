@@ -29,10 +29,24 @@ external interface EMDPageProps : Props {
 val emdPage = fc<EMDPageProps> { props ->
     // Parameters entered in form
     val (params, setParams) = useState<Map<String, String>>()
+    val (errorStr, setErrorStr) = useState<String>("")
+    val (errorVisible, setErrorVisible) = useState<Boolean>(false)
 
     // Event metadata from API
     // val (EMDData, setEMDData) = useState<String>()
     div("new_table_page") {
+        if (errorVisible) {
+            div("error") {
+                div("error__login") {
+                    +"Could not obtain statistics"
+                }
+                errorStr.split("\n").forEach {
+                    div("error__text") {
+                        + it
+                    }
+                }
+            }
+        }
         div("new_table_page__card") {
             div("mat-table-title") {
                 +props.pageConfig.name
@@ -205,7 +219,9 @@ val emdPage = fc<EMDPageProps> { props ->
                                         } catch (e: EMSBadRequestException) {
                                             // Wrong parameters were specified, e.g. incorrect range
                                             // TODO possibly toast about server returned error
-                                            props.setEMDdata(null)
+                                            ///props.setEMDdata(null)
+                                            setErrorStr("Error") // TODO
+                                            setErrorVisible(true)
                                         }
                                     }
                                 }

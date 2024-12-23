@@ -273,17 +273,14 @@ fun Application.main() {
                             call.respond(HttpStatusCode.BadRequest)
                             return@get
                         }
-                        val connEMD = newEMDConnection(config, this.context)
-                        if (connEMD == null) {
-                            call.respond(HttpStatusCode.Unauthorized)
-                        } else {
+                        var connEMD: Connection? = null
+                        try {
+                            connEMD = newEMDConnection(config, this.context)!!
                             // val softwareMap = getSoftwareMap(connEMD)  // not used for now
-                            val res = queryEMD(parameterBundle, page, connCondition, connEMD, null)
-
+                            val res = queryEMD(parameterBundle, page, connCondition, connEMD!!, null)
                             val lstEvents = ArrayList<EventRepr>()
                             while (res?.next() == true) {
                                 val paramMap = HashMap<String, Any>()
-
                                 page.parameters.forEach {
                                     when (it.type.uppercase()) {
                                         "INT" -> paramMap[it.name] = res.getInt(it.name)
@@ -307,8 +304,11 @@ fun Application.main() {
                                     )
                                 )
                             }
-                            connEMD.close()
                             call.respond(mapOf("events" to lstEvents))
+                        } catch (err: Exception) {
+                            call.respond(HttpStatusCode.NotFound, "Error obtaining event data:\n $err")
+                        } finally {
+                            connEMD?.close()
                         }
                     }
 
