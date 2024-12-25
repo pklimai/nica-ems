@@ -5,6 +5,7 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -153,8 +154,16 @@ fun Application.main() {
                         }
                     }
                     call.respond(swList)
+                } catch (err: PSQLException) {
+                    if (err.toString().contains("The connection attempt failed.")) {
+                        call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
+                    } else {
+                        call.respond(HttpStatusCode.Conflict, "Database error: $err")
+                    }
+                } catch (err: BadRequestException) {
+                    call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
                 } catch (err: Exception) {
-                    call.respond(HttpStatusCode.NotFound, "Error obtaining software table data: $err")
+                    call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
                 } finally {
                     connEMD?.close()
                 }
@@ -168,33 +177,27 @@ fun Application.main() {
                 if (!(roles.isWriter or roles.isAdmin)) {
                     call.respond(HttpStatusCode.Unauthorized)
                     return@post  // not really needed here but important in other places
-                } else {
+                }
+                var connEMD: Connection? = null
+                try {
                     val sw = call.receive<SoftwareVersion>()
-                    val connEMD = newEMDConnection(config, this.context)
-                    if (connEMD == null) {
-                        call.respond(HttpStatusCode.Unauthorized)
+                    connEMD = newEMDConnection(config, this.context)
+                    val query = """INSERT INTO software_ (software_version) VALUES ('${sw.software_version}')"""
+                    println(query)
+                    connEMD!!.createStatement().executeUpdate(query)
+                    call.respond(HttpStatusCode.OK, "SW record was created")
+                } catch (err: PSQLException) {
+                    if (err.toString().contains("The connection attempt failed.")) {
+                        call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
                     } else {
-                        val query = """
-                            INSERT INTO software_ (software_version)
-                            VALUES ('${sw.software_version}')
-                        """.trimIndent()
-                        // print(query)
-                        try {
-                            connEMD.createStatement().executeUpdate(query)
-                            call.response.status(HttpStatusCode.OK)
-                            call.respond("SW record was created")
-                        } catch (ex: PSQLException) {
-                            if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
-                                call.respond(HttpStatusCode.Unauthorized)
-                            } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
-                                call.respond(HttpStatusCode.Conflict)
-                            } else {
-                                call.respond(HttpStatusCode.InternalServerError)
-                            }
-                        } finally {
-                            connEMD.close()
-                        }
+                        call.respond(HttpStatusCode.Conflict, "Database error: $err")
                     }
+                } catch (err: BadRequestException) {
+                    call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
+                } catch (err: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
+                } finally {
+                    connEMD?.close()
                 }
             }
 
@@ -215,8 +218,16 @@ fun Application.main() {
                         }
                     }
                     call.respond(storageList)
+                } catch (err: PSQLException) {
+                    if (err.toString().contains("The connection attempt failed.")) {
+                        call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
+                    } else {
+                        call.respond(HttpStatusCode.Conflict, "Database error: $err")
+                    }
+                } catch (err: BadRequestException) {
+                    call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
                 } catch (err: Exception) {
-                    call.respond(HttpStatusCode.NotFound, "Error obtaining storage table data: $err")
+                    call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
                 } finally {
                     connEMD?.close()
                 }
@@ -227,33 +238,30 @@ fun Application.main() {
                 val roles = call.principal<WithRoles>()?.roles!!
                 if (!(roles.isWriter or roles.isAdmin)) {
                     call.respond(HttpStatusCode.Unauthorized)
-                } else {
+                    return@post
+                }
+                var connEMD: Connection? = null
+                try {
                     val storage = call.receive<Storage>()
-                    val connEMD = newEMDConnection(config, this.context)
-                    if (connEMD == null) {
-                        call.respond(HttpStatusCode.Unauthorized)
+                    connEMD = newEMDConnection(config, this.context)
+                    val query = """INSERT INTO storage_ (storage_name) VALUES ('${storage.storage_name}')"""
+                    println(query)
+
+                    connEMD!!.createStatement().executeUpdate(query)
+                    call.response.status(HttpStatusCode.OK)
+                    call.respond("Storage record was created")
+                } catch (err: PSQLException) {
+                    if (err.toString().contains("The connection attempt failed.")) {
+                        call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
                     } else {
-                        val query = """
-                            INSERT INTO storage_ (storage_name)
-                            VALUES ('${storage.storage_name}')
-                        """.trimIndent()
-                        // print(query)
-                        try {
-                            connEMD.createStatement().executeUpdate(query)
-                            call.response.status(HttpStatusCode.OK)
-                            call.respond("Storage record was created")
-                        } catch (ex: PSQLException) {  // e.g. this version already exists
-                            if (ex.serverErrorMessage.toString().startsWith("ERROR: permission denied for table")) {
-                                call.respond(HttpStatusCode.Unauthorized)
-                            } else if (ex.serverErrorMessage.toString().startsWith("ERROR: duplicate key value")) {
-                                call.respond(HttpStatusCode.Conflict)
-                            } else {
-                                call.respond(HttpStatusCode.InternalServerError)
-                            }
-                        } finally {
-                            connEMD.close()
-                        }
+                        call.respond(HttpStatusCode.Conflict, "Database error: $err")
                     }
+                } catch (err: BadRequestException) {
+                    call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
+                } catch (err: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
+                } finally {
+                    connEMD?.close()
                 }
             }
         }
@@ -305,8 +313,16 @@ fun Application.main() {
                                 )
                             }
                             call.respond(mapOf("events" to lstEvents))
+                        } catch (err: PSQLException) {
+                            if (err.toString().contains("The connection attempt failed.")) {
+                                call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
+                            } else {
+                                call.respond(HttpStatusCode.Conflict, "Database error: $err")
+                            }
+                        } catch (err: BadRequestException) {
+                            call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
                         } catch (err: Exception) {
-                            call.respond(HttpStatusCode.NotFound, "Error obtaining event data:\n $err")
+                            call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
                         } finally {
                             connEMD?.close()
                         }
@@ -350,7 +366,7 @@ fun Application.main() {
                                         INSERT INTO file_ (storage_id, file_path)
                                         VALUES ($storage_id, '$file_path')
                                     """.trimIndent()
-                                    print(fileQuery)
+                                    println(fileQuery)
                                     connEMD!!.createStatement().executeUpdate(fileQuery)
                                     // TODO remove duplicate code here...
                                     val res2 = connEMD!!.createStatement().executeQuery(
@@ -379,15 +395,21 @@ fun Application.main() {
                                         VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
                                             ${event.run_number}, $parameterValuesStr)
                                     """.trimIndent()
-                                // print(query)
+                                println(query)
                                 connEMD!!.createStatement().executeUpdate(query)
                             }
-                            call.response.status(HttpStatusCode.OK)
-                            call.respond("Events were created")
+                            call.respond(HttpStatusCode.OK, "Events were created")
+                        } catch (err: PSQLException) {
+                            if (err.toString().contains("The connection attempt failed.")) {
+                                call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
+                            } else {
+                                call.respond(HttpStatusCode.Conflict, "Database error: $err")
+                            }
+                        } catch (err: BadRequestException) {
+                            call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
                         } catch (err: Exception) {
                             call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
-                        }
-                        finally {
+                        } finally {
                             connEMD?.close()
                         }
                     }
