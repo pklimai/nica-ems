@@ -321,15 +321,12 @@ fun Application.main() {
                             return@post
                         }
 
-                        val events = call.receive<Array<EventRepr>>()
-
-                        val connEMD = newEMDConnection(config, this.context)
-                        if (connEMD == null) {
-                            call.respond(HttpStatusCode.Unauthorized)
-                            return@post
-                        } else {
-                            val softwareMap = getSoftwareMap(connEMD)
-                            val storageMap = getStorageMap(connEMD)
+                        var connEMD: Connection? = null
+                        try {
+                            val events = call.receive<Array<EventRepr>>()
+                            connEMD = newEMDConnection(config, this.context)
+                            val softwareMap = getSoftwareMap(connEMD!!)
+                            val storageMap = getStorageMap(connEMD!!)
                             events.forEach { event ->
                                 println("Create event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
@@ -339,7 +336,7 @@ fun Application.main() {
 
                                 // get file_guid
                                 val file_guid: Int
-                                val res = connEMD.createStatement().executeQuery(
+                                val res = connEMD!!.createStatement().executeQuery(
                                     """SELECT file_guid FROM file_ WHERE 
                                          storage_id = $storage_id AND file_path = '$file_path'
                                     """.trimMargin()
@@ -354,9 +351,9 @@ fun Application.main() {
                                         VALUES ($storage_id, '$file_path')
                                     """.trimIndent()
                                     print(fileQuery)
-                                    connEMD.createStatement().executeUpdate(fileQuery)
+                                    connEMD!!.createStatement().executeUpdate(fileQuery)
                                     // TODO remove duplicate code here...
-                                    val res2 = connEMD.createStatement().executeQuery(
+                                    val res2 = connEMD!!.createStatement().executeQuery(
                                         """SELECT file_guid FROM file_ WHERE 
                                             storage_id = $storage_id AND file_path = '$file_path'
                                         """.trimMargin()
@@ -383,11 +380,15 @@ fun Application.main() {
                                             ${event.run_number}, $parameterValuesStr)
                                     """.trimIndent()
                                 // print(query)
-                                connEMD.createStatement().executeUpdate(query)
+                                connEMD!!.createStatement().executeUpdate(query)
                             }
-                            connEMD.close()
                             call.response.status(HttpStatusCode.OK)
                             call.respond("Events were created")
+                        } catch (err: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
+                        }
+                        finally {
+                            connEMD?.close()
                         }
                     }
 
