@@ -417,11 +417,59 @@ fun Application.main() {
                     delete("/${EVENT_ENTITY_API_NAME}") {
                         val roles = call.principal<WithRoles>()?.roles!!
                         if (!roles.isAdmin) {
-                            call.respond(HttpStatusCode.Unauthorized)
+                            call.respond(HttpStatusCode.Unauthorized, "Only user with Admin role can delete events")
                             return@delete
-                        } else {
-                            call.respond(HttpStatusCode.NotImplemented)
-                            TODO("To be implemented")
+                        }
+                        var connEMD: Connection? = null
+                        var deletedCount = 0
+                        try {
+                            // Here, we only care about reference to event, other event data is optional and is ignored, if passed
+                            val events = call.receive<Array<EventReprForDelete>>()
+                            connEMD = newEMDConnection(config, this.context)
+                            val storageMap = getStorageMap(connEMD!!)
+                            events.forEach { event ->
+                                println("Deleting event: $event")
+                                // val software_id = softwareMap.str_to_id[event.software_version]
+                                val file_path = event.reference.file_path
+                                val storage_name = event.reference.storage_name
+                                val storage_id = storageMap.str_to_id[storage_name]
+
+                                val file_guid: Int
+                                val res = connEMD!!.createStatement().executeQuery(
+                                    """SELECT file_guid FROM file_ WHERE 
+                                         storage_id = $storage_id AND file_path = '$file_path'
+                                    """.trimMargin()
+                                )
+                                if (res.next()) {
+                                    file_guid = res.getInt("file_guid")
+                                    println("File GUID = $file_guid")
+                                } else { // no such file
+                                    call.respond(HttpStatusCode.NotFound, "Error: file_guid not found for event")
+                                    return@delete
+                                }
+                                val query = """
+                                    DELETE FROM ${page.db_table_name} 
+                                    WHERE (("file_guid" = $file_guid AND "event_number" = ${event.reference.event_number}));
+                                    """.trimIndent()
+                                println(query)
+                                val intRes = connEMD!!.createStatement().executeUpdate(query)
+                                if (intRes == 1) {
+                                    deletedCount++
+                                }
+                            }
+                            call.respond(HttpStatusCode.OK, "Overall $deletedCount events were deleted")
+                        } catch (err: PSQLException) {
+                            if (err.toString().contains("The connection attempt failed.")) {
+                                call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
+                            } else {
+                                call.respond(HttpStatusCode.Conflict, "Database error: $err")
+                            }
+                        } catch (err: BadRequestException) {
+                            call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
+                        } catch (err: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, "Error deleting events: $err")
+                        } finally {
+                            connEMD?.close()
                         }
                     }
 

@@ -86,15 +86,33 @@ Example:
 `http://127.0.0.1:8080/event_api/v1/event?limit=5&software_version=~19._&beam_particle=~A_&track_number=11|`
 
 
-#### Create event records in the metadata catalog:
+#### Create event records in the metadata catalog (Writer or Admin role required):
 `POST /event_api/v1/event`
 
 Message body must contain the JSON list of events using format as given below.  
 
-#### TODO: Delete event records from the metadata catalog
+#### Read software records from dictionary
+`GET /event_api/v1/software`
+
+#### Create software record in dictionary
+`POST /event_api/v1/software`
+
+Message body example `{"software_id": 100, "software_version": "22.11"}`
+
+#### Read storage records from dictionary
+`GET /event_api/v1/storage`
+
+#### Create storage record in dictionary
+`POST /event_api/v1/storage`
+
+Message body example `{"storage_id": 100, "storage_name": "data1"}`
+
+
+#### Delete event records from the metadata catalog (Admin role required)
 `DELETE /event_api/v1/event`
 
-Message body must contain the JSON list of events (only `reference:` part required).
+Message body must contain the JSON list of events (only `reference:` part is required, other fields are
+optional and ignored, if present).
 
 #### TODO: Count number of entries in EMS and return just this value
 `GET /count[?parameter1=value1[&parameter2=value2[...]]]`

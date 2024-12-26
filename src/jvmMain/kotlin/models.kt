@@ -13,3 +13,11 @@ data class Reference(
     val file_path: String,
     val event_number: Int
 )
+
+data class EventReprForDelete(
+    val reference: Reference,
+    val software_version: String? = "",
+    val period_number: Short? = 0,
+    val run_number: Int? = 0,
+    val parameters: Map<String, Any>?
+)
