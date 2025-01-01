@@ -322,7 +322,7 @@ fun Application.main() {
                         } catch (err: BadRequestException) {
                             call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
                         } catch (err: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
+                            call.respond(HttpStatusCode.InternalServerError, "Error obtaining event data: $err")
                         } finally {
                             connEMD?.close()
                         }
@@ -341,6 +341,7 @@ fun Application.main() {
                         try {
                             val events = call.receive<Array<EventRepr>>()
                             connEMD = newEMDConnection(config, this.context)
+                            connEMD!!.autoCommit = false
                             val softwareMap = getSoftwareMap(connEMD!!)
                             val storageMap = getStorageMap(connEMD!!)
                             events.forEach { event ->
@@ -350,37 +351,23 @@ fun Application.main() {
                                 val storage_name = event.reference.storage_name
                                 val storage_id = storageMap.str_to_id[storage_name]
 
-                                // get file_guid
                                 val file_guid: Int
                                 val res = connEMD!!.createStatement().executeQuery(
-                                    """SELECT file_guid FROM file_ WHERE 
-                                         storage_id = $storage_id AND file_path = '$file_path'
-                                    """.trimMargin()
+                                    """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
                                 )
-                                if (res.next()) {
+                                if (res.next()) { // file record already exists
                                     file_guid = res.getInt("file_guid")
-                                    println("File GUID = $file_guid")
-                                } else {
-                                    // create file
-                                    val fileQuery = """
-                                        INSERT INTO file_ (storage_id, file_path)
-                                        VALUES ($storage_id, '$file_path')
-                                    """.trimIndent()
+                                } else { // create file record
+                                    val fileQuery = """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
                                     println(fileQuery)
                                     connEMD!!.createStatement().executeUpdate(fileQuery)
-                                    // TODO remove duplicate code here...
                                     val res2 = connEMD!!.createStatement().executeQuery(
-                                        """SELECT file_guid FROM file_ WHERE 
-                                            storage_id = $storage_id AND file_path = '$file_path'
-                                        """.trimMargin()
+                                        """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
                                     )
-                                    if (res2.next()) {
-                                        file_guid = res2.getInt("file_guid")
-                                        println("File GUID = $file_guid")
-                                    } else {
-                                        throw java.lang.Exception("File guid writing issue... ")
-                                    }
+                                    res2.next()
+                                    file_guid = res2.getInt("file_guid")
                                 }
+                                println("File GUID = $file_guid")
                                 val parameterValuesStr =
                                     page.parameters.joinToString(", ") {
                                         when (it.type.uppercase()) {
@@ -398,7 +385,8 @@ fun Application.main() {
                                 println(query)
                                 connEMD!!.createStatement().executeUpdate(query)
                             }
-                            call.respond(HttpStatusCode.OK, "Events were created")
+                            connEMD!!.commit()
+                            call.respond(HttpStatusCode.OK, "Success: ${events.size} event(s) were created")
                         } catch (err: PSQLException) {
                             if (err.toString().contains("The connection attempt failed.")) {
                                 call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
@@ -408,10 +396,14 @@ fun Application.main() {
                         } catch (err: BadRequestException) {
                             call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
                         } catch (err: Exception) {
-                            call.respond(HttpStatusCode.InternalServerError, "Error obtaining software table data: $err")
+                            call.respond(HttpStatusCode.InternalServerError, "Error writing event data: $err")
                         } finally {
                             connEMD?.close()
                         }
+                    }
+
+                    put("/${EVENT_ENTITY_API_NAME}") {
+                        TODO()
                     }
 
                     delete("/${EVENT_ENTITY_API_NAME}") {
@@ -426,25 +418,26 @@ fun Application.main() {
                             // Here, we only care about reference to event, other event data is optional and is ignored, if passed
                             val events = call.receive<Array<EventReprForDelete>>()
                             connEMD = newEMDConnection(config, this.context)
+                            connEMD!!.autoCommit = false
                             val storageMap = getStorageMap(connEMD!!)
                             events.forEach { event ->
                                 println("Deleting event: $event")
-                                // val software_id = softwareMap.str_to_id[event.software_version]
                                 val file_path = event.reference.file_path
                                 val storage_name = event.reference.storage_name
                                 val storage_id = storageMap.str_to_id[storage_name]
 
                                 val file_guid: Int
                                 val res = connEMD!!.createStatement().executeQuery(
-                                    """SELECT file_guid FROM file_ WHERE 
-                                         storage_id = $storage_id AND file_path = '$file_path'
-                                    """.trimMargin()
+                                    """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
                                 )
                                 if (res.next()) {
                                     file_guid = res.getInt("file_guid")
                                     println("File GUID = $file_guid")
                                 } else { // no such file
-                                    call.respond(HttpStatusCode.NotFound, "Error: file_guid not found for event")
+                                    call.respond(
+                                        HttpStatusCode.NotFound,
+                                        "Error: file_guid not found for event ${event.str()}"
+                                    )
                                     return@delete
                                 }
                                 val query = """
@@ -455,9 +448,14 @@ fun Application.main() {
                                 val intRes = connEMD!!.createStatement().executeUpdate(query)
                                 if (intRes == 1) {
                                     deletedCount++
+                                } else {
+                                    call.respond(HttpStatusCode.NotFound,
+                                        "Error: event (${event.str()}) not found")
+                                    return@delete
                                 }
                             }
-                            call.respond(HttpStatusCode.OK, "Overall $deletedCount events were deleted")
+                            connEMD!!.commit()
+                            call.respond(HttpStatusCode.OK, "Success: $deletedCount event(s) were deleted")
                         } catch (err: PSQLException) {
                             if (err.toString().contains("The connection attempt failed.")) {
                                 call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")

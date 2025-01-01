@@ -21,3 +21,6 @@ data class EventReprForDelete(
     val run_number: Int? = 0,
     val parameters: Map<String, Any>?
 )
+
+fun EventReprForDelete.str(): String =
+    "(${this.reference.storage_name}, ${this.reference.file_path}, ${this.reference.event_number})"
