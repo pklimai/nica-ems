@@ -62,7 +62,7 @@ sudo docker run -d --rm --name nica-ems -p 80:8080 -v ./ems.config.yaml:/app/bin
 
 ### Methods supported
 
-#### Get event metadata:
+#### Read event records (get event metadata):
 `GET /event_api/v1/event[?parameter1=value1[&parameter2=value2[...]]]`
   
 Here and below, for parameter values we have 
@@ -80,7 +80,7 @@ Here and below, for parameter values we have
   - `limit` (int)
   - `offset` (int)
 
-* Any custom parameters specified in YAML file 
+* Any custom parameters specified in YAML configuration file 
 
 Example:
 `http://127.0.0.1:8080/event_api/v1/event?limit=5&software_version=~19._&beam_particle=~A_&track_number=11|`
@@ -89,23 +89,15 @@ Example:
 #### Create event records in the metadata catalog (Writer or Admin role required):
 `POST /event_api/v1/event`
 
-Message body must contain the JSON list of events using format as given below.  
+Message body must contain the JSON list of events to be written, using format as given below. In case of any events 
+already present, an error is returned and whole transaction is cancelled.
 
-#### Read software records from dictionary
-`GET /event_api/v1/software`
 
-#### Create software record in dictionary
-`POST /event_api/v1/software`
+#### Update event records in the metadata catalog (Writer or Admin role required):
+`PUT /event_api/v1/event`
 
-Message body example `{"software_id": 100, "software_version": "22.11"}`
-
-#### Read storage records from dictionary
-`GET /event_api/v1/storage`
-
-#### Create storage record in dictionary
-`POST /event_api/v1/storage`
-
-Message body example `{"storage_id": 100, "storage_name": "data1"}`
+Message body must contain the JSON list of events to be created or updated. The request succeeds even if some records
+are already present (if any parameters are different, they are updated). 
 
 
 #### Delete event records from the metadata catalog (Admin role required)
@@ -114,13 +106,36 @@ Message body example `{"storage_id": 100, "storage_name": "data1"}`
 Message body must contain the JSON list of events (only `reference:` part is required, other fields are
 optional and ignored, if present).
 
+
+#### Read software records from dictionary
+`GET /event_api/v1/software`
+
+
+#### Create software record in dictionary
+`POST /event_api/v1/software`
+
+Message body example `{"software_id": 100, "software_version": "22.11"}`
+
+
+#### Read storage records from dictionary
+`GET /event_api/v1/storage`
+
+
+#### Create storage record in dictionary
+`POST /event_api/v1/storage`
+
+Message body example `{"storage_id": 100, "storage_name": "data1"}`
+
+
 #### TODO: Count number of entries in EMS and return just this value
 `GET /count[?parameter1=value1[&parameter2=value2[...]]]`
+
 
 #### TODO: Get event records as a ROOT file (synchronous)
 `GET /event_api/v1/eventFile[?parameter1=value1[&parameter2=value2[...]]]`
 
 File is built and downloaded immediately (same HTTP session) 
+
 
 #### TODO: Get event records as a ROOT file reference (asynchronous)
 `GET /event_api/v1/eventFileRef[?parameter1=value1[&parameter2=value2[...]]]`

@@ -329,14 +329,12 @@ fun Application.main() {
                     }
 
                     post("/${EVENT_ENTITY_API_NAME}") {
-
                         val roles = call.principal<WithRoles>()?.roles!!
                         // println("Roles in EVENT_ENTITY_API_NAME: $roles")
                         if (!(roles.isWriter or roles.isAdmin)) {
                             call.respond(HttpStatusCode.Unauthorized)
                             return@post
                         }
-
                         var connEMD: Connection? = null
                         try {
                             val events = call.receive<Array<EventRepr>>()
@@ -347,10 +345,8 @@ fun Application.main() {
                             events.forEach { event ->
                                 println("Create event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
+                                val storage_id = storageMap.str_to_id[event.reference.storage_name]
                                 val file_path = event.reference.file_path
-                                val storage_name = event.reference.storage_name
-                                val storage_id = storageMap.str_to_id[storage_name]
-
                                 val file_guid: Int
                                 val res = connEMD!!.createStatement().executeQuery(
                                     """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
@@ -367,7 +363,7 @@ fun Application.main() {
                                     res2.next()
                                     file_guid = res2.getInt("file_guid")
                                 }
-                                println("File GUID = $file_guid")
+                                println("File GUID for $file_path = $file_guid")
                                 val parameterValuesStr =
                                     page.parameters.joinToString(", ") {
                                         when (it.type.uppercase()) {
@@ -403,7 +399,83 @@ fun Application.main() {
                     }
 
                     put("/${EVENT_ENTITY_API_NAME}") {
-                        TODO()
+                        val roles = call.principal<WithRoles>()?.roles!!
+                        if (!(roles.isWriter or roles.isAdmin)) {
+                            call.respond(HttpStatusCode.Unauthorized)
+                            return@put
+                        }
+                        var connEMD: Connection? = null
+                        try {
+                            val events = call.receive<Array<EventRepr>>()
+                            connEMD = newEMDConnection(config, this.context)
+                            connEMD!!.autoCommit = false
+                            val softwareMap = getSoftwareMap(connEMD!!)
+                            val storageMap = getStorageMap(connEMD!!)
+                            events.forEach { event ->
+                                println("Create or update event: $event")
+                                val software_id = softwareMap.str_to_id[event.software_version]
+                                val storage_id = storageMap.str_to_id[event.reference.storage_name]
+                                val file_path = event.reference.file_path
+                                val file_guid: Int
+                                val res = connEMD!!.createStatement().executeQuery(
+                                    """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
+                                )
+                                if (res.next()) { // file record already exists
+                                    file_guid = res.getInt("file_guid")
+                                } else { // create file record
+                                    val fileQuery = """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
+                                    println(fileQuery)
+                                    connEMD!!.createStatement().executeUpdate(fileQuery)
+                                    val res2 = connEMD!!.createStatement().executeQuery(
+                                        """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
+                                    )
+                                    res2.next()
+                                    file_guid = res2.getInt("file_guid")
+                                }
+                                println("File GUID for $file_path = $file_guid")
+                                val parameterValuesStr =
+                                    page.parameters.joinToString(", ") {
+                                        when (it.type.uppercase()) {
+                                            "STRING" -> "'" + event.parameters[it.name].toString() + "'"
+                                            else -> event.parameters[it.name].toString()
+                                        }
+                                    }
+                                val parameterNamesEqValuesStr =
+                                    page.parameters.joinToString(", ") {
+                                        when (it.type.uppercase()) {
+                                            "STRING" -> "${it.name}='${event.parameters[it.name].toString()}'"
+                                            else -> "${it.name}=${event.parameters[it.name].toString()}"
+                                        }
+                                    }
+                                val query = """
+                                        INSERT INTO ${page.db_table_name} 
+                                            (file_guid, event_number, software_id, period_number, run_number,
+                                            ${page.parameters.joinToString(", ") { it.name }})
+                                        VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
+                                            ${event.run_number}, $parameterValuesStr)
+                                        ON CONFLICT (file_guid, event_number) DO UPDATE SET
+                                            software_id=$software_id, period_number=${event.period_number}, run_number=${event.run_number},
+                                            $parameterNamesEqValuesStr
+                                    """.trimIndent()
+                                println(query)
+                                val res3 = connEMD!!.createStatement().executeUpdate(query)
+                                println("res of update is $res3")
+                            }
+                            connEMD!!.commit()
+                            call.respond(HttpStatusCode.OK, "Success: ${events.size} event(s) were put")
+                        } catch (err: PSQLException) {
+                            if (err.toString().contains("The connection attempt failed.")) {
+                                call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
+                            } else {
+                                call.respond(HttpStatusCode.Conflict, "Database error: $err")
+                            }
+                        } catch (err: BadRequestException) {
+                            call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
+                        } catch (err: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, "Error writing event data: $err")
+                        } finally {
+                            connEMD?.close()
+                        }
                     }
 
                     delete("/${EVENT_ENTITY_API_NAME}") {
