@@ -24,3 +24,7 @@ data class EventReprForDelete(
 
 fun EventReprForDelete.str(): String =
     "(${this.reference.storage_name}, ${this.reference.file_path}, ${this.reference.event_number})"
+
+data class EventListRepr(
+    val events: Array<EventRepr>
+)

@@ -15,43 +15,79 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import com.google.gson.Gson
+import kotlin.test.assertFalse
 
 
 const val BASE_URL = "http://127.0.0.1:8080/event_api/v1"
 const val PERIOD = 7.toShort()
 const val RUN = 5050
 
-val event1 = EventRepr(
-    Reference("data2", "/tmp/file12", 1),
-    "19.1",
-    PERIOD,
-    RUN,
-    mapOf("track_number" to 11)
-)
+val gson = Gson()
 
-val event1_mod = EventRepr(
-    Reference("data2", "/tmp/file12", 1),
-    "19.1",
-    PERIOD,
-    RUN,
-    mapOf("track_number" to 1100)
-)
+val event1 = gson.fromJson("""
+    {
+        "reference": {
+            "storage_name": "data2",
+            "file_path": "/tmp/file12",
+            "event_number": 1
+        },
+        "software_version": "19.1",
+        "period_number": $PERIOD,
+        "run_number": $RUN,
+        "parameters": {
+            "track_number": 11
+        }
+    }
+""", EventRepr::class.java)
 
-val event2 = EventRepr(
-    Reference("data2", "/tmp/file12", 2),
-    "19.1",
-    PERIOD,
-    RUN,
-    mapOf("track_number" to 22)
-)
+val event1_mod = gson.fromJson("""
+    {
+        "reference": {
+            "storage_name": "data2",
+            "file_path": "/tmp/file12",
+            "event_number": 1
+        },
+        "software_version": "19.1",
+        "period_number": $PERIOD,
+        "run_number": $RUN,
+        "parameters": {
+            "track_number": 1100
+        }
+    }
+""", EventRepr::class.java)
 
-val event3 = EventRepr(
-    Reference("data2", "/tmp/file12", 3),
-    "19.1",
-    PERIOD,
-    RUN,
-    mapOf("track_number" to 33)
-)
+val event2 = gson.fromJson("""
+    {
+        "reference": {
+            "storage_name": "data2",
+            "file_path": "/tmp/file12",
+            "event_number": 2
+        },
+        "software_version": "19.1",
+        "period_number": $PERIOD,
+        "run_number": $RUN,
+        "parameters": {
+            "track_number": 22
+        }
+    }
+""", EventRepr::class.java)
+
+val event3 = gson.fromJson("""
+    {
+        "reference": {
+            "storage_name": "data2",
+            "file_path": "/tmp/file12",
+            "event_number": 3
+        },
+        "software_version": "19.1",
+        "period_number": $PERIOD,
+        "run_number": $RUN,
+        "parameters": {
+            "track_number": 33
+        }
+    }
+""", EventRepr::class.java)
 
 
 class RestApiTest {
@@ -131,6 +167,255 @@ class RestApiTest {
             println(response.bodyAsText())
             val storages = response.body<Array<Storage>>()
             assert(storages.any { it.storage_name == event1.reference.storage_name })
+        }
+    }
+
+    @Test
+    fun `Long API consistency test`() {
+        runBlocking {
+
+            var response: HttpResponse
+
+            println("************************************************************")
+            println("Deleting events 1,2,3 (if present in database)")
+            listOf(event1, event2, event3).forEach { event ->
+                response = authenticatedClient().delete("$BASE_URL/event") {
+                    contentType(ContentType.Application.Json)
+                    setBody(gson.toJson(listOf(event)))
+                }
+                println(response.status)
+                println(response.bodyAsText())
+            }
+
+            println("************************************************************")
+            println("Creating events 1, 2")
+            response = authenticatedClient().post("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event2, event1)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+
+            println("************************************************************")
+            println("Checking that events 1,2 are in catalogue and event 3 is not")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            var eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event1 in eventsArray.events)
+            assert(event2 in eventsArray.events)
+            assertFalse(event3 in eventsArray.events)
+
+            println("************************************************************")
+            println("Creating event 3")
+            response = authenticatedClient().post("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event3)))
+            }
+            assertEquals(response.status, HttpStatusCode.OK)
+            println(response.status)
+            println(response.bodyAsText())
+
+            println("************************************************************")
+            println("Checking that event 3 is now in catalogue")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event3 in eventsArray.events)
+
+            println("************************************************************")
+            println("Checking that event 3 can not be written again with POST")
+            response = authenticatedClient().post("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event3)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.Conflict) // 409
+
+            println("************************************************************")
+            println("Checking that event 3 can be written again with PUT")
+            response = authenticatedClient().put("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event3)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.OK)
+
+            println("************************************************************")
+            println("Checking that event 3 is still in the catalogue")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event3 in eventsArray.events)
+
+            println("************************************************************")
+            println("Modifying event 1 parameter (with POST, should fail)")
+            response = authenticatedClient().post("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1_mod)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.Conflict) // 409
+
+            println("************************************************************")
+            println("Modifying event 1 parameter (with PUT)")
+            response = authenticatedClient().put("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1_mod)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.OK)
+
+            println("************************************************************")
+            println("Checking that original event 1 is not there, but modified is")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event1_mod in eventsArray.events)
+            assertFalse(event1 in eventsArray.events)
+
+            println("************************************************************")
+            println("Trying to delete event 1 both original and modified (should fail)")
+            response = authenticatedClient().delete("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1, event1_mod)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.NotFound)
+
+            println("************************************************************")
+            println("Checking (again) that original event 1 is not there, but modified is")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event1_mod in eventsArray.events)
+            assertFalse(event1 in eventsArray.events)
+
+            println("************************************************************")
+            println("Delete modified event 1")
+            response = authenticatedClient().delete("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1_mod)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.OK)
+
+            println("************************************************************")
+            println("Checking that event 1 was deleted")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assertFalse(event1_mod in eventsArray.events)
+            assertFalse(event1 in eventsArray.events)
+
+            println("************************************************************")
+            println("Creating again events 1,2 with POST (should fail)")
+            response = authenticatedClient().post("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1, event2)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.Conflict) // 409
+
+            println("************************************************************")
+            println("Creating again events 1,2 with PUT (should work)")
+            response = authenticatedClient().put("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1, event2)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.OK)
+
+            println("************************************************************")
+            println("Checking that events 1,2 are there")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event1 in eventsArray.events)
+            assert(event2 in eventsArray.events)
+
+            println("************************************************************")
+            println("Modifying event number for event 1 (should be treated as different event)")
+            var event1_mod_event_num = gson.fromJson("""
+                {
+                    "reference": {
+                        "storage_name": "data2",
+                        "file_path": "/tmp/file12",
+                        "event_number": 1000
+                    },
+                    "software_version": "19.1",
+                    "period_number": $PERIOD,
+                    "run_number": $RUN,
+                    "parameters": {
+                        "track_number": 11
+                    }
+                }
+            """.trimIndent(), EventRepr::class.java)
+            response = authenticatedClient().put("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1_mod_event_num)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.OK)
+
+            println("************************************************************")
+            println("Checking that event 1 both original and modified are there")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event1 in eventsArray.events)
+            assert(event1_mod_event_num in eventsArray.events)
+
+            println("************************************************************")
+            println("Doing filter based on track_number")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN&track_number=11") {
+                contentType(ContentType.Application.Json)
+            }
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assert(event1 in eventsArray.events)
+            assert(event1_mod_event_num in eventsArray.events)
+            assertFalse(event2 in eventsArray.events)
+            assertFalse(event3 in eventsArray.events)
+
+            println("************************************************************")
+            println("Delete events")
+            response = authenticatedClient().delete("$BASE_URL/event") {
+                contentType(ContentType.Application.Json)
+                setBody(gson.toJson(listOf(event1, event1_mod_event_num, event2, event3)))
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.OK)
+
+            println("************************************************************")
+            println("Check that events were deleted")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            assertFalse(event1 in eventsArray.events)
+            assertFalse(event1_mod_event_num in eventsArray.events)
+            assertFalse(event2 in eventsArray.events)
+            assertFalse(event3 in eventsArray.events)
+
         }
     }
 
