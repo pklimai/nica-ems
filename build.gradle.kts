@@ -100,6 +100,16 @@ kotlin {
                 implementation(npm("highcharts", "10.1.0"))
             }
         }
+        getByName("jvmTest") {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("io.ktor:ktor-client-core:$ktorVersion")
+                implementation("io.ktor:ktor-client-cio:$ktorVersion")
+                implementation("io.ktor:ktor-client-auth:$ktorVersion")
+                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+
+            }
+        }
     }
 }
 
