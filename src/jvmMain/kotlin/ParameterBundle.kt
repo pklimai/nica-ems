@@ -1,6 +1,7 @@
 package ru.mipt.npm.nica.ems
 
 import io.ktor.server.application.*
+import io.ktor.util.*
 
 class ParameterBundle(
     val period_number: Parameter?,
@@ -44,14 +45,41 @@ class ParameterBundle(
         }
     }
 
-    fun hasInvalidParameters(): Boolean {
-        if (period_number?.validParameter == false || run_number?.validParameter == false
-                // software_version TODO ?
-                || beam_particle?.validParameter == false || target_particle?.validParameter == false ||
-                energy?.validParameter == false || limit?.validParameter == false ||
-                offset?.validParameter == false) return true
+    fun hasInvalidParameters(call: ApplicationCall, page: PageConfig): Boolean {
+        // Note that parameter can be invalid either if its value is invalid (e.g. incorrect range),
+        // or if parameter name is just unknown
+
+        if (period_number?.validParameter == false ||
+            run_number?.validParameter == false ||
+            software_version?.validParameter == false ||
+            beam_particle?.validParameter == false ||
+            target_particle?.validParameter == false ||
+            energy?.validParameter == false ||
+            limit?.validParameter == false ||
+            offset?.validParameter == false
+        ) return true
+
         parametersSupplied.forEach { (_ /* name */, value) ->
-            if (value.validParameter == false) return true
+            if (!value.validParameter) return true
+        }
+
+        val allowedPageParameters =
+            page.parameters.map { it.name } +
+                    listOf(
+                        periodConfig.name,
+                        runConfig.name,
+                        softwareConfig.name,
+                        beamParticleConfig.name,
+                        targetParticleConfig.name,
+                        energyConfig.name,
+                        limitConfig.name,
+                        offsetConfig.name
+                    )
+
+        for (param in call.parameters.toMap().keys) {
+            if (param !in allowedPageParameters) {
+                return true
+            }
         }
         return false
     }

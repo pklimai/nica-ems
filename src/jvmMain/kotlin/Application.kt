@@ -277,7 +277,7 @@ fun Application.main() {
                     get("/${EVENT_ENTITY_API_NAME}") {
                         // no role checking here - any user allowed
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
-                        if (parameterBundle.hasInvalidParameters()) {
+                        if (parameterBundle.hasInvalidParameters(call, page)) {
                             call.respond(HttpStatusCode.BadRequest, "Invalid parameters detected in request")
                             return@get
                         }
@@ -329,7 +329,7 @@ fun Application.main() {
 
                     get("/${EVENT_COUNT_API_NAME}") {
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
-                        if (parameterBundle.hasInvalidParameters()) {
+                        if (parameterBundle.hasInvalidParameters(call, page)) {
                             call.respond(HttpStatusCode.BadRequest, "Invalid parameters detected in request")
                             return@get
                         }

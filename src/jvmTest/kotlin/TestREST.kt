@@ -405,10 +405,30 @@ class RestApiTest {
                 contentType(ContentType.Application.Json)
             }
             eventsArray = gson.fromJson(response.bodyAsText(), EventListRepr::class.java)
+            println(response.status)
+            println(response.bodyAsText())
             assert(event1 in eventsArray.events)
             assert(event1_mod_event_num in eventsArray.events)
             assertFalse(event2 in eventsArray.events)
             assertFalse(event3 in eventsArray.events)
+
+            println("************************************************************")
+            println("Doing incorrect filtering expression")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN&track_number=|") {
+                contentType(ContentType.Application.Json)
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.BadRequest)
+
+            println("************************************************************")
+            println("Doing filtering with unknown parameter")
+            response = authenticatedClient().get("$BASE_URL/event?period_number=$PERIOD&run_number=$RUN&unknown_param=90") {
+                contentType(ContentType.Application.Json)
+            }
+            println(response.status)
+            println(response.bodyAsText())
+            assertEquals(response.status, HttpStatusCode.BadRequest)
 
             println("************************************************************")
             println("Delete events")
