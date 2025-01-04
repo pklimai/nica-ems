@@ -278,13 +278,12 @@ fun Application.main() {
                         // no role checking here - any user allowed
                         val parameterBundle = ParameterBundle.buildFromCall(call, page)
                         if (parameterBundle.hasInvalidParameters()) {
-                            call.respond(HttpStatusCode.BadRequest)
+                            call.respond(HttpStatusCode.BadRequest, "Invalid parameters detected in request")
                             return@get
                         }
                         var connEMD: Connection? = null
                         try {
                             connEMD = newEMDConnection(config, this.context)!!
-                            // val softwareMap = getSoftwareMap(connEMD)  // not used for now
                             val res = queryEMD(parameterBundle, page, connCondition, connEMD!!, null)
                             val lstEvents = ArrayList<EventRepr>()
                             while (res?.next() == true) {
@@ -313,6 +312,36 @@ fun Application.main() {
                                 )
                             }
                             call.respond(mapOf("events" to lstEvents))
+                        } catch (err: PSQLException) {
+                            if (err.toString().contains("The connection attempt failed.")) {
+                                call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")
+                            } else {
+                                call.respond(HttpStatusCode.Conflict, "Database error: $err")
+                            }
+                        } catch (err: BadRequestException) {
+                            call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
+                        } catch (err: Exception) {
+                            call.respond(HttpStatusCode.InternalServerError, "Error obtaining event data: $err")
+                        } finally {
+                            connEMD?.close()
+                        }
+                    }
+
+                    get("/${EVENT_COUNT_API_NAME}") {
+                        val parameterBundle = ParameterBundle.buildFromCall(call, page)
+                        if (parameterBundle.hasInvalidParameters()) {
+                            call.respond(HttpStatusCode.BadRequest, "Invalid parameters detected in request")
+                            return@get
+                        }
+                        var connEMD: Connection? = null
+                        try {
+                            connEMD = newEMDConnection(config, this.context)!!
+                            val res = queryEMD(parameterBundle, page, connCondition, connEMD!!, null, countOnly = true)
+                            if (res?.next() == true) {
+                                call.respond(HttpStatusCode.OK, mapOf("count" to res.getInt(1)))
+                            } else {
+                                call.respond(HttpStatusCode.ServiceUnavailable, "Could not obtain event count from database")
+                            }
                         } catch (err: PSQLException) {
                             if (err.toString().contains("The connection attempt failed.")) {
                                 call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")

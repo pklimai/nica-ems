@@ -64,13 +64,14 @@ fun queryEMD(
     connCondition: Connection?,
     connEMD: Connection,
     body: BODY?,
-    defaultLimit: Int? = null
+    defaultLimit: Int? = null,
+    countOnly: Boolean = false
 ): ResultSet? {
     with(parameterBundle) {
         val et = page.db_table_name
         // TODO: Check how joins affect the performance. Consider doing DIY joins?
         var query =
-            """SELECT * FROM $et 
+            """SELECT ${if (countOnly) "count(1)" else "*"} FROM $et 
                   INNER JOIN software_ ON $et.software_id = software_.software_id
                   INNER JOIN file_ ON $et.file_guid = file_.file_guid
                   INNER JOIN storage_ ON file_.storage_id = storage_.storage_id

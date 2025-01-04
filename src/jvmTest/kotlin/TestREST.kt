@@ -188,6 +188,14 @@ class RestApiTest {
             }
 
             println("************************************************************")
+            println("Counting events")
+            response = authenticatedClient().get("$BASE_URL/count?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            val eventsCount1 = gson.fromJson(response.bodyAsText(), EventCountRepr::class.java)
+            println("Initially we had ${eventsCount1.count} events")
+
+            println("************************************************************")
             println("Creating events 1, 2")
             response = authenticatedClient().post("$BASE_URL/event") {
                 contentType(ContentType.Application.Json)
@@ -195,6 +203,15 @@ class RestApiTest {
             }
             println(response.status)
             println(response.bodyAsText())
+
+            println("************************************************************")
+            println("Counting events")
+            response = authenticatedClient().get("$BASE_URL/count?period_number=$PERIOD&run_number=$RUN") {
+                contentType(ContentType.Application.Json)
+            }
+            val eventsCount2 = gson.fromJson(response.bodyAsText(), EventCountRepr::class.java)
+            println("After creation we have ${eventsCount2.count} events")
+            assertEquals(eventsCount1.count + 2, eventsCount2.count)
 
             println("************************************************************")
             println("Checking that events 1,2 are in catalogue and event 3 is not")

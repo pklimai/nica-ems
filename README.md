@@ -4,17 +4,27 @@
 ## About
 
 This software is part of the Event Metadata System (EMS), providing REST API and Web User Interface (UI) for the 
-Event Catalogue of an experiment on particle collisions. The PostgreSQL database is currently used as the event metadata storage. EMS supports integration with the [Unified Condition Database (UniConDa)](https://git.jinr.ru/nica_db/unidb_platform) containing run metadata of an experiment for fast pre-selection and KeyCloak identity provider ensuring cental authentification and authorization for users.
+Event Catalogue of an experiment on particle collisions. The PostgreSQL database is currently used as the event metadata 
+storage. EMS supports integration with the [Unified Condition Database (UniConDa)](https://git.jinr.ru/nica_db/unidb_platform) 
+containing run metadata of an experiment for fast pre-selection and KeyCloak identity provider ensuring central 
+authentication and authorization for users.
 
 ## Deployment
 
 ### Setting up the configuration file
 
-The system is configurable via YAML file for a particular experiment on particle collisions, including a set of specific event metadata. The configuration should be prepared in a file named `ems.config.yaml`. An example of the EMS configuration for the BM@N experiment can be seen in the `ems.bmn-config.yaml` file.
+The system is configurable via YAML file for a particular experiment on particle collisions, including a set of specific 
+event metadata. The configuration should be prepared in a file named `ems.config.yaml`. An example of the EMS configuration 
+for the BM@N experiment can be seen in the `ems.bmn-config.yaml` file.
 
-In the configuration file, you must provide credentials for the event database (Event Catalogue) and optionally for the Unified Condition database (if it is employed), optionally set KeyCloak server parameters, and specify URLs and event parameters (metadata) stored in the Event Catalogue.
+In the configuration file, you must provide credentials for the event database (Event Catalogue) and optionally for the 
+Unified Condition database (if it is employed), optionally set KeyCloak server parameters, and specify URLs and event 
+parameters (metadata) stored in the Event Catalogue.
 
-Supported event parameter types are currently: `int`, `float`, `string`, `bool`. Acceptable ranges for `int` and `float` values can be defined using `|` separator for both Web interface and API (for instance, `track-number=10|15`). The ranges are inclusive, that is start and end of the intervals are included. The intervals unbound from one side are also supported, for example, `track-number=10|` or `track-number=|15`.
+Supported event parameter types are currently: `int`, `float`, `string`, `bool`. Acceptable ranges for `int` and `float` 
+values can be defined using `|` separator for both Web interface and API (for instance, `track-number=10|15`). The ranges 
+are inclusive, that is start and end of the intervals are included. The intervals unbound from one side are also 
+supported, for example, `track-number=10|` or `track-number=|15`.
 
 ### Run installation of the EMS interfaces on a RedHat-based Operating System (AlmaLinux, CentOS, RedHat)
 
@@ -107,6 +117,12 @@ Message body must contain the JSON list of events (only `reference:` part is req
 optional and ignored, if present).
 
 
+#### Count number of entries in EMS and return just this value
+`GET /event_api/v1/count[?parameter1=value1[&parameter2=value2[...]]]`
+
+Returns number of records matching the request, in a form `{"count": number}`.
+
+
 #### Read software records from dictionary
 `GET /event_api/v1/software`
 
@@ -125,10 +141,6 @@ Message body example `{"software_id": 100, "software_version": "22.11"}`
 `POST /event_api/v1/storage`
 
 Message body example `{"storage_id": 100, "storage_name": "data1"}`
-
-
-#### TODO: Count number of entries in EMS and return just this value
-`GET /count[?parameter1=value1[&parameter2=value2[...]]]`
 
 
 #### TODO: Get event records as a ROOT file (synchronous)
@@ -187,4 +199,4 @@ curl -X POST -u USER:PASS -H "Content-Type: application/json" http://127.0.0.1/e
 ```
 
 Note: `software_version` and `storage_name` must exist in the corresponding EMS database tables.
-The `file_path` will be created in the `file_` table, if not there yet.
+The `file_path` will be automatically created in the `file_` table, if not there yet.

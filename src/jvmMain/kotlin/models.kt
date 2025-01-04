@@ -28,3 +28,7 @@ fun EventReprForDelete.str(): String =
 data class EventListRepr(
     val events: Array<EventRepr>
 )
+
+data class EventCountRepr(
+    val count: Long
+)
