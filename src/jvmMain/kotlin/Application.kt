@@ -340,7 +340,10 @@ fun Application.main() {
                             if (res?.next() == true) {
                                 call.respond(HttpStatusCode.OK, mapOf("count" to res.getInt(1)))
                             } else {
-                                call.respond(HttpStatusCode.ServiceUnavailable, "Could not obtain event count from database")
+                                call.respond(
+                                    HttpStatusCode.ServiceUnavailable,
+                                    "Could not obtain event count from database"
+                                )
                             }
                         } catch (err: PSQLException) {
                             if (err.toString().contains("The connection attempt failed.")) {
@@ -359,7 +362,6 @@ fun Application.main() {
 
                     post("/${EVENT_ENTITY_API_NAME}") {
                         val roles = call.principal<WithRoles>()?.roles!!
-                        // println("Roles in EVENT_ENTITY_API_NAME: $roles")
                         if (!(roles.isWriter or roles.isAdmin)) {
                             call.respond(HttpStatusCode.Unauthorized)
                             return@post
@@ -371,38 +373,53 @@ fun Application.main() {
                             connEMD!!.autoCommit = false
                             val softwareMap = getSoftwareMap(connEMD!!)
                             val storageMap = getStorageMap(connEMD!!)
+                            println("Received ${events.size} events!")
+                            val fileData = mutableMapOf<Pair<Byte, String>, Int>()
                             events.forEach { event ->
-                                println("Creating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
                                 if (software_id == null) {
-                                    call.respond(HttpStatusCode.Conflict,
-                                        "Error: Software version ${event.software_version} not present in the dictionary")
+                                    call.respond(
+                                        HttpStatusCode.Conflict,
+                                        "Error: Software version ${event.software_version} not present in the dictionary"
+                                    )
                                     return@post
                                 }
                                 val storage_id = storageMap.str_to_id[event.reference.storage_name]
                                 if (storage_id == null) {
-                                    call.respond(HttpStatusCode.Conflict,
-                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary")
+                                    call.respond(
+                                        HttpStatusCode.Conflict,
+                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary"
+                                    )
                                     return@post
                                 }
                                 val file_path = event.reference.file_path
                                 val file_guid: Int
-                                val res = connEMD!!.createStatement().executeQuery(
-                                    """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
-                                )
-                                if (res.next()) { // file record already exists
-                                    file_guid = res.getInt("file_guid")
-                                } else { // create file record
-                                    val fileQuery = """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
-                                    println(fileQuery)
-                                    connEMD!!.createStatement().executeUpdate(fileQuery)
-                                    val res2 = connEMD!!.createStatement().executeQuery(
+                                if (Pair(storage_id, file_path) !in fileData) {
+                                    val res = connEMD!!.createStatement().executeQuery(
                                         """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
                                     )
-                                    res2.next()
-                                    file_guid = res2.getInt("file_guid")
+                                    if (res.next()) { // file record already exists
+                                        file_guid = res.getInt("file_guid")
+                                    } else { // create file record
+                                        val fileQuery =
+                                            """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
+                                        println(fileQuery)
+                                        connEMD!!.createStatement().executeUpdate(fileQuery)
+                                        val res2 = connEMD!!.createStatement().executeQuery(
+                                            """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
+                                        )
+                                        res2.next()
+                                        file_guid = res2.getInt("file_guid")
+                                    }
+                                    fileData[Pair(storage_id, file_path)] = file_guid
+                                    println("File GUID for $file_path = $file_guid")
                                 }
-                                println("File GUID for $file_path = $file_guid")
+                            }
+                            events.forEach { event ->
+                                println("Creating event: $event")
+                                val software_id = softwareMap.str_to_id[event.software_version]
+                                val storage_id = storageMap.str_to_id[event.reference.storage_name]
+                                val file_guid = fileData[Pair(storage_id, event.reference.file_path)]!!
                                 val parameterValuesStr =
                                     page.parameters.joinToString(", ") {
                                         when (it.type.uppercase()) {
@@ -421,6 +438,7 @@ fun Application.main() {
                                 connEMD!!.createStatement().executeUpdate(query)
                             }
                             connEMD!!.commit()
+                            println("Success: ${events.size} event(s) were created")
                             call.respond(HttpStatusCode.OK, "Success: ${events.size} event(s) were created")
                         } catch (err: PSQLException) {
                             if (err.toString().contains("The connection attempt failed.")) {
@@ -450,38 +468,53 @@ fun Application.main() {
                             connEMD!!.autoCommit = false
                             val softwareMap = getSoftwareMap(connEMD!!)
                             val storageMap = getStorageMap(connEMD!!)
+                            println("Received ${events.size} events!")
+                            val fileData = mutableMapOf<Pair<Byte, String>, Int>()
                             events.forEach { event ->
-                                println("Creating or updating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
                                 if (software_id == null) {
-                                    call.respond(HttpStatusCode.Conflict,
-                                        "Error: Software version ${event.software_version} not present in the dictionary")
+                                    call.respond(
+                                        HttpStatusCode.Conflict,
+                                        "Error: Software version ${event.software_version} not present in the dictionary"
+                                    )
                                     return@put
                                 }
                                 val storage_id = storageMap.str_to_id[event.reference.storage_name]
                                 if (storage_id == null) {
-                                    call.respond(HttpStatusCode.Conflict,
-                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary")
+                                    call.respond(
+                                        HttpStatusCode.Conflict,
+                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary"
+                                    )
                                     return@put
                                 }
                                 val file_path = event.reference.file_path
                                 val file_guid: Int
-                                val res = connEMD!!.createStatement().executeQuery(
-                                    """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
-                                )
-                                if (res.next()) { // file record already exists
-                                    file_guid = res.getInt("file_guid")
-                                } else { // create file record
-                                    val fileQuery = """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
-                                    println(fileQuery)
-                                    connEMD!!.createStatement().executeUpdate(fileQuery)
-                                    val res2 = connEMD!!.createStatement().executeQuery(
+                                if (Pair(storage_id, file_path) !in fileData) {
+                                    val res = connEMD!!.createStatement().executeQuery(
                                         """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
                                     )
-                                    res2.next()
-                                    file_guid = res2.getInt("file_guid")
+                                    if (res.next()) { // file record already exists
+                                        file_guid = res.getInt("file_guid")
+                                    } else { // create file record
+                                        val fileQuery =
+                                            """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
+                                        println(fileQuery)
+                                        connEMD!!.createStatement().executeUpdate(fileQuery)
+                                        val res2 = connEMD!!.createStatement().executeQuery(
+                                            """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
+                                        )
+                                        res2.next()
+                                        file_guid = res2.getInt("file_guid")
+                                    }
+                                    fileData[Pair(storage_id, file_path)] = file_guid
+                                    println("File GUID for $file_path = $file_guid")
                                 }
-                                println("File GUID for $file_path = $file_guid")
+                            }
+                            events.forEach { event ->
+                                println("Creating event: $event")
+                                val software_id = softwareMap.str_to_id[event.software_version]
+                                val storage_id = storageMap.str_to_id[event.reference.storage_name]
+                                val file_guid = fileData[Pair(storage_id, event.reference.file_path)]!!
                                 val parameterValuesStr =
                                     page.parameters.joinToString(", ") {
                                         when (it.type.uppercase()) {
@@ -507,8 +540,7 @@ fun Application.main() {
                                             $parameterNamesEqValuesStr
                                     """.trimIndent()
                                 println(query)
-                                val res3 = connEMD!!.createStatement().executeUpdate(query)
-                                println("res of update is $res3")
+                                connEMD!!.createStatement().executeUpdate(query)
                             }
                             connEMD!!.commit()
                             call.respond(HttpStatusCode.OK, "Success: ${events.size} event(s) were put")
@@ -546,8 +578,10 @@ fun Application.main() {
                                 val storage_name = event.reference.storage_name
                                 val storage_id = storageMap.str_to_id[storage_name]
                                 if (storage_id == null) {
-                                    call.respond(HttpStatusCode.Conflict,
-                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary")
+                                    call.respond(
+                                        HttpStatusCode.Conflict,
+                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary"
+                                    )
                                     return@delete
                                 }
                                 val file_path = event.reference.file_path
@@ -574,8 +608,10 @@ fun Application.main() {
                                 if (intRes == 1) {
                                     deletedCount++
                                 } else {
-                                    call.respond(HttpStatusCode.NotFound,
-                                        "Error: event (${event.str()}) not found")
+                                    call.respond(
+                                        HttpStatusCode.NotFound,
+                                        "Error: event (${event.str()}) not found"
+                                    )
                                     return@delete
                                 }
                             }
