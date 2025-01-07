@@ -372,9 +372,19 @@ fun Application.main() {
                             val softwareMap = getSoftwareMap(connEMD!!)
                             val storageMap = getStorageMap(connEMD!!)
                             events.forEach { event ->
-                                println("Create event: $event")
+                                println("Creating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
+                                if (software_id == null) {
+                                    call.respond(HttpStatusCode.Conflict,
+                                        "Error: Software version ${event.software_version} not present in the dictionary")
+                                    return@post
+                                }
                                 val storage_id = storageMap.str_to_id[event.reference.storage_name]
+                                if (storage_id == null) {
+                                    call.respond(HttpStatusCode.Conflict,
+                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary")
+                                    return@post
+                                }
                                 val file_path = event.reference.file_path
                                 val file_guid: Int
                                 val res = connEMD!!.createStatement().executeQuery(
@@ -441,9 +451,19 @@ fun Application.main() {
                             val softwareMap = getSoftwareMap(connEMD!!)
                             val storageMap = getStorageMap(connEMD!!)
                             events.forEach { event ->
-                                println("Create or update event: $event")
+                                println("Creating or updating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
+                                if (software_id == null) {
+                                    call.respond(HttpStatusCode.Conflict,
+                                        "Error: Software version ${event.software_version} not present in the dictionary")
+                                    return@put
+                                }
                                 val storage_id = storageMap.str_to_id[event.reference.storage_name]
+                                if (storage_id == null) {
+                                    call.respond(HttpStatusCode.Conflict,
+                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary")
+                                    return@put
+                                }
                                 val file_path = event.reference.file_path
                                 val file_guid: Int
                                 val res = connEMD!!.createStatement().executeQuery(
@@ -523,10 +543,14 @@ fun Application.main() {
                             val storageMap = getStorageMap(connEMD!!)
                             events.forEach { event ->
                                 println("Deleting event: $event")
-                                val file_path = event.reference.file_path
                                 val storage_name = event.reference.storage_name
                                 val storage_id = storageMap.str_to_id[storage_name]
-
+                                if (storage_id == null) {
+                                    call.respond(HttpStatusCode.Conflict,
+                                        "Error: Storage ${event.reference.storage_name} not present in the dictionary")
+                                    return@delete
+                                }
+                                val file_path = event.reference.file_path
                                 val file_guid: Int
                                 val res = connEMD!!.createStatement().executeQuery(
                                     """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
