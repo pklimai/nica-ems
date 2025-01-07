@@ -415,6 +415,7 @@ fun Application.main() {
                                     println("File GUID for $file_path = $file_guid")
                                 }
                             }
+                            val stmt = connEMD!!.createStatement()
                             events.forEach { event ->
                                 println("Creating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
@@ -435,8 +436,9 @@ fun Application.main() {
                                             ${event.run_number}, $parameterValuesStr)
                                     """.trimIndent()
                                 println(query)
-                                connEMD!!.createStatement().executeUpdate(query)
+                                stmt.addBatch(query)
                             }
+                            stmt.executeBatch()
                             connEMD!!.commit()
                             println("Success: ${events.size} event(s) were created")
                             call.respond(HttpStatusCode.OK, "Success: ${events.size} event(s) were created")
@@ -510,6 +512,7 @@ fun Application.main() {
                                     println("File GUID for $file_path = $file_guid")
                                 }
                             }
+                            val stmt = connEMD!!.createStatement()
                             events.forEach { event ->
                                 println("Creating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
@@ -540,8 +543,9 @@ fun Application.main() {
                                             $parameterNamesEqValuesStr
                                     """.trimIndent()
                                 println(query)
-                                connEMD!!.createStatement().executeUpdate(query)
+                                stmt.addBatch(query)
                             }
+                            stmt.executeBatch()
                             connEMD!!.commit()
                             call.respond(HttpStatusCode.OK, "Success: ${events.size} event(s) were put")
                         } catch (err: PSQLException) {
@@ -559,7 +563,7 @@ fun Application.main() {
                         }
                     }
 
-                    delete("/${EVENT_ENTITY_API_NAME}") {
+                    delete("/${EVENT_ENTITY_API_NAME}") {             // TODO batches to speed up
                         val roles = call.principal<WithRoles>()?.roles!!
                         if (!roles.isAdmin) {
                             call.respond(HttpStatusCode.Unauthorized, "Only user with Admin role can delete events")
