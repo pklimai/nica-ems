@@ -563,22 +563,21 @@ fun Application.main() {
                         }
                     }
 
-                    delete("/${EVENT_ENTITY_API_NAME}") {             // TODO batches to speed up
+                    delete("/${EVENT_ENTITY_API_NAME}") {
                         val roles = call.principal<WithRoles>()?.roles!!
                         if (!roles.isAdmin) {
                             call.respond(HttpStatusCode.Unauthorized, "Only user with Admin role can delete events")
                             return@delete
                         }
                         var connEMD: Connection? = null
-                        var deletedCount = 0
                         try {
                             // Here, we only care about reference to event, other event data is optional and is ignored, if passed
                             val events = call.receive<Array<EventReprForDelete>>()
                             connEMD = newEMDConnection(config, this.context)
                             connEMD!!.autoCommit = false
                             val storageMap = getStorageMap(connEMD!!)
+                            val fileData = mutableMapOf<Pair<Byte, String>, Int>()
                             events.forEach { event ->
-                                println("Deleting event: $event")
                                 val storage_name = event.reference.storage_name
                                 val storage_id = storageMap.str_to_id[storage_name]
                                 if (storage_id == null) {
@@ -589,35 +588,44 @@ fun Application.main() {
                                     return@delete
                                 }
                                 val file_path = event.reference.file_path
-                                val file_guid: Int
-                                val res = connEMD!!.createStatement().executeQuery(
-                                    """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
-                                )
-                                if (res.next()) {
-                                    file_guid = res.getInt("file_guid")
-                                    println("File GUID = $file_guid")
-                                } else { // no such file
-                                    call.respond(
-                                        HttpStatusCode.NotFound,
-                                        "Error: file_guid not found for event ${event.str()}"
+                                if (Pair(storage_id, file_path) !in fileData) {
+                                    val res = connEMD!!.createStatement().executeQuery(
+                                        """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
                                     )
-                                    return@delete
+                                    if (res.next()) {
+                                        val file_guid: Int = res.getInt("file_guid")
+                                        println("File GUID ($storage_id, $file_path) = $file_guid")
+                                        fileData[Pair(storage_id, file_path)] = file_guid
+                                    } else { // no such file
+                                        call.respond(
+                                            HttpStatusCode.NotFound,
+                                            "Error: file_guid not found for event ${event.str()}"
+                                        )
+                                        return@delete
+                                    }
                                 }
+                            }
+                            val stmt = connEMD!!.createStatement()
+                            events.forEach { event ->
+                                println("Deleting event: $event")
+                                val storage_id = storageMap.str_to_id[event.reference.storage_name]
+                                val file_guid = fileData[Pair(storage_id, event.reference.file_path)]
                                 val query = """
                                     DELETE FROM ${page.db_table_name} 
                                     WHERE (("file_guid" = $file_guid AND "event_number" = ${event.reference.event_number}));
                                     """.trimIndent()
                                 println(query)
-                                val intRes = connEMD!!.createStatement().executeUpdate(query)
-                                if (intRes == 1) {
-                                    deletedCount++
-                                } else {
-                                    call.respond(
-                                        HttpStatusCode.NotFound,
-                                        "Error: event (${event.str()}) not found"
-                                    )
-                                    return@delete
-                                }
+                                stmt.addBatch(query)
+                            }
+                            val res = stmt.executeBatch()
+                            val deletedCount = res.sum()
+                            if (deletedCount != events.size) {
+                                call.respond(
+                                    HttpStatusCode.NotFound,
+                                    "Error: could not find some of the events to delete, aborting transaction.\n" +
+                                            "The first missing event was ${events[res.indexOfFirst { it == 0 }].str()}"
+                                )
+                                return@delete
                             }
                             connEMD!!.commit()
                             call.respond(HttpStatusCode.OK, "Success: $deletedCount event(s) were deleted")
