@@ -26,6 +26,8 @@ values can be defined using `|` separator for both Web interface and API (for in
 are inclusive, that is start and end of the intervals are included. The intervals unbound from one side are also 
 supported, for example, `track-number=10|` or `track-number=|15`.
 
+If you want extensive debug output (including all SQL requests), specify `debug: True` in the configuration file.
+
 ### Run installation of the EMS interfaces on a RedHat-based Operating System (AlmaLinux, CentOS, RedHat)
 
 There are three possible ways to install the EMS API and Web UI.

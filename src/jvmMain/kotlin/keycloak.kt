@@ -48,22 +48,22 @@ fun getKCtoken(config: ConfigFile, username: String, pass: String): String? {
         token = keycloak.tokenManager().grantToken()
         // println(token.token)
     } catch (e: NotAuthorizedException) {
-        println("Authentication failed, no token obtained!")
+        debug("Authentication failed, no token obtained!")
         return null
     }
-    return token!!.token .also{ println("getKCtoken: token was obtained") }  //.also { println(it) }
+    return token!!.token .also{ debug("getKCtoken: token was obtained") }  //.also { println(it) }
 }
 
 suspend fun getKCgroups(config: ConfigFile, token: String): List<String> {
     val parser = JwtParser()
     val jsonToken = parser.parseToJsonObject(token)
-    // println(jsonToken?.get("groups"))
+    // debug(jsonToken?.get("groups"))
     val res = mutableListOf<String>()
     jsonToken?.get("groups")?.jsonArray?.forEach {
-        // println(it)
+        // debug(it)
         res.add((it.toString().replace("/", "").replace("\"", "")))
     }
-    // println(res)
+    // debug(res)
     return res
 }
 

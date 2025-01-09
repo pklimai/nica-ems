@@ -15,7 +15,7 @@ fun readConfig(): ConfigFile? {
     } catch (e: java.lang.Exception) {
         println(
             "Could not read config file from $CONFIG_PATH. \n" +
-                    "Make sure the file is there and has proper format (if in Docker, mount as volume)"
+                    "Make sure the file is there and has proper format (if in container, mount as volume)"
         )
         return null
     }

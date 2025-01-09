@@ -23,7 +23,10 @@ class ConfigFile(
     val keycloak_auth: KeyCloakAuthConfig?,
 
     val title: String,
-    val pages: List<PageConfig>
+    val pages: List<PageConfig>,
+
+    // If true, API will log requests extensively
+    val debug: Boolean? = false
 )
 
 @Serializable

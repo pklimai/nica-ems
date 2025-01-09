@@ -21,6 +21,12 @@ import java.sql.DriverManager
 
 lateinit var config: ConfigFile
 
+fun debug(message: String) {
+    if (config.debug == true) {
+        println(message)
+    }
+}
+
 fun Application.main() {
 
     install(DefaultHeaders)
@@ -38,14 +44,14 @@ fun Application.main() {
             basic("auth-keycloak-userpass") {
                 // Obtain Token via KeyCloak
                 validate { credentials ->
-                    println("auth-keycloak-userpass called for username ${credentials.name}")
+                    debug("auth-keycloak-userpass called for username ${credentials.name}")
                     // Note: validate must return Principal in case of successful authentication or null otherwise
-                    getKCPrincipalOrNull(config, credentials.name, credentials.password) //.also { println(it) }
+                    getKCPrincipalOrNull(config, credentials.name, credentials.password) //.also { debug(it) }
                 }
             }
             bearer("auth-keycloak-bearer") {
                 authenticate { bearerTokenCredential: BearerTokenCredential ->
-                    println("auth-keycloak-bearer called with token = ${bearerTokenCredential.token}")
+                    debug("auth-keycloak-bearer called with token = ${bearerTokenCredential.token}")
                     val groups = getKCgroups(config, bearerTokenCredential.token) ?: return@authenticate null
                     TokenGroupsPrincipal(bearerTokenCredential.token, groups, rolesFromGroups(config, groups))
                 }
@@ -69,7 +75,7 @@ fun Application.main() {
         DriverManager.getConnection(urlConditionDB, config.condition_db!!.user, config.condition_db!!.password)
     }
 
-    // println("Working Directory = ${System.getProperty("user.dir")}")
+    // debug("Working Directory = ${System.getProperty("user.dir")}")
     routing {
 
         // Allows all resources to be statically available (including generated nica-ems.js file)
@@ -112,7 +118,7 @@ fun Application.main() {
                         }
                     }
             } catch (err: Exception) {
-                println("EMS database error: $err")
+                debug("EMS database error: $err")
                 call.respond(HttpStatusCode.NotFound, "EMS database error: $err")
             } finally {
                 connEMD?.close()
@@ -173,7 +179,7 @@ fun Application.main() {
                 // e.g. POST { "software_id": 100, "software_version": "22.1" }
                 // Note: software_id is assigned automatically by the database, regardless of what is passed in JSON
                 val roles = call.principal<WithRoles>()?.roles!!
-                // println("Roles in post(SOFTWARE_URL): $roles")
+                // debug("Roles in post(SOFTWARE_URL): $roles")
                 if (!(roles.isWriter or roles.isAdmin)) {
                     call.respond(HttpStatusCode.Unauthorized)
                     return@post  // not really needed here but important in other places
@@ -183,7 +189,7 @@ fun Application.main() {
                     val sw = call.receive<SoftwareVersion>()
                     connEMD = newEMDConnection(config, this.context)
                     val query = """INSERT INTO software_ (software_version) VALUES ('${sw.software_version}')"""
-                    println(query)
+                    debug(query)
                     connEMD!!.createStatement().executeUpdate(query)
                     call.respond(HttpStatusCode.OK, "SW record was created")
                 } catch (err: PSQLException) {
@@ -245,7 +251,7 @@ fun Application.main() {
                     val storage = call.receive<Storage>()
                     connEMD = newEMDConnection(config, this.context)
                     val query = """INSERT INTO storage_ (storage_name) VALUES ('${storage.storage_name}')"""
-                    println(query)
+                    debug(query)
 
                     connEMD!!.createStatement().executeUpdate(query)
                     call.response.status(HttpStatusCode.OK)
@@ -373,7 +379,7 @@ fun Application.main() {
                             connEMD!!.autoCommit = false
                             val softwareMap = getSoftwareMap(connEMD!!)
                             val storageMap = getStorageMap(connEMD!!)
-                            println("Received ${events.size} events!")
+                            debug("Received ${events.size} events!")
                             val fileData = mutableMapOf<Pair<Byte, String>, Int>()
                             events.forEach { event ->
                                 val software_id = softwareMap.str_to_id[event.software_version]
@@ -403,7 +409,7 @@ fun Application.main() {
                                     } else { // create file record
                                         val fileQuery =
                                             """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
-                                        println(fileQuery)
+                                        debug(fileQuery)
                                         connEMD!!.createStatement().executeUpdate(fileQuery)
                                         val res2 = connEMD!!.createStatement().executeQuery(
                                             """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
@@ -412,12 +418,12 @@ fun Application.main() {
                                         file_guid = res2.getInt("file_guid")
                                     }
                                     fileData[Pair(storage_id, file_path)] = file_guid
-                                    println("File GUID for $file_path = $file_guid")
+                                    debug("File GUID for $file_path = $file_guid")
                                 }
                             }
                             val stmt = connEMD!!.createStatement()
                             events.forEach { event ->
-                                println("Creating event: $event")
+                                debug("Creating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
                                 val storage_id = storageMap.str_to_id[event.reference.storage_name]
                                 val file_guid = fileData[Pair(storage_id, event.reference.file_path)]!!
@@ -435,12 +441,12 @@ fun Application.main() {
                                         VALUES ($file_guid, ${event.reference.event_number}, $software_id, ${event.period_number},
                                             ${event.run_number}, $parameterValuesStr)
                                     """.trimIndent()
-                                println(query)
+                                debug(query)
                                 stmt.addBatch(query)
                             }
                             stmt.executeBatch()
                             connEMD!!.commit()
-                            println("Success: ${events.size} event(s) were created")
+                            debug("Success: ${events.size} event(s) were created")
                             call.respond(HttpStatusCode.OK, "Success: ${events.size} event(s) were created")
                         } catch (err: PSQLException) {
                             if (err.toString().contains("The connection attempt failed.")) {
@@ -470,7 +476,7 @@ fun Application.main() {
                             connEMD!!.autoCommit = false
                             val softwareMap = getSoftwareMap(connEMD!!)
                             val storageMap = getStorageMap(connEMD!!)
-                            println("Received ${events.size} events!")
+                            debug("Received ${events.size} events!")
                             val fileData = mutableMapOf<Pair<Byte, String>, Int>()
                             events.forEach { event ->
                                 val software_id = softwareMap.str_to_id[event.software_version]
@@ -500,7 +506,7 @@ fun Application.main() {
                                     } else { // create file record
                                         val fileQuery =
                                             """INSERT INTO file_ (storage_id, file_path) VALUES ($storage_id, '$file_path')"""
-                                        println(fileQuery)
+                                        debug(fileQuery)
                                         connEMD!!.createStatement().executeUpdate(fileQuery)
                                         val res2 = connEMD!!.createStatement().executeQuery(
                                             """SELECT file_guid FROM file_ WHERE storage_id = $storage_id AND file_path = '$file_path'"""
@@ -509,12 +515,12 @@ fun Application.main() {
                                         file_guid = res2.getInt("file_guid")
                                     }
                                     fileData[Pair(storage_id, file_path)] = file_guid
-                                    println("File GUID for $file_path = $file_guid")
+                                    debug("File GUID for $file_path = $file_guid")
                                 }
                             }
                             val stmt = connEMD!!.createStatement()
                             events.forEach { event ->
-                                println("Creating event: $event")
+                                debug("Creating event: $event")
                                 val software_id = softwareMap.str_to_id[event.software_version]
                                 val storage_id = storageMap.str_to_id[event.reference.storage_name]
                                 val file_guid = fileData[Pair(storage_id, event.reference.file_path)]!!
@@ -542,7 +548,7 @@ fun Application.main() {
                                             software_id=$software_id, period_number=${event.period_number}, run_number=${event.run_number},
                                             $parameterNamesEqValuesStr
                                     """.trimIndent()
-                                println(query)
+                                debug(query)
                                 stmt.addBatch(query)
                             }
                             stmt.executeBatch()
@@ -594,7 +600,7 @@ fun Application.main() {
                                     )
                                     if (res.next()) {
                                         val file_guid: Int = res.getInt("file_guid")
-                                        println("File GUID ($storage_id, $file_path) = $file_guid")
+                                        debug("File GUID ($storage_id, $file_path) = $file_guid")
                                         fileData[Pair(storage_id, file_path)] = file_guid
                                     } else { // no such file
                                         call.respond(
@@ -607,14 +613,14 @@ fun Application.main() {
                             }
                             val stmt = connEMD!!.createStatement()
                             events.forEach { event ->
-                                println("Deleting event: $event")
+                                debug("Deleting event: $event")
                                 val storage_id = storageMap.str_to_id[event.reference.storage_name]
                                 val file_guid = fileData[Pair(storage_id, event.reference.file_path)]
                                 val query = """
                                     DELETE FROM ${page.db_table_name} 
                                     WHERE (("file_guid" = $file_guid AND "event_number" = ${event.reference.event_number}));
                                     """.trimIndent()
-                                println(query)
+                                debug(query)
                                 stmt.addBatch(query)
                             }
                             val res = stmt.executeBatch()
@@ -647,7 +653,7 @@ fun Application.main() {
                     // Synchronous - build a file with some ROOT macro and return it
                     get("/eventFile") {
                         // TODO Apply all filtering, build ROOT file
-                        println("Serving dummy eventFile...")
+                        debug("Serving dummy eventFile...")
                         val f =
                             Thread.currentThread().getContextClassLoader().getResource("static/downloadFile.bin")!!.file
                         call.respondFile(File(f))
