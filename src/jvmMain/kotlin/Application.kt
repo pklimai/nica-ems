@@ -454,6 +454,8 @@ fun Application.main() {
                             } else {
                                 call.respond(HttpStatusCode.Conflict, "Database error: $err")
                             }
+                        } catch (err: java.sql.BatchUpdateException) {
+                            call.respond(HttpStatusCode.Conflict, "Database error: $err")
                         } catch (err: BadRequestException) {
                             call.respond(HttpStatusCode.UnprocessableEntity, "Error processing content: $err")
                         } catch (err: Exception) {
