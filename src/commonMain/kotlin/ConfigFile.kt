@@ -2,7 +2,9 @@ package ru.mipt.npm.nica.ems
 
 import kotlinx.serialization.Serializable
 
-val DEFAULT_LIMIT_FOR_WEB = 1000
+val DEFAULT_LIMIT_FOR_WEB = 10_000L
+val DEFAULT_LIMIT_FOR_API = 50_000L
+val MAX_LIMIT_FOR_API = 100_000L
 
 /**
  * Determines configuration file structure
@@ -46,7 +48,8 @@ class PageConfig(
     val parameters: List<ParameterConfig>,
     // By default, this number of records is returned in WebUI if limit is not specified
     // does not need to be specified in YAML (uses given default value if not specified)
-    val default_limit_web: Int = DEFAULT_LIMIT_FOR_WEB
+    val default_limit_web: Long = DEFAULT_LIMIT_FOR_WEB,
+    val default_limit_api: Long = DEFAULT_LIMIT_FOR_API
 )
 
 @Serializable

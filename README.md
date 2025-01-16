@@ -200,5 +200,20 @@ curl -X POST -u USER:PASS -H "Content-Type: application/json" http://127.0.0.1/e
 '
 ```
 
-Note: `software_version` and `storage_name` must exist in the corresponding EMS database tables.
-The `file_path` will be automatically created in the `file_` table, if not there yet.
+The GET response also includes some extra data, like this (`limit` is the maximum number of events
+that were requested or could be returned, `offset` is offset starting from which events were retrieved,
+`count` is equal to actual number of events in `events`: 
+
+```
+{
+    "events": [ ... ]
+    "limit": 50000,
+    "offset": 0,
+    "count": 100
+}
+```
+
+Note: when POSTing or PUTing events, `software_version` and `storage_name` must exist in the corresponding 
+EMS database tables beforehand. However, the `file_path` entry will be automatically created in 
+the `file_` table, if not there yet.
+

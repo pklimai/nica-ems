@@ -137,7 +137,7 @@ fun Route.legacyPage(page: PageConfig, config: ConfigFile, connCondition: java.s
                         h3 { +"Events found:" }
 
                         val res = queryEMD(
-                            parameterBundle, page, connCondition, connEMD, this, DEFAULT_LIMIT_FOR_WEB
+                            parameterBundle, page, connCondition, connEMD, this
                         )
 
                         br {}

@@ -291,6 +291,8 @@ fun Application.main() {
                         try {
                             connEMD = newEMDConnection(config, this.context)!!
                             val res = queryEMD(parameterBundle, page, connCondition, connEMD!!, null)
+                            val limit = getLimit(page, parameterBundle.limit?.stringValue)
+                            val offset = parameterBundle.offset?.stringValue?.toLong() ?: 0
                             val lstEvents = ArrayList<EventRepr>()
                             while (res?.next() == true) {
                                 val paramMap = HashMap<String, Any>()
@@ -317,7 +319,12 @@ fun Application.main() {
                                     )
                                 )
                             }
-                            call.respond(mapOf("events" to lstEvents))
+                            call.respond(mapOf(
+                                "events" to lstEvents,
+                                "limit" to limit,
+                                "offset" to offset,
+                                "count" to lstEvents.size
+                            ))
                         } catch (err: PSQLException) {
                             if (err.toString().contains("The connection attempt failed.")) {
                                 call.respond(HttpStatusCode.ServiceUnavailable, "Database connection failed: $err")

@@ -58,13 +58,25 @@ fun getStorageMap(conn: java.sql.Connection): StorageMap {
     return StorageMap(strToId)
 }
 
+fun getLimit(page: PageConfig,providedLimit: String?): Long {
+    if (providedLimit.isNullOrEmpty()) {
+        return page.default_limit_api
+    } else {
+        if (providedLimit.toLong() > MAX_LIMIT_FOR_API) {
+            return MAX_LIMIT_FOR_API
+        } else {
+            return providedLimit.toLong()
+        }
+    }
+}
+
 fun queryEMD(
     parameterBundle: ParameterBundle,
     page: PageConfig,
     connCondition: Connection?,
     connEMD: Connection,
     body: BODY?,
-    defaultLimit: Int? = null,
+    //defaultLimit: Int? = null,
     countOnly: Boolean = false
 ): ResultSet? {
     with(parameterBundle) {
@@ -109,12 +121,10 @@ fun queryEMD(
             query += " WHERE " + filterCriteria.joinToString(" AND ")
         }
 
-        if (limit != null) {
-            query += " LIMIT ${limit.stringValue}"
-        } else if (defaultLimit != null) {
-            query += " LIMIT $defaultLimit"
-        }
+        query += " LIMIT ${getLimit(page, limit?.stringValue)}"
+
         offset?.let {
+            val offs = offset.stringValue.toLong()    // TODO better check bad characters, esp. "|"
             query += " OFFSET ${offset.stringValue}"
         }
 
