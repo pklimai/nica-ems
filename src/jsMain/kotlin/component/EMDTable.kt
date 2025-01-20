@@ -6,6 +6,7 @@ import react.fc
 import kotlin.js.Json
 import mui.material.*
 import mui.x.DataGrid
+import react.useState
 
 external interface EMDTableProps : Props {
     var content: String?
@@ -13,6 +14,9 @@ external interface EMDTableProps : Props {
 }
 
 val EMDTable = fc<EMDTableProps> { props ->
+
+    val (pageSizeState, setPageSizeState) = useState<Int>(10)
+
     if (props.content != null) {
 
         val columns = mutableListOf(
@@ -92,14 +96,17 @@ val EMDTable = fc<EMDTableProps> { props ->
                     attrs {
                         this.columns = columns.toTypedArray()
                         this.rows = rows.toTypedArray()
-                        pageSize = 10
+                        pageSize = pageSizeState
                         // TODO https://mui.com/components/data-grid/pagination/
-//                    rowsPerPageOptions = arrayOf(10, 20, 30)
-//                    onPageSizeChange = { newPageSize: Int ->
-//                        this.setPageSize(newPageSize)
-//                    }
+                        rowsPerPageOptions = arrayOf(10, 20, 30)
+
+                        onPageSizeChange = { newPageSize: Int ->
+                            setPageSizeState(newPageSize)
+
+                        }
 //                    columnBuffer = 8
                     }
+
                 }
             }
         }
