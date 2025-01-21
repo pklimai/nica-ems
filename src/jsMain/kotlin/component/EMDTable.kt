@@ -15,7 +15,7 @@ external interface EMDTableProps : Props {
 
 val EMDTable = fc<EMDTableProps> { props ->
 
-    val (pageSizeState, setPageSizeState) = useState<Int>(10)
+    val (pageSize, setPageSize) = useState<Int>(10)
 
     if (props.content != null) {
 
@@ -96,17 +96,14 @@ val EMDTable = fc<EMDTableProps> { props ->
                     attrs {
                         this.columns = columns.toTypedArray()
                         this.rows = rows.toTypedArray()
-                        pageSize = pageSizeState
-                        // TODO https://mui.com/components/data-grid/pagination/
-                        rowsPerPageOptions = arrayOf(10, 20, 30)
-
+                        this.pageSize = pageSize
+                        // See https://mui.com/components/data-grid/pagination/
+                        rowsPerPageOptions = arrayOf(10, 20, 50, 100)
                         onPageSizeChange = { newPageSize: Int ->
-                            setPageSizeState(newPageSize)
-
+                            setPageSize(newPageSize)
                         }
-//                    columnBuffer = 8
+                        // columnBuffer = 8
                     }
-
                 }
             }
         }
