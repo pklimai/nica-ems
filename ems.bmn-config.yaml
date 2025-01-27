@@ -1,5 +1,5 @@
 event_db:
-  host: nc24.jinr.ru
+  host: bmn-eventdb.jinr.ru
   port: 5432
   db_name: event_db
   user: writer           # CHANGE EVENT DATABASE USER
