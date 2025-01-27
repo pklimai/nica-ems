@@ -3,9 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.with-build
-    container_name: nica-ems
+    container_name: nica-emd
     restart: unless-stopped
     ports:
-      - "80:8080"
+      - "8080:8080"
     volumes:
-      - ./ems.bmn-config.yaml:/app/bin/ems.config.yaml
+      - ./ems.config.yaml:/app/bin/ems.config.yaml
