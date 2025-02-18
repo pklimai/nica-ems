@@ -1,0 +1,13 @@
+event_db:
+  host: 192.168.65.52
+  port: 5000
+  db_name: event_db
+  user: postgres
+  password: example
+
+condition_db:
+  host: nc13.jinr.ru
+  port: 5432
+  db_name: bmn_db
+  user: db_reader
+  password: reader_pass

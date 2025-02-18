@@ -1,0 +1,10 @@
+[project]
+name = "ems-stat-collector"
+version = "0.1.0"
+description = "Statistics collector script for BM@N EMS"
+requires-python = ">=3.9"
+dependencies = [
+    "psycopg2[binary]>=2.9.10",
+    "pyyaml>=6.0.2",
+    "sqlalchemy>=2.0.38",
+]

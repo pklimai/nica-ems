@@ -1,0 +1,110 @@
+{
+	"totalRecords": 50000,
+	"periodStats": [
+		{
+			"periodNumber": 1,
+			"periodRecords": null,
+			"softwareStats": null
+		},
+		{
+			"periodNumber": 2,
+			"periodRecords": null,
+			"softwareStats": null
+		},
+		{
+			"periodNumber": 3,
+			"periodRecords": null,
+			"softwareStats": null
+		},
+		{
+			"periodNumber": 4,
+			"periodRecords": null,
+			"softwareStats": null
+		},
+		{
+			"periodNumber": 5,
+			"periodRecords": null,
+			"softwareStats": null
+		},
+		{
+			"periodNumber": 6,
+			"periodRecords": null,
+			"softwareStats": null
+		},
+		{
+			"periodNumber": 7,
+			"periodRecords": null,
+			"softwareStats": null
+		},
+		{
+			"periodNumber": 8,
+			"periodRecords": 10000,
+			"softwareStats": [
+				{
+					"swVer": "19.1",
+					"graphs": [
+						{
+							"title1": "Beam Xe ( E = 3 GeV/n )",
+							"title2": "Total: 60.74 MEvents",
+							"slices": [
+								{
+									"name": "Fe",
+									"value": 1
+								},
+								{
+									"name": "Cu",
+									"value": 2
+								},
+								{
+									"name": "Be",
+									"value": 3
+								}
+							]
+						}
+					]
+				},
+				{
+					"swVer": "20.1",
+					"graphs": [
+						{
+							"title1": "Beam C ( E = 3.6 GeV/n )",
+							"title2": "Total: 0.73 MEvents",
+							"slices": [
+								{
+									"name": "Au",
+									"value": 4
+								},
+								{
+									"name": "B",
+									"value": 5
+								},
+								{
+									"name": "C",
+									"value": 6
+								}
+							]
+						},
+						{
+							"title1": "My Stat Graph TWO-2",
+							"title2": "",
+							"slices": [
+								{
+									"name": "Au",
+									"value": 44
+								},
+								{
+									"name": "B",
+									"value": 55
+								},
+								{
+									"name": "C",
+									"value": 66
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}
