@@ -26,7 +26,7 @@ create table file_
 (
     file_guid serial primary key,
     storage_id smallint not null references storage_(storage_id) on update cascade,
-    file_path varchar(255) not null
+    file_path text not null
 );
 
 create table event_
@@ -46,8 +46,8 @@ create table event_
 
 CREATE TABLE statistics_ (
     id serial primary key,
-    json_stats character varying NOT NULL,
-    time_written time without time zone
+    json_stats text NOT NULL,
+    time_written timestamp
 );
 
 
