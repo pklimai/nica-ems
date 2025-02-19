@@ -28,7 +28,7 @@ class File(Base):
 
 
 class Event(Base):
-    __tablename__ = "event"
+    __tablename__ = "event_"
     file_guid: Mapped[int] = mapped_column(ForeignKey("file_.file_guid"), primary_key=True)
     file: Mapped[File] = relationship()
     event_number: Mapped[int] = mapped_column(primary_key=True)
@@ -42,7 +42,7 @@ class Event(Base):
 
 
 class Statistics(Base):
-    __tablename__ = "statistics"
+    __tablename__ = "statistics_"
     id: Mapped[int] = mapped_column(primary_key=True)
     json_stats: Mapped[str]
     time_written: Mapped[datetime.datetime] = mapped_column(

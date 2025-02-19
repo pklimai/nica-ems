@@ -62,7 +62,7 @@ val chartComponent = fc<ChartComponentProps> { props ->
                         "credits" to json(
                             "enabled" to false
                         ),
-                        "tooltip" to js("{style: { color: '#1b1818' }, backgroundColor: '#ffffff', borderRadius: 5, borderWidth: 3, headerFormat: '<small></small>', pointFormat: '{point.name}: {point.y} events' }"), // MEvents
+                        "tooltip" to js("{style: { color: '#1b1818', fontSize: '14px', fontFamily: 'Roboto, sans-serif' }, backgroundColor: '#ffffff', borderRadius: 5, borderWidth: 2, headerFormat: '<small></small>', pointFormat: '<b>{point.name}</b>: {point.y} events' }"), // MEvents
                         "plotOptions" to json(
                             "pie" to json(
                                 "allowPointSelect" to true,
@@ -72,9 +72,9 @@ val chartComponent = fc<ChartComponentProps> { props ->
                                 //"colors" to arrayOf("#ff0000", "#00ff00", "#0000ff"),   this.bname[i].color,
                                 "dataLabels" to json(
                                     "enabled" to true,
-                                    "distance" to 15,
-                                    "style" to js("{ fontSize: 'inherit', fontWeight: 'normal', fontFamily: 'Lato, sans-serif', lineHeight: '18px' }"),
-                                    "format" to "{point.name}: <i>{point.y} events</i>" // MEvents
+                                    "distance" to 20,
+                                    "style" to js("{ fontSize: '13px', fontWeight: 'normal', fontFamily: 'Roboto, sans-serif', lineHeight: '18px' }"),
+                                    "format" to "<b>{point.name}</b>: <i>{point.y} events</i>" // MEvents
                                 )
                             )
                         ),
