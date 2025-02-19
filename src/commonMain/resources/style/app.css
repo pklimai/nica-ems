@@ -796,19 +796,16 @@ footer {
   }
 }
 
-@media (max-width: 1840px) {
+@media (max-width: 1700px) {
   .home__page__stats {
       cursor: default;
       display: flex;
       width: 100%;
       flex-wrap: wrap;
-  }
-}
-@media (max-width: 920px) {
-  .home__page__stats {
       justify-content: center;
   }
 }
+
 
 .home__page__stats {
   cursor: default;
@@ -837,7 +834,6 @@ footer {
   background-color: #fff;
   border-radius: 0.3rem !important;
   padding: 1rem !important;
-  min-width: 176px;
   animation: translating5 .8s;
 }
 
@@ -854,7 +850,6 @@ footer {
   background-color: #fff;
   border-radius: 0.3rem !important;
   padding: 1rem !important;
-  min-width: 218px;
   cursor: default !important;
   white-space: nowrap;
 }
@@ -865,7 +860,6 @@ footer {
 
 .home__page__stats__block {
   height: 75px;
-  min-width: 218px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1345,7 +1339,7 @@ border-right: 2px solid rgb(110 110 110 / 50%);
 
 .chart_bloks {
   padding: 1.4% 1.5% 1.4% 1.5%;
-  margin-right: 20px;
+  margin-right: 2rem;
   margin-top: 20px;
   border-radius: 0.6em;
   box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;

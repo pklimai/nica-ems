@@ -7,3 +7,5 @@
 /testing/event_db
 /kotlin-js-store/yarn.lock
 ems.config.yaml
+/ems-stat-collector/src/__pycache__
+/ems-stat-collector/src/orm/__pycache__
