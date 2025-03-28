@@ -290,6 +290,7 @@ WorkingDirectory=/opt/emd/ems-stat-collector
 StandardOutput=append:/var/log/ems-stat-collector.log
 StandardError=append:/var/log/ems-stat-collector.err
 Restart=on-failure
+StartLimitBurst=5
 User=username
 
 [Install]
