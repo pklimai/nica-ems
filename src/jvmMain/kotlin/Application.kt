@@ -107,14 +107,14 @@ fun Application.main() {
             try {
                 connEMD = newEMDConnection(config, this@get.context, forStatsGetting = true)!!
                 connEMD.createStatement()
-                    .executeQuery("SELECT json_stats FROM statistics ORDER BY id DESC LIMIT 1")
+                    .executeQuery("SELECT json_stats FROM statistics_ ORDER BY id DESC LIMIT 1")
                     .let { resultSet ->
                         if (resultSet.next()) {
                             val r = resultSet.getString("json_stats")
                             call.response.header("Content-Type", "application/json")
                             call.respondText(r)
                         } else {
-                            call.respond(HttpStatusCode.NotFound, "No data in EMS statistics table")
+                            call.respond(HttpStatusCode.NotFound, "No data in EMS statistics_ table")
                         }
                     }
             } catch (err: Exception) {

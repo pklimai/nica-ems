@@ -71,7 +71,7 @@ create table test_event
     primary_vertex bool not null
 );
 
-CREATE TABLE statistics (
+CREATE TABLE statistics_ (
     id serial primary key,
     json_stats character varying NOT NULL,
     time_written time without time zone

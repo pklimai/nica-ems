@@ -217,3 +217,11 @@ Note: when POSTing or PUTing events, `software_version` and `storage_name` must 
 EMS database tables beforehand. However, the `file_path` entry will be automatically created in 
 the `file_` table, if not there yet.
 
+
+## Statistics collection and display
+
+To see stats on the Web UI homepage, you must run statistics collection script (ideally, run
+it periodically from cron).
+
+The statistics collection script is part of this repository, see [README](ems-stat-collector/README.md)
+for details.

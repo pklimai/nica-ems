@@ -27,7 +27,7 @@ title: BM@N Event Metadata System
 pages:
   - name: BM@N Events
     api_url: /event_api/v1
-    db_table_name: event
+    db_table_name: event_
     default_limit_web: 100
     parameters:
       - name: track_number
