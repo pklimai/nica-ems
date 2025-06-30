@@ -1,7 +1,8 @@
-FROM gradle:7.6.4-jdk17 as builder
+FROM gradle:7.6.4-jdk17 AS builder
 COPY src ./src
 COPY build.gradle.kts ./build.gradle.kts
 COPY settings.gradle.kts ./settings.gradle.kts
+COPY gradle.properties ./gradle.properties
 RUN gradle installDist
 
 FROM azul/zulu-openjdk:17
